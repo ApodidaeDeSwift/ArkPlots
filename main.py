@@ -17,7 +17,16 @@ import sys
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-WORKDIR = os.path.dirname(os.path.abspath(__file__))
+def get_app_dir():
+    """获取程序实际运行目录（兼容源码/EXE两种运行方式）"""
+    if getattr(sys, 'frozen', False):
+        # 打包成EXE运行时，获取EXE所在目录
+        return os.path.dirname(os.path.abspath(sys.executable))
+    else:
+        # 源码运行时，获取脚本所在目录
+        return os.path.dirname(os.path.abspath(__file__))
+
+WORKDIR = get_app_dir()
 PLOTLINE_PATH = os.path.join(WORKDIR, "Plotline.json")
 READ_RECORD_PATH = os.path.join(WORKDIR, "Read_record.json")
 
@@ -278,8 +287,11 @@ def gui_main():
     try:
         style = ttk.Style(root)
         style.theme_use('clam')
+        style.configure("FilterGrid.TCheckbutton", padding=(6, 4), anchor="w")
     except Exception:
         style = None
+    if style:
+        style.configure("Link.TLabel", foreground="#1565c0")
     try:
         default_font = tkfont.nametofont("TkDefaultFont")
         default_font.configure(size=10, family="Segoe UI")
@@ -387,13 +399,37 @@ def gui_main():
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
+        def _on_mousewheel(event):
+            if hasattr(event, 'delta') and event.delta:
+                canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            elif getattr(event, 'num', None) == 4:
+                canvas.yview_scroll(-1, "units")
+            elif getattr(event, 'num', None) == 5:
+                canvas.yview_scroll(1, "units")
+
+        canvas.bind("<MouseWheel>", _on_mousewheel)
+        canvas.bind("<Button-4>", _on_mousewheel)
+        canvas.bind("<Button-5>", _on_mousewheel)
+        scrollable.bind("<MouseWheel>", _on_mousewheel)
+        scrollable.bind("<Button-4>", _on_mousewheel)
+        scrollable.bind("<Button-5>", _on_mousewheel)
+
+        grid_columns = min(4, max(1, (len(options) + 3) // 4 if options else 1))
+        grid_frame = ttk.Frame(scrollable)
+        grid_frame.pack(fill=tk.BOTH, expand=True)
+
         vars_list: List[tk.BooleanVar] = []
-        # populate checkbuttons
-        for opt in options:
+        # populate checkbuttons in grid layout
+        for idx, opt in enumerate(options):
             var = tk.BooleanVar(value=(opt in (initial or [])))
-            cb = ttk.Checkbutton(scrollable, text=opt, variable=var)
-            cb.pack(anchor='w', padx=4, pady=2)
+            cb = ttk.Checkbutton(grid_frame, text=opt, variable=var, style="FilterGrid.TCheckbutton")
+            row = idx // grid_columns
+            col = idx % grid_columns
+            cb.grid(row=row, column=col, sticky='w', padx=8, pady=3)
             vars_list.append((opt, var))
+
+        for col in range(grid_columns):
+            grid_frame.grid_columnconfigure(col, weight=1)
 
         # control buttons
         ctrl = ttk.Frame(dlg)
@@ -537,6 +573,21 @@ def gui_main():
     items_frame = tk.Frame(canvas)
     canvas.create_window((0, 0), window=items_frame, anchor='nw')
 
+    def _on_list_mousewheel(event):
+        if hasattr(event, 'delta') and event.delta:
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        elif getattr(event, 'num', None) == 4:
+            canvas.yview_scroll(-1, "units")
+        elif getattr(event, 'num', None) == 5:
+            canvas.yview_scroll(1, "units")
+
+    canvas.bind("<MouseWheel>", _on_list_mousewheel)
+    canvas.bind("<Button-4>", _on_list_mousewheel)
+    canvas.bind("<Button-5>", _on_list_mousewheel)
+    items_frame.bind("<MouseWheel>", _on_list_mousewheel)
+    items_frame.bind("<Button-4>", _on_list_mousewheel)
+    items_frame.bind("<Button-5>", _on_list_mousewheel)
+
     def _on_frame_config(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
 
@@ -545,10 +596,23 @@ def gui_main():
     # selection state for multi-select behaviour
     selected_indices = set()
     last_selected_index = None
+    preview_history: List[str] = []
+    history_position = -1
+    history_suppress_push = False
+    history_back_btn: Optional[ttk.Button] = None
+    history_forward_btn: Optional[ttk.Button] = None
+    show_necessary_var = tk.BooleanVar(value=True)
+    show_optional_var = tk.BooleanVar(value=True)
+    show_preplot_reason_var = tk.BooleanVar(value=True)
+    detail_link_tags: List[str] = []
+    detail_status_tags: List[str] = []
+    link_counter = 0
+    status_tag_counter = 0
 
     def clear_selection():
-        nonlocal selected_indices
+        nonlocal selected_indices, last_selected_index
         selected_indices.clear()
+        last_selected_index = None
         for child in items_frame.winfo_children():
             try:
                 child.configure(bg=items_frame.cget('bg'))
@@ -599,10 +663,208 @@ def gui_main():
             last_selected_index = idx
         on_select()
 
-    # Details area
-    details = tk.Text(right, wrap=tk.WORD, font=yahei_font)
-    details.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-    details.configure(state='disabled')
+    # Details area with preview history and prequel controls
+    details_panel = ttk.Frame(right)
+    details_panel.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+    history_panel = ttk.Frame(details_panel)
+    history_panel.pack(fill=tk.X, pady=(0, 4))
+
+    details_text = tk.Text(details_panel, wrap=tk.WORD, font=yahei_font)
+    details_text.pack(fill=tk.BOTH, expand=True, padx=0, pady=(0, 6))
+    details_text.configure(state='disabled')
+
+    def reset_detail_links() -> None:
+        nonlocal detail_link_tags, detail_status_tags, link_counter, status_tag_counter
+        for tag in detail_link_tags + detail_status_tags:
+            try:
+                details_text.tag_delete(tag)
+            except Exception:
+                pass
+        detail_link_tags.clear()
+        detail_status_tags.clear()
+        link_counter = 0
+        status_tag_counter = 0
+
+    def add_preplot_link(label: str, pid: str) -> None:
+        nonlocal detail_link_tags, link_counter
+        tag = f"preplot_link_{link_counter}"
+        link_counter += 1
+        start = details_text.index(tk.INSERT)
+        details_text.insert(tk.END, label)
+        end = details_text.index(tk.INSERT)
+        details_text.tag_add(tag, start, end)
+        detail_link_tags.append(tag)
+        details_text.tag_config(tag, foreground="#1565c0", underline=True)
+        details_text.tag_bind(tag, "<Double-Button-1>", lambda e, pid=pid: jump_to_plot_by_id(pid))
+        details_text.tag_bind(tag, "<Enter>", lambda e: details_text.configure(cursor="hand2"))
+        details_text.tag_bind(tag, "<Leave>", lambda e: details_text.configure(cursor=""))
+
+    def insert_status_label(status: str) -> None:
+        nonlocal detail_status_tags, status_tag_counter
+        tag = f"preplot_status_{status_tag_counter}"
+        status_tag_counter += 1
+        color = "#388e3c" if status == "已读" else "#d32f2f"
+        font_spec = (yahei_font.actual('family'), yahei_font.actual('size'), 'bold')
+        start = details_text.index(tk.INSERT)
+        details_text.insert(tk.END, f"[{status}]")
+        end = details_text.index(tk.INSERT)
+        details_text.tag_add(tag, start, end)
+        detail_status_tags.append(tag)
+        details_text.tag_config(tag, foreground=color, font=font_spec)
+
+    def jump_to_plot_by_id(plot_id: Any) -> None:
+        plot = plots_map.get(str(plot_id))
+        if not plot:
+            messagebox.showinfo("提示", "未找到该前置剧情")
+            return
+        display_plot(plot)
+
+    def append_preplot_section(label: str, entries: List[Dict[str, Any]], *, is_necessary: bool = False) -> None:
+        if not entries:
+            return
+        details_text.insert(tk.END, f"\n{label}\n")
+        for entry in entries:
+            pid = str(entry.get("id"))
+            title = plots_map.get(pid, {}).get("name") or f"ID:{pid}"
+            if is_necessary:
+                details_text.insert(tk.END, "  ")
+                status = records.get(pid, "未读")
+                insert_status_label(status)
+                details_text.insert(tk.END, " ")
+                add_preplot_link(title, pid)
+                details_text.insert(tk.END, "\n")
+                if show_preplot_reason_var.get():
+                    reason = entry.get("reason")
+                    if reason:
+                        details_text.insert(tk.END, f"    阅读理由：{reason}\n")
+            else:
+                details_text.insert(tk.END, "  ")
+                add_preplot_link(title, pid)
+                if show_preplot_reason_var.get():
+                    reason = entry.get("reason")
+                    if reason:
+                        details_text.insert(tk.END, f"（{reason}）")
+                details_text.insert(tk.END, "\n")
+
+    def push_history(plot_id: str) -> None:
+        nonlocal preview_history, history_position
+        if history_suppress_push:
+            return
+        if 0 <= history_position < len(preview_history) and preview_history[history_position] == plot_id:
+            return
+        preview_history = preview_history[:history_position + 1]
+        preview_history.append(plot_id)
+        history_position = len(preview_history) - 1
+        update_history_buttons()
+
+    def update_history_buttons() -> None:
+        if history_back_btn:
+            history_back_btn.configure(state=tk.NORMAL if history_position > 0 else tk.DISABLED)
+        if history_forward_btn:
+            history_forward_btn.configure(state=tk.NORMAL if history_position < len(preview_history) - 1 else tk.DISABLED)
+
+    def select_plot_in_current_list(item: Dict[str, Any]) -> Optional[int]:
+        nonlocal last_selected_index
+        target = str(item.get('id'))
+        items = getattr(items_frame, '_items', [])
+        for idx, candidate in enumerate(items):
+            if str(candidate.get('id')) == target:
+                clear_selection()
+                selected_indices.add(idx)
+                highlight_index(idx, True)
+                last_selected_index = idx
+                if items:
+                    canvas.yview_moveto(idx / max(1, len(items)))
+                return idx
+        return None
+
+    def display_plot(item: Optional[Dict[str, Any]], *, record_history: bool = True, highlight: bool = True) -> None:
+        details_text.configure(state='normal')
+        details_text.delete(1.0, tk.END)
+        reset_detail_links()
+        if item is None:
+            details_text.configure(state='disabled')
+            return
+        lines = []
+        lines.append(f"ID: {item.get('id')}")
+        if review_fields.get('name', True):
+            lines.append(f"名称: {item.get('name')}")
+        if review_fields.get('type', True):
+            c = item.get('class')
+            lines.append(f"类型: {class_label_map.get(c, c)}")
+        lines.append(f"发布日期: {item.get('date')}")
+        if review_fields.get('country', True):
+            lines.append(f"国家: {', '.join(normalize_list_field(item.get('country')))}")
+        if review_fields.get('plot_stage', True):
+            lines.append(f"阶段: {item.get('plot_stage')}")
+        if review_fields.get('new_operator', True):
+            lines.append(f"同期角色: {', '.join(normalize_list_field(item.get('new_operator')))}")
+        if review_fields.get('related_power', True):
+            lines.append(f"相关势力: {', '.join(normalize_list_field(item.get('related_power')))}")
+        if review_fields.get('related_plot', True):
+            lines.append(f"相关剧情: {', '.join(normalize_list_field(item.get('related_plot')))}")
+        if review_fields.get('description', True):
+            lines.append(f"描述: {item.get('description')}")
+        lines.append(f"阅读状态: {records.get(str(item.get('id')), '未读')}")
+        details_text.insert(tk.END, "\n".join(lines))
+        if show_necessary_var.get():
+            append_preplot_section("必要前置剧情：", item.get('necessary_plot') or [], is_necessary=True)
+        if show_optional_var.get():
+            append_preplot_section("可选前置剧情：", item.get('optional_plot') or [])
+        details_text.configure(state='disabled')
+        pid = str(item.get('id'))
+        if record_history:
+            push_history(pid)
+        if highlight:
+            select_plot_in_current_list(item)
+
+    def refresh_current_preview() -> None:
+        if not hasattr(items_frame, '_items') or not items_frame._items:
+            display_plot(None, record_history=False, highlight=False)
+            return
+        if not selected_indices:
+            display_plot(None, record_history=False, highlight=False)
+            return
+        items = items_frame._items
+        idx = min(selected_indices)
+        if 0 <= idx < len(items):
+            display_plot(items[idx], record_history=False, highlight=False)
+
+    def show_history_entry(position: int) -> None:
+        nonlocal history_position, history_suppress_push
+        if position < 0 or position >= len(preview_history):
+            return
+        pid = preview_history[position]
+        target = plots_map.get(pid)
+        if not target:
+            return
+        history_suppress_push = True
+        try:
+            display_plot(target, record_history=False, highlight=True)
+        finally:
+            history_suppress_push = False
+        history_position = position
+        update_history_buttons()
+
+    def history_back() -> None:
+        nonlocal history_position
+        if history_position <= 0:
+            return
+        show_history_entry(history_position - 1)
+
+    def history_forward() -> None:
+        nonlocal history_position
+        if history_position >= len(preview_history) - 1:
+            return
+        show_history_entry(history_position + 1)
+
+    history_back_btn = ttk.Button(history_panel, text="↩", width=3, command=history_back, state=tk.DISABLED)
+    history_back_btn.pack(side=tk.LEFT, padx=(0, 4))
+    history_forward_btn = ttk.Button(history_panel, text="↪", width=3, command=history_forward, state=tk.DISABLED)
+    history_forward_btn.pack(side=tk.LEFT, padx=(0, 4))
+    ttk.Label(history_panel, text="预览历史").pack(side=tk.LEFT)
+    update_history_buttons()
 
     def refresh_list(filtered: Optional[List[Dict[str, Any]]] = None):
         # 使用两行条目渲染
@@ -687,6 +949,9 @@ def gui_main():
                 selected_indices.discard(i)
         for i in selected_indices:
             highlight_index(i, True)
+        canvas.yview_moveto(0)
+        if not selected_indices:
+            display_plot(None, record_history=False, highlight=False)
 
     def apply_filters():
         f = {}
@@ -720,47 +985,16 @@ def gui_main():
         refresh_list(matched)
 
     def on_select(evt=None):
-        # show details of first selected item (if any)
         if not hasattr(items_frame, '_items'):
             return
-        items = items_frame._items
         if not selected_indices:
-            details.configure(state='normal')
-            details.delete(1.0, tk.END)
-            details.configure(state='disabled')
+            display_plot(None, record_history=False, highlight=False)
             return
+        items = items_frame._items
         idx = min(selected_indices)
         if idx < 0 or idx >= len(items):
             return
-        item = items[idx]
-        pid = str(item.get("id"))
-        details.configure(state='normal')
-        details.delete(1.0, tk.END)
-        lines = []
-        # build detail lines according to review_fields
-        if review_fields.get('name', True):
-            lines.append(f"名称: {item.get('name')}")
-        if review_fields.get('type', True):
-            c = item.get('class')
-            lines.append(f"类型: {class_label_map.get(c, c)}")
-        # always show ID and date (ID useful)
-        lines.insert(0, f"ID: {item.get('id')}")
-        lines.append(f"发布日期: {item.get('date')}")
-        if review_fields.get('country', True):
-            lines.append(f"国家: {', '.join(normalize_list_field(item.get('country')))}")
-        if review_fields.get('plot_stage', True):
-            lines.append(f"阶段: {item.get('plot_stage')}")
-        if review_fields.get('new_operator', True):
-            lines.append(f"同期角色: {', '.join(normalize_list_field(item.get('new_operator')))}")
-        if review_fields.get('related_power', True):
-            lines.append(f"相关势力: {', '.join(normalize_list_field(item.get('related_power')))}")
-        if review_fields.get('related_plot', True):
-            lines.append(f"相关剧情: {', '.join(normalize_list_field(item.get('related_plot')))}")
-        if review_fields.get('description', True):
-            lines.append(f"描述: {item.get('description')}")
-        lines.append(f"阅读状态: {records.get(pid, '未读')}")
-        details.insert(tk.END, "\n".join(lines))
-        details.configure(state='disabled')
+        display_plot(items[idx])
 
     def set_status():
         if not hasattr(items_frame, '_items'):
@@ -861,6 +1095,9 @@ def gui_main():
     ttk.Button(btn_frame, text="刷新全部", command=lambda: refresh_list(plots)).pack(side=tk.LEFT, padx=5)
     ttk.Button(btn_frame, text="设置阅读状态", command=set_status).pack(side=tk.LEFT, padx=5)
     ttk.Button(btn_frame, text="批量设置", command=lambda: batch_set_status()).pack(side=tk.LEFT, padx=5)
+    ttk.Checkbutton(btn_frame, text="显示必要前置", variable=show_necessary_var, command=refresh_current_preview).pack(side=tk.LEFT, padx=5)
+    ttk.Checkbutton(btn_frame, text="显示可选前置", variable=show_optional_var, command=refresh_current_preview).pack(side=tk.LEFT, padx=5)
+    ttk.Checkbutton(btn_frame, text="显示前置理由", variable=show_preplot_reason_var, command=refresh_current_preview).pack(side=tk.LEFT, padx=5)
     ttk.Button(toolbar, text="审阅", command=open_review_dialog).pack(side=tk.LEFT, padx=5)
 
     # selection handled by item click handlers in the custom items_frame
