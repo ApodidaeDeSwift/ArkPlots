@@ -29,6 +29,22 @@
                 {
                     "name": "【《明日方舟》游戏概念宣传PV-2】",
                     "url": "https://www.bilibili.com/video/BV1w4411b7c3"
+                },
+                {
+                    "name": "(主线动画pv)【主线动画《明日方舟：黎明前奏》先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1jL4y1V79g"
+                },
+                {
+                    "name": "【主线动画《明日方舟：黎明前奏》先导PV2】",
+                    "url": "https://www.bilibili.com/video/BV1RS4y177yB"
+                },
+                {
+                    "name": "【主线动画《明日方舟：黎明前奏》定档PV】",
+                    "url": "https://www.bilibili.com/video/BV1tG411g7Fo"
+                },
+                {
+                    "name": "【《明日方舟：黎明前奏》主线动画正式pv】",
+                    "url": "https://www.bilibili.com/video/BV1cP411K7C6"
                 }
             ]
         },
@@ -134,7 +150,25 @@
                     "reason": "必要前置主线"
                 }
             ],
-            "optional_plot": []
+            "optional_plot": [],
+            "Videos": [
+                {
+                    "name": "【主线动画《明日方舟：冬隐归路》先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1Tk4y1J71z"
+                },
+                {
+                    "name": "【主线动画《明日方舟：冬隐归路》先导PV2】",
+                    "url": "https://www.bilibili.com/video/BV18X4y1n7xC"
+                },
+                {
+                    "name": "【主线动画《明日方舟：冬隐归路》定档PV】",
+                    "url": "https://www.bilibili.com/video/BV1P34y1N7GH"
+                },
+                {
+                    "name": "【主线动画《明日方舟：冬隐归路》播出中PV】",
+                    "url": "https://www.bilibili.com/video/BV12e411R78z"
+                }
+            ]
         },
         {
             "id": 6,
@@ -376,7 +410,21 @@
             "optional_plot": [
                 {
                     "id": 10,
-                    "reason": "这段故事是发生在喧闹法则之后的休闲剧情。"
+                    "reason": "这段故事是发生在喧闹法则之后的。"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》新章节「局部坏死」限时纪念活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1rJ411x78V"
+                },
+                {
+                    "name": "【《明日方舟》EP – Zone 10⁻⁸】",
+                    "url": "https://www.bilibili.com/video/BV1UJ411y7rk"
+                },
+                {
+                    "name": "【《明日方舟》EP – Boiling Blood】",
+                    "url": "https://www.bilibili.com/video/BV1NJ411h7MZ"
                 }
             ]
         },
@@ -415,7 +463,17 @@
                     "reason": "喧闹法则中的部分角色在这段剧情出场"
                 }
             ],
-            "optional_plot": []
+            "optional_plot": [],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》微型故事「洪炉示岁」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1nJ411772M"
+                },
+                {
+                    "name": "【《明日方舟》EP - 示岁】",
+                    "url": "https://www.bilibili.com/video/BV1E7411e7hC"
+                }
+            ]
         },
         {
             "id": 13,
@@ -453,7 +511,25 @@
                     "reason": "这段故事需要了解泰拉基础世界观后查看。"
                 }
             ],
-            "optional_plot": []
+            "optional_plot": [],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》微型故事「午间逸话」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1d7411A7XP"
+                },
+                {
+                    "name": "【《明日方舟》EP - 独行长路】",
+                    "url": "https://www.bilibili.com/video/BV1AE41177Nn"
+                },
+                {
+                    "name": "【《明日方舟》EP - 故乡的风】",
+                    "url": "https://www.bilibili.com/video/BV1S7411d7gj"
+                },
+                {
+                    "name": "【《明日方舟》EP - 春弦】",
+                    "url": "https://www.bilibili.com/video/BV1at4y1m7pj"
+                }
+            ]
         },
         {
             "id": 14,
@@ -480,7 +556,7 @@
         {
             "id": 15,
             "name": "生于黑夜",
-            "class": "interlude",
+            "class": "sidestory",
             "plot_stage": 1,
             "description": "这个故事可以了解萨卡兹族群的基本状况",
             "country": [
@@ -513,6 +589,16 @@
                 {
                     "id": 13,
                     "reason": "午间逸话有少量萨卡兹相关线索"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「生于黑夜」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1ta4y1x7gA"
+                },
+                {
+                    "name": "【《明日方舟》EP - Curtain Call】",
+                    "url": "https://www.bilibili.com/video/BV1rA411b7eH"
                 }
             ]
         },
@@ -557,6 +643,68 @@
                     "id": 13,
                     "reason": "午间逸话有少量萨卡兹相关线索"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》一周年限时纪念活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1nC4y1W7ih"
+                },
+                {
+                    "name": "【《明日方舟》一周年纪念动画短片】",
+                    "url": "https://www.bilibili.com/video/BV1zt4y1y7wf"
+                },
+                {
+                    "name": "【《明日方舟》一周年庆典starset乐队歌曲献唱】",
+                    "url": "https://www.bilibili.com/video/BV1LC4y1W7TS"
+                },
+                {
+                    "name": "【《明日方舟》4.25一周年直播录像（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1VC4y1W7fG"
+                },
+                {
+                    "name": "【《明日方舟》EP - Renegade】",
+                    "url": "https://www.bilibili.com/video/BV1HC4y1W7ja"
+                },
+                {
+                    "name": "【《明日方舟》EP - Requiem】",
+                    "url": "https://www.bilibili.com/video/BV1Sg4y1z7XF"
+                },
+                {
+                    "name": "【《明日方舟》EP - Sparkling Hydraulics】",
+                    "url": "https://www.bilibili.com/video/BV1q54y1Q7Hy"
+                },
+                {
+                    "name": "【《明日方舟》EP - Reversed time】",
+                    "url": "https://www.bilibili.com/video/BV1pK411s7s4"
+                },
+                {
+                    "name": "【主线动画《明日方舟：焰烬曙明》 制作决定】",
+                    "url": "https://www.bilibili.com/video/BV1ji42117CV"
+                },
+                {
+                    "name": "【主线动画《明日方舟：焰烬曙明》先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1bE14YyEuZ"
+                },
+                {
+                    "name": "【主线动画《明日方舟：焰烬曙明》先导PV2】",
+                    "url": "https://www.bilibili.com/video/BV1s8cxeGEHs"
+                },
+                {
+                    "name": "【主线动画《明日方舟：焰烬曙明》定档PV】",
+                    "url": "https://www.bilibili.com/video/BV1rtLRz2Evr"
+                },
+                {
+                    "name": "【《明日方舟》主线动画剧情回顾PV】",
+                    "url": "https://www.bilibili.com/video/BV1TmKwzDEEV"
+                },
+                {
+                    "name": "【主线动画 播出中特别映像《Truth》】",
+                    "url": "https://www.bilibili.com/video/BV1XPbtzsEin"
+                },
+                {
+                    "name": "【主线动画 完结特别映像《生命换装》】",
+                    "url": "https://www.bilibili.com/video/BV1PEYTzFEL6"
+                }
             ]
         },
         {
@@ -594,6 +742,20 @@
                     "id": 16,
                     "reason": "本次故事部分角色在主线第七章存在描写"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》全新故事「乌萨斯的孩子们」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1TA411B7t2"
+                },
+                {
+                    "name": "【明日方舟首张正式音乐专辑《回响》&首张黑胶音乐唱片《Zone 10⁻⁸》推出】",
+                    "url": "https://www.bilibili.com/video/BV1QT4y1J7XA"
+                },
+                {
+                    "name": "【《明日方舟》EP - 从那高地上远眺】",
+                    "url": "https://www.bilibili.com/video/BV1La4y1Y7H7"
+                }
             ]
         },
         {
@@ -629,6 +791,20 @@
                     "id": 16,
                     "reason": "整合运动在主线第七章有少量交代"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「沃伦姆德的薄暮」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1nK4y1s72J"
+                },
+                {
+                    "name": "【《明日方舟》EP - Everything's Alright by DJ Okawari】",
+                    "url": "https://www.bilibili.com/video/BV11z4y1X7V5"
+                },
+                {
+                    "name": "【《明日方舟》EP - Lily of the Valley】",
+                    "url": "https://www.bilibili.com/video/BV1WT4y1j7jP"
+                }
             ]
         },
         {
@@ -658,7 +834,33 @@
                     "reason": "这段故事需要了解泰拉基础世界观后查看。"
                 }
             ],
-            "optional_plot": []
+            "optional_plot": [],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》EP - 夏浪】",
+                    "url": "https://www.bilibili.com/video/BV12a4y1E7PT"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「火蓝之心」复刻活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1i54y1S7tR"
+                },
+                {
+                    "name": "【《明日方舟》EP - El Brillo Solitario】",
+                    "url": "https://www.bilibili.com/video/BV1F64y1c7hd"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「密林悍将归来」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1rp4y1v7fz"
+                },
+                {
+                    "name": "【《明日方舟》EP - Evolutionary Mechanization】",
+                    "url": "https://www.bilibili.com/video/BV1zv411y7Xs"
+                },
+                {
+                    "name": "【《明日方舟》EP - ALIVE】",
+                    "url": "https://www.bilibili.com/video/BV1iK4y1e7uL"
+                }
+            ]
         },
         {
             "id": 20,
@@ -748,6 +950,16 @@
                     "id": 9,
                     "reason": "这段故事部分势力在战地秘闻有描写"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【金秋系列限时活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1ET4y1A7uv"
+                },
+                {
+                    "name": "【《明日方舟》EP - Reconnection】",
+                    "url": "https://www.bilibili.com/video/BV1Pz4y1Z7UF"
+                }
             ]
         },
         {
@@ -780,6 +992,20 @@
                 {
                     "id": 6,
                     "reason": "这段故事部分势力在骑兵与猎人有描写"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「玛莉娅·临光」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1HD4y1d79R"
+                },
+                {
+                    "name": "【《明日方舟》EP - 秋绪】",
+                    "url": "https://www.bilibili.com/video/BV1Yi4y1j7Us"
+                },
+                {
+                    "name": "【《明日方舟》EP - Stay Gold】",
+                    "url": "https://www.bilibili.com/video/BV1Lv411k7Nt"
                 }
             ]
         },
@@ -822,6 +1048,48 @@
                     "id": 9,
                     "reason": "这段故事部分势力在战地秘闻给出了后日谈"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》2020「感谢庆典」限时活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1W54y1C7jy"
+                },
+                {
+                    "name": "【《明日方舟》音律联觉 Ambience Synesthesia预告PV】",
+                    "url": "https://www.bilibili.com/video/BV1rv411k7Wv"
+                },
+                {
+                    "name": "【初探泰拉 TERRA EXPLORATION】",
+                    "url": "https://www.bilibili.com/video/BV1Hy4y1r7k7"
+                },
+                {
+                    "name": "【《明日方舟》音乐幕后制作记录】",
+                    "url": "https://www.bilibili.com/video/BV1Hy4y1r7x9"
+                },
+                {
+                    "name": "【《明日方舟》10.25感谢庆典直播录像（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1Fr4y1w7Ls"
+                },
+                {
+                    "name": "【《明日方舟》EP - Confront】",
+                    "url": "https://www.bilibili.com/video/BV1St4y1e7t3"
+                },
+                {
+                    "name": "【《明日方舟》EP - Lullabye】",
+                    "url": "https://www.bilibili.com/video/BV1jt4y1e7PF"
+                },
+                {
+                    "name": "【《明日方舟》EP - Lithos】",
+                    "url": "https://www.bilibili.com/video/BV1Av411r7ny"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「燃灰行动」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1W5411V7NX"
+                },
+                {
+                    "name": "【《明日方舟》EP - Crystallize】",
+                    "url": "https://www.bilibili.com/video/BV1ut4y1Y7Yn"
+                }
             ]
         },
         {
@@ -848,6 +1116,25 @@
                 {
                     "id": 13,
                     "reason": "这段故事的重要角色在午间逸话交代了人物背景"
+                }
+            ],
+            "optional_plot": [],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「孤岛风云」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Ka411c7kp"
+                },
+                {
+                    "name": "【《明日方舟》EP - Tipsy】",
+                    "url": "https://www.bilibili.com/video/BV1964y1f7w9"
+                },
+                {
+                    "name": "【《明日方舟》EP - Rock the Night Away】",
+                    "url": "https://www.bilibili.com/video/BV1vK4y1V7gs"
+                },
+                {
+                    "name": "【《明日方舟》携手招商银行「泰运通达」联名活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Pa4y1p7j2"
                 }
             ]
         },
@@ -900,6 +1187,25 @@
                     "id": 6,
                     "reason": "这段故事的重要势力在骑兵与猎人首次出场"
                 }
+            ],
+            "optional_plot": [],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》全新故事「此地之外」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV12z4y1r7jy"
+                },
+                {
+                    "name": "【《明日方舟》EP - Till the Bell Tolls】",
+                    "url": "https://www.bilibili.com/video/BV19y4y127Kv"
+                },
+                {
+                    "name": "【《明日方舟》EP - 冬涤】",
+                    "url": "https://www.bilibili.com/video/BV1XK4y1p7GF"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「铅封行动」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV11t4y1z7rG"
+                }
             ]
         },
         {
@@ -930,6 +1236,25 @@
                 {
                     "reason": "烘炉示岁为岁线首个剧情",
                     "id": 12
+                }
+            ],
+            "optional_plot": [],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「画中人」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1jv4y1f7jH"
+                },
+                {
+                    "name": "【《明日方舟》EP - 尽波澜】",
+                    "url": "https://www.bilibili.com/video/BV1ot4y1B71b"
+                },
+                {
+                    "name": "【《明日方舟》EP - 更阑影】",
+                    "url": "https://www.bilibili.com/video/BV1eo4y1d7Zc"
+                },
+                {
+                    "name": "【《明日方舟》EP - 观心】",
+                    "url": "https://www.bilibili.com/video/BV1rp4y1n7Ft"
                 }
             ]
         },
@@ -963,6 +1288,29 @@
                     "id": 4,
                     "reason": "这段故事需要了解泰拉基础世界观后查看。"
                 }
+            ],
+            "optional_plot": [],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》x《彩虹六号：围攻》先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1LU4y1s7gv"
+                },
+                {
+                    "name": "【《明日方舟》×《彩虹六号：围攻》】“源石尘行动”限时活动宣传PV",
+                    "url": "https://www.bilibili.com/video/BV1oU4y1H7Pw"
+                },
+                {
+                    "name": "【《明日方舟》EP - daydaydream】",
+                    "url": "https://www.bilibili.com/video/BV1DX4y1372m"
+                },
+                {
+                    "name": "【《明日方舟》x《彩虹六号：围攻》联动结束纪念】",
+                    "url": "https://www.bilibili.com/video/BV1Kp4y1a749"
+                },
+                {
+                    "name": "【2021《明日方舟》音律联觉专场演出宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Bh411D7cB"
+                }
             ]
         },
         {
@@ -985,12 +1333,13 @@
                     "id": 10,
                     "reason": "这段故事部分势力在喧闹法则首次出场"
                 }
-            ]
+            ],
+            "optional_plot": []
         },
         {
             "id": 29,
             "name": "遗尘漫步",
-            "class": "interlude",
+            "class": "sidestory",
             "plot_stage": 1,
             "date": "2021-04-15",
             "country": [
@@ -1021,6 +1370,20 @@
                     "id": 9,
                     "reason": "该剧情与邪魔有关的设定在战地秘闻有所提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「遗尘漫步」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1L5411c7L3"
+                },
+                {
+                    "name": "【《明日方舟》EP - Gearing Up】",
+                    "url": "https://www.bilibili.com/video/BV1Zp4y187JQ"
+                },
+                {
+                    "name": "【【心脏病患者慎入】一 格 斩 五 将】",
+                    "url": "https://www.bilibili.com/video/BV1tu411i7zd"
+                }
             ]
         },
         {
@@ -1048,7 +1411,7 @@
         {
             "id": 31,
             "name": "覆潮之下",
-            "class": "interlude",
+            "class": "sidestory",
             "plot_stage": 1,
             "country": [
                 "伊比利亚",
@@ -1081,6 +1444,65 @@
                 {
                     "id": 25,
                     "reason": "此地之外是该剧情的重要前置"
+                }
+            ],
+            "optional_plot": [],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》二周年庆典活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV16B4y1A7ar"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「覆潮之下」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV16o4y1f7Fv"
+                },
+                {
+                    "name": "【【明日方舟】3000块全没了！各位一定要管好自己，我真服了！】",
+                    "url": "https://www.bilibili.com/video/BV1cf4y1W771"
+                },
+                {
+                    "name": "【《明日方舟》游戏概念宣传PV-3】",
+                    "url": "https://www.bilibili.com/video/BV1Ap4y1b7UC"
+                },
+                {
+                    "name": "【《明日方舟》EP - Voices】",
+                    "url": "https://www.bilibili.com/video/BV1VK4y1Z727"
+                },
+                {
+                    "name": "【《明日方舟》EP - Immutable】",
+                    "url": "https://www.bilibili.com/video/BV1oq4y1E7mr"
+                },
+                {
+                    "name": "【《明日方舟》EP - Feels by Low Roar】",
+                    "url": "https://www.bilibili.com/video/BV15B4y1c7Gg"
+                },
+                {
+                    "name": "【《明日方舟》二周年特别直播录像（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1JZ4y1F7hH"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》01话：可露希尔的自我介绍！】",
+                    "url": "https://www.bilibili.com/video/BV1tQ4y1Z7qA"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》02话：可露希尔和博士！】",
+                    "url": "https://www.bilibili.com/video/BV1NV411E7Q3"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》03话：可露希尔的罗德岛导览！】",
+                    "url": "https://www.bilibili.com/video/BV15q4y1E7tE"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「光谱行动」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1264y117Py"
+                },
+                {
+                    "name": "【《明日方舟》X i.t 春夏合作款宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1ZN411Z7oe"
+                },
+                {
+                    "name": "【《明日方舟》x i.t合作幕后制作记录】",
+                    "url": "https://www.bilibili.com/video/BV1T84y1c7To"
                 }
             ]
         },
@@ -1166,6 +1588,32 @@
                     "id": 4,
                     "reason": "这段故事需要了解泰拉基础世界观后查看。"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》全新故事「灯火序曲」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1oV411j7cx"
+                },
+                {
+                    "name": "【《明日方舟》EP - Real Me】",
+                    "url": "https://www.bilibili.com/video/BV1X5411T7uj"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》04话：可露希尔的商店！】",
+                    "url": "https://www.bilibili.com/video/BV1sv411V7CX"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出 2021】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep407393"
+                },
+                {
+                    "name": "【《明日方舟》EP - Heart Forest】",
+                    "url": "https://www.bilibili.com/video/BV1MU4y1j7TR"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》05话：可露希尔的采购推荐！】",
+                    "url": "https://www.bilibili.com/video/BV1rv411p7Bw"
+                }
             ]
         },
         {
@@ -1197,6 +1645,16 @@
                 {
                     "id": 13,
                     "reason": "该故事涉及的国家在午间逸话中首次提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《可露希尔的秘密档案》05话：可露希尔的采购推荐！】",
+                    "url": "https://www.bilibili.com/video/BV1rv411p7Bw"
+                },
+                {
+                    "name": "【《明日方舟》EP - Keep the torch】",
+                    "url": "https://www.bilibili.com/video/BV1ab4y1C7gk"
                 }
             ]
         },
@@ -1278,6 +1736,20 @@
                     "id": 21,
                     "reason": "该故事部分角色在踏寻往昔之风中首次登场"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《可露希尔的秘密档案》05话：可露希尔的采购推荐！】",
+                    "url": "https://www.bilibili.com/video/BV1rv411p7Bw"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》06话：基建第一站——制造站】",
+                    "url": "https://www.bilibili.com/video/BV1nB4y1T71c"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》07话：非常看重共事者的贸易站！】",
+                    "url": "https://www.bilibili.com/video/BV1Xf4y1L7rF"
+                }
             ]
         },
         {
@@ -1318,6 +1790,12 @@
                     "id": 13,
                     "reason": "这段故事的主要势力在午间逸话中提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》官方漫画前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1ra411Y7Ys"
+                }
             ]
         },
         {
@@ -1347,7 +1825,41 @@
                     "reason": "该故事需要阶段性地了解泰拉基础世界观后查看。"
                 }
             ],
-            "optional_plot": []
+            "optional_plot": [],
+            "Videos": [
+                {
+                    "name": "(记得看评论区)【《明日方舟》夏日嘉年华限时活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1fy4y1L7Rq"
+                },
+                {
+                    "name": "【《明日方舟》夏日嘉年华特别通讯视频】",
+                    "url": "https://www.bilibili.com/video/BV1wL411n7C2"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》08话：重要设施发电站！】",
+                    "url": "https://www.bilibili.com/video/BV1ug41177sb"
+                },
+                {
+                    "name": "【《明日方舟》EP - Across the wind】",
+                    "url": "https://www.bilibili.com/video/BV12h411z7nU"
+                },
+                {
+                    "name": "【《明日方舟》EP - Y1K】",
+                    "url": "https://www.bilibili.com/video/BV1kq4y1p7ed"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》09话：罗德岛心脏——控制中枢①】",
+                    "url": "https://www.bilibili.com/video/BV1ah411B7J5"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「蛮鳞行动」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1HA411A7q7"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》10话：罗德岛心脏——控制中枢②】",
+                    "url": "https://www.bilibili.com/video/BV1My4y1G7PP"
+                }
+            ]
         },
         {
             "id": 39,
@@ -1380,6 +1892,28 @@
                     "id": 36,
                     "reason": "该故事推荐阶段性地了解泰拉基础世界观后查看。"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》主题曲【风暴瞭望】开放 限时纪念活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1gA411F7s4"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》11话：来宿舍休息一下吧】",
+                    "url": "https://www.bilibili.com/video/BV1E3411q7nU"
+                },
+                {
+                    "name": "【《明日方舟》EP - Towards Her Light】",
+                    "url": "https://www.bilibili.com/video/BV1jq4y1f7UQ"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》12话：奇怪人士聚集的会客室】",
+                    "url": "https://www.bilibili.com/video/BV1eL4y1874M"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》13话：地狱加工站】",
+                    "url": "https://www.bilibili.com/video/BV1Mq4y1N7zT"
+                }
             ]
         },
         {
@@ -1408,6 +1942,20 @@
                 {
                     "id": 33,
                     "reason": "该故事涉及的主要国家在灯火序曲中提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》全新故事「红松林」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Yf4y1c7o5"
+                },
+                {
+                    "name": "【《明日方舟》EP - Bridge to the Dawn】",
+                    "url": "https://www.bilibili.com/video/BV13T4y1o7R6"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》14话：24小时营业的人力资源办公室】",
+                    "url": "https://www.bilibili.com/video/BV1Z3411C7yB"
                 }
             ]
         },
@@ -1451,6 +1999,48 @@
                     "id": 33,
                     "reason": "该故事涉及的主要国家在灯火序曲中提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「长夜临光」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1vT4y1R7D8"
+                },
+                {
+                    "name": "【《明日方舟》2021「感谢庆典」限时活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV13L4y1z7nB"
+                },
+                {
+                    "name": "【《明日方舟》EP - Radiant】",
+                    "url": "https://www.bilibili.com/video/BV1QU4y1u7D7"
+                },
+                {
+                    "name": "【《明日方舟》EP - Field in the Light】",
+                    "url": "https://www.bilibili.com/video/BV1eh41187Ut"
+                },
+                {
+                    "name": "【《明日方舟》音律联觉及嘉年华 “灯下定影” 先导预告】",
+                    "url": "https://www.bilibili.com/video/BV1dr4y1y7Pe"
+                },
+                {
+                    "name": "【再探泰拉  DISCOVERED TERRA 2.0】",
+                    "url": "https://www.bilibili.com/video/BV1wq4y1R7Kt"
+                },
+                {
+                    "name": "【《明日方舟》2021「感谢庆典」特别直播录像（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1RR4y1J7wn"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》15话：训练室，练起来！】",
+                    "url": "https://www.bilibili.com/video/BV1SR4y1E797"
+                },
+                {
+                    "name": "【《可露希尔的秘密档案》最终话：可露希尔的秘密档案】",
+                    "url": "https://www.bilibili.com/video/BV1n44y1Y7LG"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「松烟行动」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1ZL411u7MS"
+                }
             ]
         },
         {
@@ -1491,6 +2081,24 @@
                 {
                     "id": 13,
                     "reason": "该故事涉及的主要人物在长野临光中提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「风雪过境」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1yF411z71E"
+                },
+                {
+                    "name": "【《明日方舟》EP - Heal the World】",
+                    "url": "https://www.bilibili.com/video/BV1fb4y1e7Gv"
+                },
+                {
+                    "name": "【《明日方舟》EP - Melting White】",
+                    "url": "https://www.bilibili.com/video/BV1pa41167XE"
+                },
+                {
+                    "name": "【《明日方舟》EP - Silver Lining】",
+                    "url": "https://www.bilibili.com/video/BV13F411q7Y8"
                 }
             ]
         },
@@ -1535,6 +2143,16 @@
                     "id": 20,
                     "reason": "建议简单了解更早期的肉鸽剧情"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》集成战略「傀影与猩红孤钻」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV17m4y1Q7ar"
+                },
+                {
+                    "name": "(打完4结局再看)【《明日方舟》EP - 行文之韵】",
+                    "url": "https://www.bilibili.com/video/BV1Sr4y137rC"
+                }
             ]
         },
         {
@@ -1567,6 +2185,32 @@
                     "id": 26,
                     "reason": "岁线的前置剧情"
                 }
+            ],
+            "optional_plot": [
+                {
+                    "name": "【【明日方舟×九色鹿】“吉兆呈祥”限时活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1N3411e772"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「将进酒」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1SR4y1g7Br"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「将进酒」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1mm4y1D7JJ"
+                },
+                {
+                    "name": "【《明日方舟》2022新春前瞻特辑视频】",
+                    "url": "https://www.bilibili.com/video/BV1fr4y1v78Z"
+                },
+                {
+                    "name": "【《明日方舟》EP - 醉飞尘】",
+                    "url": "https://www.bilibili.com/video/BV17L4y1x7x8"
+                },
+                {
+                    "name": "【《明日方舟》EP - 却阑珊】",
+                    "url": "https://www.bilibili.com/video/BV1UT4y1C7GL"
+                }
             ]
         },
         {
@@ -1596,6 +2240,24 @@
                 {
                     "id": 39,
                     "reason": "该故事涉及的部分情节在主线第九章有前置"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》全新故事「阴云火花」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1NS4y1G7C9"
+                },
+                {
+                    "name": "【《明日方舟》EP - Spark for Dream】",
+                    "url": "https://www.bilibili.com/video/BV12a411k7os"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「寻昼行动」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1fF41177fP"
+                },
+                {
+                    "name": "【《明日方舟》EP - Прощание】",
+                    "url": "https://www.bilibili.com/video/BV1Wu411X7q9"
                 }
             ]
         },
@@ -1640,6 +2302,16 @@
                 {
                     "id": 25,
                     "reason": "该故事部分势力在此地之外中被提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「吾导先路」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1qP4y1g738"
+                },
+                {
+                    "name": "【《明日方舟》EP - Eternal Flame】",
+                    "url": "https://www.bilibili.com/video/BV1WL411P71u"
                 }
             ]
         },
@@ -1702,12 +2374,34 @@
                     "id": 45,
                     "reason": "该故事主要势力在阴云火花中被提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》主题曲【破碎日冕】概念pv】",
+                    "url": "https://www.bilibili.com/video/BV1FA4y1R7DE"
+                },
+                {
+                    "name": "【《明日方舟》主题曲【破碎日冕】开放 限时纪念活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1nT4y1Y7XN"
+                },
+                {
+                    "name": "(强度党必看)【【机制解构#1】城防炮与H10-3设计浅析，谈谈什么是优秀的机制设计】",
+                    "url": "https://www.bilibili.com/video/BV1fN4y1o7FQ"
+                },
+                {
+                    "name": "【《明日方舟》EP - March On!】",
+                    "url": "https://www.bilibili.com/video/BV1q541127rm"
+                },
+                {
+                    "name": "【《明日方舟》EP - A Grand Adventure】",
+                    "url": "https://www.bilibili.com/video/BV1i3411T78m"
+                }
             ]
         },
         {
             "id": 49,
             "name": "愚人号",
-            "class": "interlude",
+            "class": "sidestory",
             "plot_stage": 2,
             "date": "2022-05-01",
             "country": [
@@ -1740,6 +2434,52 @@
                     "id": 33,
                     "reason": "海嗣线的重要后日谈"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「愚人号」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1uY4y1Y7B9"
+                },
+                {
+                    "name": "【《明日方舟》三周年庆典活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1kL4y1V7H1"
+                },
+                {
+                    "name": "【《明日方舟》三周年前瞻特别节目录像（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1na411e7n9"
+                },
+                {
+                    "name": "【《明日方舟》2022「音律联觉&嘉年华-灯下定影」片场前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1QT4y1a7PY"
+                },
+                {
+                    "name": "【《明日方舟》×光明冷饮 旗下熊小白「罗德岛假日」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV13541117Vr"
+                },
+                {
+                    "name": "【《明日方舟》×中国邮政 「泰拉来信」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1n44y1g7Xy"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「归溟幽灵鲨」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1w44y1371Y"
+                },
+                {
+                    "name": "【《明日方舟》EP - Awaken】",
+                    "url": "https://www.bilibili.com/video/BV1QA4y1D7x8"
+                },
+                {
+                    "name": "【《明日方舟》EP - Rapier】",
+                    "url": "https://www.bilibili.com/video/BV1ZY4y1t7Rp"
+                },
+                {
+                    "name": "【《明日方舟》EP - Bluish Light】",
+                    "url": "https://www.bilibili.com/video/BV1AY411A7jB"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「渊默行动」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1vZ4y1a7Be"
+                }
             ]
         },
         {
@@ -1767,6 +2507,12 @@
                 {
                     "id": 38,
                     "reason": "该故事的发生地在多索雷斯假日中被提及。"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》官方漫画前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1ra411Y7Ys"
                 }
             ]
         },
@@ -1810,6 +2556,24 @@
                     "id": 43,
                     "reason": "该故事主要国家在傀影肉鸽有背景介绍"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》特别映像 [莱塔尼亚：余烬]】",
+                    "url": "https://www.bilibili.com/video/BV16u411k75m"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「尘影余音」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Xg411X7KU"
+                },
+                {
+                    "name": "【《明日方舟》EP - Your Star】",
+                    "url": "https://www.bilibili.com/video/BV1UL4y1P7Jd"
+                },
+                {
+                    "name": "【《明日方舟》EP -  Ständchen】",
+                    "url": "https://www.bilibili.com/video/BV1o34y1L75s"
+                }
             ]
         },
         {
@@ -1845,6 +2609,20 @@
                 {
                     "id": 25,
                     "reason": "该故事主要国家在此地之外有背景介绍"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》特别映像 [莱茵生命：访问]】",
+                    "url": "https://www.bilibili.com/video/BV1rr4y1b7sz"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「绿野幻梦」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1A34y1p79t"
+                },
+                {
+                    "name": "【《明日方舟》EP - Magic Theorem】",
+                    "url": "https://www.bilibili.com/video/BV1YU4y1S7D1"
                 }
             ]
         },
@@ -1898,6 +2676,12 @@
                     "id": 25,
                     "reason": "该剧情的主要国家在此地之外中有背景介绍"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「绿野幻梦」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1A34y1p79t"
+                }
             ]
         },
         {
@@ -1932,6 +2716,40 @@
                     "id": 17,
                     "reason": "该故事主要国家在乌萨斯的孩子们中有背景介绍"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》EP - A Long Vacation】",
+                    "url": "https://www.bilibili.com/video/BV18f4y1d7af"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「理想城：长夏狂欢季」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1qd4y1T7q4"
+                },
+                {
+                    "name": "【《明日方舟》2022夏日嘉年华特别通讯视频】",
+                    "url": "https://www.bilibili.com/video/BV1gt4y1G7Hq"
+                },
+                {
+                    "name": "【《明日方舟》EP - All hail Savior!】",
+                    "url": "https://www.bilibili.com/video/BV1714y1b7cm"
+                },
+                {
+                    "name": "【《明日方舟》EP - Undertopia】",
+                    "url": "https://www.bilibili.com/video/BV1ra411P7nn"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「尘环行动」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV14G411b7VF"
+                },
+                {
+                    "name": "【《明日方舟》2022「音律联觉&嘉年华-灯下定影」情报公开】",
+                    "url": "https://www.bilibili.com/video/BV1L14y147W5"
+                },
+                {
+                    "name": "【《明日方舟》2022「嘉年华-灯下定影」正式情报公开】",
+                    "url": "https://www.bilibili.com/video/BV15e4y1Y7Ng"
+                }
             ]
         },
         {
@@ -1960,6 +2778,16 @@
                 {
                     "id": 55,
                     "reason": "该故事的部分人物在未尽篇章-再见罗伊中有背景介绍"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》全新故事「日暮寻路」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1cG4y1r7nt"
+                },
+                {
+                    "name": "【《明日方舟》EP -  Ensheath】",
+                    "url": "https://www.bilibili.com/video/BV1je41137RM"
                 }
             ]
         },
@@ -1999,6 +2827,12 @@
                 {
                     "id": 18,
                     "reason": "该故事的部分角色在沃伦姆德的薄暮中首次登场"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【【明日方舟x罗小黑战记】全新故事「好久不见」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1ZG4y1B79V?vd_source=89235169e0f179861a794fd2860cf11d"
                 }
             ]
         },
@@ -2040,6 +2874,16 @@
                     "id": 43,
                     "reason": "推荐先游玩更早期的肉鸽"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》集成战略「水月与深蓝之树」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1eW4y1v7ak"
+                },
+                {
+                    "name": "(打完4结局再看)【《明日方舟》EP -Endospore】",
+                    "url": "https://www.bilibili.com/video/BV1yT411H79u?vd_source=89235169e0f179861a794fd2860cf11d"
+                }
             ]
         },
         {
@@ -2080,6 +2924,28 @@
                 {
                     "id": 53,
                     "reason": "罗德岛的动向在未尽篇章中有少量提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》主题曲【淬火尘霾】开放 限时纪念活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV19V4y1N7ZT"
+                },
+                {
+                    "name": "【《明日方舟》EP - A Sweet Rendez-vous】",
+                    "url": "https://www.bilibili.com/video/BV1Ye4y1B7ru"
+                },
+                {
+                    "name": "【《明日方舟》EP - Stainless Heart】",
+                    "url": "https://www.bilibili.com/video/BV1uT411N7Se"
+                },
+                {
+                    "name": "【《明日方舟》主题曲【淬火尘霾】概念pv】",
+                    "url": "https://www.bilibili.com/video/BV1ag411h7Uq"
+                },
+                {
+                    "name": "【《明日方舟》EP - Rekindle】",
+                    "url": "https://www.bilibili.com/video/BV1hP41177cE"
                 }
             ]
         },
@@ -2125,6 +2991,52 @@
                     "id": 53,
                     "reason": "该故事的部分势力在未尽篇章中有提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「叙拉古人」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1b8411e7V8"
+                },
+                {
+                    "name": "【《明日方舟》2022「感谢庆典」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1rD4y1r7XA"
+                },
+                {
+                    "name": "【三探泰拉  DISCOVERED TERRA 3.0】",
+                    "url": "https://www.bilibili.com/video/BV17W4y1E7hK"
+                },
+                {
+                    "name": "【明日方舟2022感谢庆典印象曲 -  Running In the Dark by MONKEY MAJIK】",
+                    "url": "https://www.bilibili.com/video/BV1VV4y157pr"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「缄默德克萨斯」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV19P411A7jC"
+                },
+                {
+                    "name": "【《明日方舟》2022「感谢庆典」前瞻特别节目（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1Wt4y1T78v"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出-灯下定影 2022】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep706080"
+                },
+                {
+                    "name": "【《明日方舟》EP - Thorns In You】",
+                    "url": "https://www.bilibili.com/video/BV1Ld4y1C7kY"
+                },
+                {
+                    "name": "【《明日方舟》EP - Sentenced】",
+                    "url": "https://www.bilibili.com/video/BV1Ce4y1y7Ly"
+                },
+                {
+                    "name": "【《明日方舟》EP - Go My Way】",
+                    "url": "https://www.bilibili.com/video/BV1wd4y1C7YM"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「赝波行动」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1ED4y1x7Vc?vd_source=89235169e0f179861a794fd2860cf11d"
+                }
             ]
         },
         {
@@ -2149,6 +3061,40 @@
                 {
                     "id": 58,
                     "reason": "该故事的主要角色在主线11章大量提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》特别映像 [维多利亚：红龙的誓言]】",
+                    "url": "https://www.bilibili.com/video/BV1Hm4y1F7oo"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「照我以火」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1MR4y1C7QW"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出-灯下定影 2022】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep706096"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出-灯下定影 2022】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep706097"
+                },
+                {
+                    "name": "【《明日方舟》EP - Flame Shadow】",
+                    "url": "https://www.bilibili.com/video/BV1Ev4y1978y"
+                },
+                {
+                    "name": "【《明日方舟》EP - Snowy Night】",
+                    "url": "https://www.bilibili.com/video/BV1oW4y1N72d"
+                },
+                {
+                    "name": "【《明日方舟》×高德地图 阿米娅导航语音合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1tW4y1K7rM"
+                },
+                {
+                    "name": "【《明日方舟》EP - A Cold Call】",
+                    "url": "https://www.bilibili.com/video/BV1bG4y1E7Ah"
                 }
             ]
         },
@@ -2175,6 +3121,24 @@
                 {
                     "id": 44,
                     "reason": "该故事的部分角色在将进酒中有提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《鲤氏侦探事务所》迷你剧先行短片 - Home Service】",
+                    "url": "https://www.bilibili.com/video/BV1gQ4y1Q7qM"
+                },
+                {
+                    "name": "【《鲤氏侦探事务所》制作中预告】",
+                    "url": "https://www.bilibili.com/video/BV19F411M7yf"
+                },
+                {
+                    "name": "【《明日方舟》迷你剧《鲤氏侦探事务所》定档PV】",
+                    "url": "https://www.bilibili.com/video/BV1rg411J7qh"
+                },
+                {
+                    "name": "【《明日方舟》EP - 兔兔在哪里？】",
+                    "url": "https://www.bilibili.com/video/BV1jR4y1Y7zm"
                 }
             ]
         },
@@ -2215,6 +3179,44 @@
                 {
                     "id": 53,
                     "reason": "该故事的部分角色在未尽篇章中有提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「登临意」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1Pg411s72k"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「登临意」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1ee4y137g3"
+                },
+                {
+                    "name": "【《明日方舟》2023新春前瞻特辑视频】",
+                    "url": "https://www.bilibili.com/video/BV1Jx4y1G7cb"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「重岳」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV18M411b7dm"
+                },
+                {
+                    "name": "【《明日方舟》EP - 定风波】",
+                    "url": "https://www.bilibili.com/video/BV1MR4y1a7KX"
+                },
+                {
+                    "name": "【《明日方舟》特别映像 [炎：劫争]】",
+                    "url": "https://www.bilibili.com/video/BV15G4y1w7KE"
+                },
+                {
+                    "name": "【《明日方舟》EP - 近尘烟】",
+                    "url": "https://www.bilibili.com/video/BV1FR4y1e7Cy"
+                },
+                {
+                    "name": "【《明日方舟》× Keep「积跬步，至千里！」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1z2421P745"
+                },
+                {
+                    "name": "【《明日方舟》「积跬步，至千里！」特别公益PV】",
+                    "url": "https://www.bilibili.com/video/BV1oZ42147pk"
                 }
             ]
         },
@@ -2277,6 +3279,16 @@
                     "id": 62,
                     "reason": "这个故事是登临意的后日谈之一"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》全新故事「春分」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1aA4116773"
+                },
+                {
+                    "name": "【《明日方舟》EP - 春岚】",
+                    "url": "https://www.bilibili.com/video/BV1Dv4y1s724"
+                }
             ]
         },
         {
@@ -2304,6 +3316,20 @@
                 {
                     "id": 4,
                     "reason": "该故事推荐了解泰拉基础世界观后查看。"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【【明日方舟×怪物猎人】SideStory「落叶逐火」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1BM4y1R718"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「起源行动」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV15v4y1L7nB"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出-愚夜密函 2023】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep763819"
                 }
             ]
         },
@@ -2367,12 +3393,34 @@
                     "id": 60,
                     "reason": "该故事的部分角色在照我以火中被提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》主题曲【惊霆无声】开放 限时纪念活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1gY4y1D71D"
+                },
+                {
+                    "name": "【《明日方舟》主题曲【惊霆无声】概念pv】",
+                    "url": "https://www.bilibili.com/video/BV1tg4y1g7HC"
+                },
+                {
+                    "name": "【《明日方舟》EP - Squad Unknown】",
+                    "url": "https://www.bilibili.com/video/BV1Rh411u7mf"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出-愚夜密函 2023】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep763820"
+                },
+                {
+                    "name": "【2023明日方舟嘉年华「幕后制作记录」】",
+                    "url": "https://www.bilibili.com/video/BV1ph411u7Pa"
+                }
             ]
         },
         {
             "id": 68,
             "name": "孤星",
-            "class": "interlude",
+            "class": "sidestory",
             "plot_stage": 2,
             "date": "2023-05-01",
             "country": [
@@ -2410,12 +3458,58 @@
                 {
                     "id": 58,
                     "reason": "该剧情的部分角色在主线11章中被提及"
+                },
+                {
+                    "id": 46,
+                    "reason": "该故事的部分要素在吾导先路中提及"
                 }
             ],
             "optional_plot": [
                 {
                     "id": 53,
                     "reason": "该故事的部分角色在未尽篇章中有提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「孤星」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV12m4y12726"
+                },
+                {
+                    "name": "【《明日方舟》四周年庆典活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1DM411V72x"
+                },
+                {
+                    "name": "【《明日方舟》四周年庆典印象曲 - Blues with you】",
+                    "url": "https://www.bilibili.com/video/BV1sT411H7CW"
+                },
+                {
+                    "name": "【《明日方舟》四周年特别直播节目（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1Ds4y1A7pK"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「缪尔赛思」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1Zs4y1c7td"
+                },
+                {
+                    "name": "【《明日方舟》EP -Morning Dew】",
+                    "url": "https://www.bilibili.com/video/BV14X4y1U7iR"
+                },
+                {
+                    "name": "【《明日方舟》EP -Dormant Craving】",
+                    "url": "https://www.bilibili.com/video/BV1f14y1Z726"
+                },
+                {
+                    "name": "【《明日方舟》EP -The cure】",
+                    "url": "https://www.bilibili.com/video/BV1WL411a7hp"
+                },
+                {
+                    "name": "【《明日方舟》玩法介绍 - 尖灭测试作战】",
+                    "url": "https://www.bilibili.com/video/BV16h411w7im "
+                },
+                {
+                    "name": "【《明日方舟》EP - I Will Touch the Sky】",
+                    "url": "https://www.bilibili.com/video/BV1uZ421x7fu"
                 }
             ]
         },
@@ -2483,6 +3577,32 @@
                     "id": 9,
                     "reason": "该故事的主要角色在战地秘闻中首次登场"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》特别映像 [拉特兰：圣灵]】",
+                    "url": "https://www.bilibili.com/video/BV1Ac411J7Ki"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「空想花庭」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1eN41117Pb"
+                },
+                {
+                    "name": "【《明日方舟》EP - Stained】",
+                    "url": "https://www.bilibili.com/video/BV16c41137iE"
+                },
+                {
+                    "name": "【《明日方舟》EP - Before Summer】",
+                    "url": "https://www.bilibili.com/video/BV1xu4y1d79V"
+                },
+                {
+                    "name": "【《明日方舟》×中国航天神舟传媒】“宿于繁星”限时活动宣传PV",
+                    "url": "https://www.bilibili.com/video/BV1eX4y1i7k9"
+                },
+                {
+                    "name": "【《明日方舟》EP - Before & After】",
+                    "url": "https://www.bilibili.com/video/BV1DF411d7RT"
+                }
             ]
         },
         {
@@ -2544,6 +3664,28 @@
                     "id": 9,
                     "reason": "该故事的部分内容在战地秘闻中存在前置"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》特别映像 [萨米：接触]】",
+                    "url": "https://www.bilibili.com/video/BV13k4y1J7Lo"
+                },
+                {
+                    "name": "【《明日方舟》全新故事「眠于树影之中」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1gh4y1M7Ya"
+                },
+                {
+                    "name": "【《明日方舟》EP - Mortal Eye】",
+                    "url": "https://www.bilibili.com/video/BV1tz4y1E7WY"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出-愚夜密函 2023】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep763821"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出-愚夜密函 2023】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep763737"
+                }
             ]
         },
         {
@@ -2585,6 +3727,12 @@
                 {
                     "id": 57,
                     "reason": "推荐先游玩更早期的肉鸽"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》集成战略「探索者的银凇止境」宣传PV · 玩法介绍】",
+                    "url": "https://www.bilibili.com/video/BV1Qh4y1Z7jV"
                 }
             ]
         },
@@ -2637,6 +3785,48 @@
                     "id": 25,
                     "reason": "该故事的某些角色在此地之外中有提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「火山旅梦」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1Fz4y1x7Wa"
+                },
+                {
+                    "name": "【《明日方舟》2023「夏日嘉年华」限时活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1xM4y1p7YE"
+                },
+                {
+                    "name": "【《明日方舟》2023夏日嘉年华特别通讯视频】",
+                    "url": "https://www.bilibili.com/video/BV1iV411L7aV"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「纯烬艾雅法拉」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV17V41157KR"
+                },
+                {
+                    "name": "【《明日方舟》EP - Miss You】",
+                    "url": "https://www.bilibili.com/video/BV1H14y1B7zQ"
+                },
+                {
+                    "name": "【《明日方舟》EP - Missy】",
+                    "url": "https://www.bilibili.com/video/BV1ch4y1w7xM"
+                },
+                {
+                    "name": "【《明日方舟》EP - Beautiful & Lovely】",
+                    "url": "https://www.bilibili.com/video/BV1Nu4y1i7K8"
+                },
+                {
+                    "name": "【《明日方舟》× 杏花楼 「祝冰轮」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Em4y1u7DR"
+                },
+                {
+                    "name": "【《明日方舟》× 中国国家地理 合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Wu4y1D7ww"
+                },
+                {
+                    "name": "【《明日方舟》× 中国国家地理 合作幕后制作记录】",
+                    "url": "https://www.bilibili.com/video/BV1dr4y1R7oF"
+                }
             ]
         },
         {
@@ -2680,6 +3870,20 @@
                 {
                     "id": 21,
                     "reason": "该故事的背景中有部分角色在踏寻往昔之风中提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「不义之财」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1fm4y1T7Lq"
+                },
+                {
+                    "name": "【《明日方舟》EP - Water Quench】",
+                    "url": "https://www.bilibili.com/video/BV1hw411D76A"
+                },
+                {
+                    "name": "【《明日方舟》× 安踏 合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1rC4y1f7JZ"
                 }
             ]
         },
@@ -2750,6 +3954,20 @@
                     "id": 68,
                     "reason": "孤星中交代了部分萨卡兹相关的故事"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》主题曲【恶兆湍流】开放 限时纪念活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1eV411F7u9"
+                },
+                {
+                    "name": "【《明日方舟》EP - Settle Into Ash】",
+                    "url": "https://www.bilibili.com/video/BV1uG411m72c"
+                },
+                {
+                    "name": "【《明日方舟》EP - Best Moments of...】",
+                    "url": "https://www.bilibili.com/video/BV1Jw411F7ew"
+                }
             ]
         },
         {
@@ -2800,6 +4018,56 @@
                     "id": 55,
                     "reason": "该故事的部分角色在日暮寻路中有背景介绍"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「崔林特尔梅之金」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1U84y1d7Yf"
+                },
+                {
+                    "name": "【《明日方舟》2023「感谢庆典」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1ow41167CS"
+                },
+                {
+                    "name": "【《明日方舟》特别映像 [莱塔尼亚：源石技艺A1.1]】",
+                    "url": "https://www.bilibili.com/video/BV1tw411z7GA"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「塑心」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1We41197Tc"
+                },
+                {
+                    "name": "【《明日方舟》2023「感谢庆典」前瞻特别节目（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV13Q4y1H7N2"
+                },
+                {
+                    "name": "【《明日方舟》EP - Revealing】",
+                    "url": "https://www.bilibili.com/video/BV1Yu4y1h7a4"
+                },
+                {
+                    "name": "【《明日方舟》EP - Illuminate】",
+                    "url": "https://www.bilibili.com/video/BV1iG411X7h4"
+                },
+                {
+                    "name": "【《明日方舟》EP - Lessing】",
+                    "url": "https://www.bilibili.com/video/BV1Wy4y1c7Ps"
+                },
+                {
+                    "name": "【《游城拓荒：铸基者》官方桌游宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1bw411X7jx"
+                },
+                {
+                    "name": "【追溯泰拉 RETRACED TERRA】",
+                    "url": "https://www.bilibili.com/video/BV1rG411y7W3"
+                },
+                {
+                    "name": "【明日方舟2023感谢庆典印象曲 - Ashen by MY FIRST STORY】",
+                    "url": "https://www.bilibili.com/video/BV1LM411R7qd"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「浊燃作战」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV12a4y1S7MR"
+                }
             ]
         },
         {
@@ -2828,6 +4096,20 @@
                 {
                     "id": 24,
                     "reason": "该故事部分角色在孤岛风云中有提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《小刻的画图写话》——磐蟹与螺】",
+                    "url": "https://www.bilibili.com/video/BV1w3411M7oZ"
+                },
+                {
+                    "name": "【小刻的画图写话 中配版】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep789617"
+                },
+                {
+                    "name": "【《小刻的画图写话》播出预告】",
+                    "url": "https://www.bilibili.com/video/BV1QB4y1o7YD"
                 }
             ]
         },
@@ -2876,6 +4158,28 @@
                     "id": 17,
                     "reason": "该故事的部分角色在乌萨斯的孩子们中有背景介绍"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》特别映像 [谢拉格：驶向未来]】",
+                    "url": "https://www.bilibili.com/video/BV1oQ4y1p7oi"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「银心湖列车」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1xb4y1M7Jm"
+                },
+                {
+                    "name": "【《明日方舟》EP - Blade Catcher】",
+                    "url": "https://www.bilibili.com/video/BV1gc411D7wG"
+                },
+                {
+                    "name": "【《明日方舟》EP - Snow Parade】",
+                    "url": "https://www.bilibili.com/video/BV1TN4y1z7of"
+                },
+                {
+                    "name": "【《明日方舟》EP - Tranquil Snow】",
+                    "url": "https://www.bilibili.com/video/BV1VGk9YXE67"
+                }
             ]
         },
         {
@@ -2897,6 +4201,12 @@
                 {
                     "id": 4,
                     "reason": "该故事推荐了解泰拉基础世界观后查看。"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》官方漫画前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1ra411Y7Ys"
                 }
             ]
         },
@@ -2938,6 +4248,20 @@
                 {
                     "id": 62,
                     "reason": "建议先去炎国线了解巨兽的概念"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》EP - (Believed Believes) Believing】",
+                    "url": "https://www.bilibili.com/video/BV1QQ4y1E73r"
+                },
+                {
+                    "name": "【《明日方舟》全新故事「去咧嘴谷」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Jc411b7bn"
+                },
+                {
+                    "name": "【《明日方舟》EP - Winged Step】",
+                    "url": "https://www.bilibili.com/video/BV11e411e7cg"
                 }
             ]
         },
@@ -2983,6 +4307,40 @@
                 {
                     "id": 73,
                     "reason": "该故事的部分关键要素在萨米肉鸽中有背景故事"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「怀黍离」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1YZ4y1n7Fn"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「怀黍离」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1TK411h7ET"
+                },
+                {
+                    "name": "【《明日方舟》2024新春前瞻特辑视频】",
+                    "url": "https://www.bilibili.com/video/BV1te411h7LD"
+                },
+                {
+                    "name": "【明日方舟 x 南越王博物院 丨「南境余音」联动纪录片】",
+                    "url": "https://www.bilibili.com/video/BV1HW4y1c71x"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「黍」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1et421W7V8"
+                },
+                {
+                    "name": "【《明日方舟》EP - 浸春芜】",
+                    "url": "https://www.bilibili.com/video/BV1F7421T7dr"
+                },
+                {
+                    "name": "【《明日方舟》EP - 清平乐】",
+                    "url": "https://www.bilibili.com/video/BV1HT4m1S7Wq"
+                },
+                {
+                    "name": "【《明日方舟》EP - Yanking】",
+                    "url": "https://www.bilibili.com/video/BV1c2421A7VW"
                 }
             ]
         },
@@ -3037,6 +4395,20 @@
                 {
                     "id": 63,
                     "reason": "前置生息演算中有部分剧情可以查看"
+                },
+                {
+                    "name": "【《明日方舟》特别映像 [萨尔贡：万王之王]】",
+                    "url": "https://www.bilibili.com/video/BV1Zw411B7K2"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》生息演算「沙洲遗闻」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Fe411Y7bD"
+                },
+                {
+                    "name": "【《明日方舟》生息演算「沙洲遗闻」玩法介绍】",
+                    "url": "https://www.bilibili.com/video/BV1qN4y1H74W"
                 }
             ]
         },
@@ -3073,6 +4445,32 @@
                     "id": 38,
                     "reason": "该故事的主要发生地在多索雷斯假日中有背景介绍"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【【明日方舟×彩虹六号：围攻】SideStory「水晶箭行动」先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1pt421h7S4"
+                },
+                {
+                    "name": "【【明日方舟×彩虹六号：围攻】SideStory「水晶箭行动」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Qw4m1f772"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「潮曦作战」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1tx421k7PP"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出-不觅浪尘 2024】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep831066"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出-不觅浪尘 2024】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep831067"
+                },
+                {
+                    "name": "【「2024明日方舟嘉年华」前瞻PV公开】",
+                    "url": "https://www.bilibili.com/video/BV1VK421h7xV"
+                }
             ]
         },
         {
@@ -3098,7 +4496,7 @@
         {
             "id": 88,
             "name": "巴别塔",
-            "class": "interlude",
+            "class": "sidestory",
             "plot_stage": 3,
             "date": "2024-04-11",
             "country": [
@@ -3147,6 +4545,16 @@
                 {
                     "id": 76,
                     "reason": "纷争演绎说明了部分萨卡兹相关的背景故事"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「巴别塔」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Jp421y72e"
+                },
+                {
+                    "name": "【《明日方舟》EP - ONE BY ONE】",
+                    "url": "https://www.bilibili.com/video/BV17M4m197Yy"
                 }
             ]
         },
@@ -3198,6 +4606,64 @@
                     "id": 62,
                     "reason": "该故事部分角色在登临意中有提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》五周年庆典活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1J1421R76R"
+                },
+                {
+                    "name": "【《明日方舟》五周年干员前瞻PV：新生】",
+                    "url": "https://www.bilibili.com/video/BV1uu4m1c7xC"
+                },
+                {
+                    "name": "【明日方舟x中国电影资料馆 合作前瞻预告】",
+                    "url": "https://www.bilibili.com/video/BV1MD421n7vz"
+                },
+                {
+                    "name": "【《明日方舟》× 奈雪的茶「霸气果茶，香聚泰拉」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV16t421w78r"
+                },
+                {
+                    "name": "【《明日方舟》2024特别纪念动画】",
+                    "url": "https://www.bilibili.com/video/BV1wT42117NA"
+                },
+                {
+                    "name": "【《明日方舟》游戏概念宣传PV-4】",
+                    "url": "https://www.bilibili.com/video/BV1VC411H78i"
+                },
+                {
+                    "name": "【拾刀者】",
+                    "url": "https://www.bilibili.com/video/BV1Wp421S7Gb"
+                },
+                {
+                    "name": "【《明日方舟》五周年特别直播节目（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1bH4y1P77d"
+                },
+                {
+                    "name": "【《明日方舟》EP - Arsonist】",
+                    "url": "https://www.bilibili.com/video/BV1wm421x7di"
+                },
+                {
+                    "name": "【《送给博士的一份惊喜》】",
+                    "url": "https://www.bilibili.com/video/BV18J4m1n71Q"
+                },
+                {
+                    "name": "【《明日方舟》EP - Whistle Stop】",
+                    "url": "https://www.bilibili.com/video/BV1cC411n7PE"
+                },
+                {
+                    "name": "【《明日方舟》EP - Echoism】",
+                    "url": "https://www.bilibili.com/video/BV1Tb421e7hC"
+                },
+                {
+                    "name": "【《明日方舟》「罗德岛促融共竞」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1cZ421773t"
+                },
+                {
+                    "name": "【《明日方舟》EP - WE】",
+                    "url": "https://www.bilibili.com/video/BV1zUkvYLEAn"
+                }
             ]
         },
         {
@@ -3238,6 +4704,32 @@
                     "id": 70,
                     "reason": "海嗣线的少量线索在空想花庭中有交代"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》特别映像 [阿戈尔：导览]】",
+                    "url": "https://www.bilibili.com/video/BV1DZ421J7Z1"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「生路」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1ED421377G"
+                },
+                {
+                    "name": "【《明日方舟》EP - Vows of the Sea】",
+                    "url": "https://www.bilibili.com/video/BV151421y7uH"
+                },
+                {
+                    "name": "【《明日方舟》EP - Chase the Light】",
+                    "url": "https://www.bilibili.com/video/BV1Gy411z7WN"
+                },
+                {
+                    "name": "【《明日方舟》× 三丽鸥家族「虹彩茶会」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1M4421Q7XF"
+                },
+                {
+                    "name": "【《明日方舟》EP - Mare Natus】",
+                    "url": "https://www.bilibili.com/video/BV138KXzNEww"
+                }
             ]
         },
         {
@@ -3264,6 +4756,16 @@
                 {
                     "id": 89,
                     "reason": "萨卡兹线的后日谈"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》全新故事「熔炉“还魂”记」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1uZ421u78E"
+                },
+                {
+                    "name": "【《明日方舟》EP - Warm and Small Light】",
+                    "url": "https://www.bilibili.com/video/BV1xb421n7BH"
                 }
             ]
         },
@@ -3330,6 +4832,24 @@
                     "id": 46,
                     "reason": "该故事的3结局需要吾导先路作为前置"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》集成战略「萨卡兹的无终奇语」宣传PV · 玩法介绍】",
+                    "url": "https://www.bilibili.com/video/BV1hS421R74X"
+                },
+                {
+                    "name": "【明日方舟音律联觉专场演出-不觅浪尘 2024】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep831097?vd_source=89235169e0f179861a794fd2860cf11d"
+                },
+                {
+                    "name": "【《明日方舟》集成战略「萨卡兹的无终奇语」内容拓展·二 宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1xwrHYjEum"
+                },
+                {
+                    "name": "(方舟圣经2.0)【“我的出租屋里真的有很多蟑螂，但我认识的粥批真的没有几个”】",
+                    "url": "https://www.bilibili.com/video/BV155MSziEtM"
+                }
             ]
         },
         {
@@ -3364,6 +4884,32 @@
                 {
                     "id": 86,
                     "reason": "该故事的部分角色在水晶箭行动出场"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「太阳甩在身后」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1Fy411q79k"
+                },
+                {
+                    "name": "【《明日方舟》2024「夏日嘉年华」限时活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1t1421t7Pv"
+                },
+                {
+                    "name": "【《明日方舟》2024夏日嘉年华特别通讯视频】",
+                    "url": "https://www.bilibili.com/video/BV1Df421q7Qp"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「佩佩」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV134421S7hP"
+                },
+                {
+                    "name": "(记得开弹幕！)【《明日方舟》EP - Mystic Light Quest】",
+                    "url": "https://www.bilibili.com/video/BV1Ky411q7QC"
+                },
+                {
+                    "name": "【《明日方舟》EP - Nightmare's Descent】",
+                    "url": "https://www.bilibili.com/video/BV1c4421f7T1"
                 }
             ]
         },
@@ -3422,12 +4968,26 @@
                     "id": 13,
                     "reason": "该故事的主要角色在午间逸话首次登场"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【明日方舟x迷宫饭 联动前瞻预告】",
+                    "url": "https://www.bilibili.com/video/BV1Xw4m1y7q1"
+                },
+                {
+                    "name": "【明日方舟x迷宫饭 Sidestory「泰拉饭」先导预告】",
+                    "url": "https://www.bilibili.com/video/BV1hn4y1f7Dp"
+                },
+                {
+                    "name": "【明日方舟×迷宫饭】SideStory「泰拉饭」活动宣传PV",
+                    "url": "https://www.bilibili.com/video/BV1ZW421Q7PC"
+                }
             ]
         },
         {
             "id": 96,
             "name": "追迹日落以西",
-            "class": "interlude",
+            "class": "sidestory",
             "plot_stage": 4,
             "date": "2024-10-09",
             "country": [
@@ -3450,6 +5010,28 @@
                 {
                     "id": 89,
                     "reason": "该故事的主要角色在慈悲灯塔中登场"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《游城拓荒：感染者》官方宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1uwHpe4EHD"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「追迹日落以西」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1A14KeDEmW"
+                },
+                {
+                    "name": "【《明日方舟》干员「维娜·维多利亚」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1YP4jebEST"
+                },
+                {
+                    "name": "【《明日方舟》EP - Reforge】",
+                    "url": "https://www.bilibili.com/video/BV1px4je5E24"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「追迹日落以西」概念pv】",
+                    "url": "https://www.bilibili.com/video/BV1n62AYKEYA"
                 }
             ]
         },
@@ -3527,6 +5109,56 @@
                     "id": 97,
                     "reason": "主角的部分前置"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「揭幕者们」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1Nr1WYAEGL"
+                },
+                {
+                    "name": "【《明日方舟》2024「感谢庆典」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Sa1WYuEo4"
+                },
+                {
+                    "name": "【明日方舟×中国电影资料馆「留影烁今」合作先导预告】",
+                    "url": "https://www.bilibili.com/video/BV1mi1WYvEjr"
+                },
+                {
+                    "name": "【「2025明日方舟音律联觉-熠曲丰碑」金曲评选活动】",
+                    "url": "https://www.bilibili.com/video/BV1y21xYiE7b"
+                },
+                {
+                    "name": "【求索泰拉 INVESTIGATED TERRA】",
+                    "url": "https://www.bilibili.com/video/BV1vN14YWEk1"
+                },
+                {
+                    "name": "【《明日方舟》特别映像[兽主：无形的同行者]】",
+                    "url": "https://www.bilibili.com/video/BV1Ty1tY2E9K"
+                },
+                {
+                    "name": "【一分（多）钟看泰拉】",
+                    "url": "https://www.bilibili.com/video/BV1iq13YjEMt"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「荒芜拉普兰德」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1HfSeYNEoZ"
+                },
+                {
+                    "name": "【《明日方舟》2024「感谢庆典」特别直播节目（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1KPSnYvE1H"
+                },
+                {
+                    "name": "【《明日方舟》EP - Unmask】",
+                    "url": "https://www.bilibili.com/video/BV1vUS9YCET7"
+                },
+                {
+                    "name": "【《明日方舟》EP - Bloodstained Oath】",
+                    "url": "https://www.bilibili.com/video/BV12dSfYVEac"
+                },
+                {
+                    "name": "【《明日方舟》EP - Figure It Out】",
+                    "url": "https://www.bilibili.com/video/BV11tSkYtEEJ"
+                }
             ]
         },
         {
@@ -3548,6 +5180,12 @@
                 {
                     "id": 4,
                     "reason": "该故事推荐了解泰拉基础世界观后查看。"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》[卫戍协议] 宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1WjmyYoE7d"
                 }
             ]
         },
@@ -3574,6 +5212,24 @@
                 {
                     "id": 49,
                     "reason": "艺术风格一脉相承，剧情有部分前置"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》特别映像[伊比利亚：炼金与征服]】",
+                    "url": "https://www.bilibili.com/video/BV1Lu1bY8EhJ"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「出苍白海」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1EbzLY2EbG"
+                },
+                {
+                    "name": "【《明日方舟》EP - Sailing For】",
+                    "url": "https://www.bilibili.com/video/BV1XFiQYhEEr"
+                },
+                {
+                    "name": "【《明日方舟》× 中国电影资料馆「留影烁今」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1khiZYeEDn"
                 }
             ]
         },
@@ -3607,6 +5263,56 @@
                 {
                     "id": 83,
                     "reason": "岁线必要前置"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【「时光的赠礼」特别纪念PV】",
+                    "url": "https://www.bilibili.com/video/BV1dFCGYCEvN"
+                },
+                {
+                    "name": "【「特别的一天」纪念录像】",
+                    "url": "https://www.bilibili.com/video/BV13RC5YyEuA"
+                },
+                {
+                    "name": "【《明日方舟》× 罗森「新岁溢锦程」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1MMCJYHErB"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「相见欢」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1k1cRe9EZp"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「相见欢」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1KowAeJEei"
+                },
+                {
+                    "name": "【《明日方舟》× 支付宝「新春瑞途，绿色出行」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1fVcRe1EXu"
+                },
+                {
+                    "name": "【《明日方舟》「灶暖味常」特别公益PV】",
+                    "url": "https://www.bilibili.com/video/BV1FZcoesEM9"
+                },
+                {
+                    "name": "【《明日方舟》2025新春前瞻特辑视频】",
+                    "url": "https://www.bilibili.com/video/BV1YxwKeTE4t"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「余」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1jDw1eWEZX"
+                },
+                {
+                    "name": "【《明日方舟》EP - 滋味常】",
+                    "url": "https://www.bilibili.com/video/BV1tDftYUE1S"
+                },
+                {
+                    "name": "【《明日方舟》EP - 烛影暖】",
+                    "url": "https://www.bilibili.com/video/BV1EAfiY9ESn"
+                },
+                {
+                    "name": "【《明日方舟》EP - 此时圆】",
+                    "url": "https://www.bilibili.com/video/BV1r7fZYXEtP"
                 }
             ]
         },
@@ -3673,6 +5379,20 @@
                     "id": 96,
                     "reason": "该故事为主线14章的集中后日谈，追迹日落以西为14章的一个小后日谈"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》危机合约第3赛季「净罪作战」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1znfZYDE8n"
+                },
+                {
+                    "name": "【《明日方舟》全新故事「我们明日见」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1KzNVepE1Q"
+                },
+                {
+                    "name": "【《明日方舟》EP - Epilogue】",
+                    "url": "https://www.bilibili.com/video/BV1FzKwe2Eig"
+                }
             ]
         },
         {
@@ -3698,6 +5418,32 @@
                 {
                     "id": 103,
                     "reason": "该故事的主要国家在我们明日见被提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「挽歌燃烧殆尽」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1rR93YVEnU"
+                },
+                {
+                    "name": "【《明日方舟》干员「死芒」技能展示PV】",
+                    "url": "https://www.bilibili.com/video/BV1Zj9nYcEvM"
+                },
+                {
+                    "name": "【《明日方舟》EP - Final Embrace】",
+                    "url": "https://www.bilibili.com/video/BV1X49CYQEZt"
+                },
+                {
+                    "name": "【《明日方舟》「促融共竞#1」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1N7QNYtEuo"
+                },
+                {
+                    "name": "【「2025明日方舟音律联觉-熠曲丰碑」先导预告公开】",
+                    "url": "https://www.bilibili.com/video/BV1P5ZMYUEnM"
+                },
+                {
+                    "name": "【「2025明日方舟音律联觉-熠曲丰碑」情报公开】",
+                    "url": "https://www.bilibili.com/video/BV1A4oQYiEwj"
                 }
             ]
         },
@@ -3730,6 +5476,12 @@
                 {
                     "id": 58,
                     "reason": "部分关卡的前置剧情"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《ARK no NIGHTS》即将上映】",
+                    "url": "https://www.bilibili.com/video/BV1NLZHYxEdH"
                 }
             ]
         },
@@ -3768,6 +5520,24 @@
                 {
                     "id": 103,
                     "reason": "该故事存在必要前置故事集"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》主题曲【离解复合】开放 限时纪念活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1dWfgYVEeu"
+                },
+                {
+                    "name": "【《明日方舟》干员「Mon3tr」技能展示PV】",
+                    "url": "https://www.bilibili.com/video/BV1rXdcYQEFE"
+                },
+                {
+                    "name": "【《明日方舟》EP - Skeletal Wings】",
+                    "url": "https://www.bilibili.com/video/BV131R2YcEuc"
+                },
+                {
+                    "name": "【《明日方舟》EP - From Ash to Fire】",
+                    "url": "https://www.bilibili.com/video/BV1XjoWYBE1u"
                 }
             ]
         },
@@ -3815,6 +5585,64 @@
                 {
                     "id": 92,
                     "reason": "拉特兰线部分日常剧情"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「众生行记」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1gYLdzAEYW"
+                },
+                {
+                    "name": "【《明日方舟》六周年庆典活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV15HLdz6E99"
+                },
+                {
+                    "name": "【《明日方舟》「争锋频道：青草城」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1X4LdzKEzg"
+                },
+                {
+                    "name": "【《明日方舟》× 名创优品「绒梦畅想会」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1mdLnz8Ez7"
+                },
+                {
+                    "name": "【「2025明日方舟：集成映射——沉浸式线下展」先导预告公开】",
+                    "url": "https://www.bilibili.com/video/BV1snLRzHE8x"
+                },
+                {
+                    "name": "【《明日方舟》六周年庆典印象曲-Eclipse by Aimer】",
+                    "url": "https://www.bilibili.com/video/BV1NFLdzREbG"
+                },
+                {
+                    "name": "【《明日方舟》特别映像【罗德岛：明日】】",
+                    "url": "https://www.bilibili.com/video/BV1DGLozvEqX"
+                },
+                {
+                    "name": "【一分（多）钟看泰拉#2】",
+                    "url": "https://www.bilibili.com/video/BV1Q3LozKE8E"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「新约能天使」前瞻pv】",
+                    "url": "https://www.bilibili.com/video/BV19aGrzREBd"
+                },
+                {
+                    "name": "【《明日方舟》六周年特别直播节目（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1YAG1zwEJB"
+                },
+                {
+                    "name": "【《明日方舟》EP - Heavenly Me】",
+                    "url": "https://www.bilibili.com/video/BV18JGbzjEn4"
+                },
+                {
+                    "name": "【《明日方舟》EP - Sanctuary Inside】",
+                    "url": "https://www.bilibili.com/video/BV1hgVgzYEey"
+                },
+                {
+                    "name": "【《明日方舟》EP - Still the Same】",
+                    "url": "https://www.bilibili.com/video/BV1WWVJz1EAi"
+                },
+                {
+                    "name": "【《明日方舟》矢量突破#1「无机物」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1zaETzJEcj"
                 }
             ]
         },
@@ -3873,6 +5701,20 @@
                 {
                     "id": 101,
                     "reason": "该故事部分角色在相见欢中提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《U探泰拉》PV】",
+                    "url": "https://www.bilibili.com/video/BV18L14Y2E9T"
+                },
+                {
+                    "name": "【《U探泰拉》——谢拉格的商单】",
+                    "url": "https://www.bilibili.com/video/BV1rd1tYMEbq"
+                },
+                {
+                    "name": "【《明日方舟》迷你剧《U探泰拉》定档PV】",
+                    "url": "https://www.bilibili.com/video/BV145LRzxEfK"
                 }
             ]
         },
@@ -3934,6 +5776,28 @@
                     "id": 109,
                     "reason": "该故事的主要角色在序言组曲：猩红血钻中有提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【蓝卡坞深夜秀：片场直击】",
+                    "url": "https://www.bilibili.com/video/BV15FLCzTEQB"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「红丝绒」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV14S7JzaEd9"
+                },
+                {
+                    "name": "【《明日方舟》干员「酒神」技能展示PV】",
+                    "url": "https://www.bilibili.com/video/BV1CM7mzPEja"
+                },
+                {
+                    "name": "【《明日方舟》EP - The After】",
+                    "url": "https://www.bilibili.com/video/BV1u8TszsEez"
+                },
+                {
+                    "name": "【《明日方舟》EP - Grow on My Time】",
+                    "url": "https://www.bilibili.com/video/BV1KuTgzkEDN"
+                }
             ]
         },
         {
@@ -3960,6 +5824,24 @@
                 {
                     "id": 101,
                     "reason": "该故事为界园肉鸽预热，建议先去相见欢了解岁线的设定和剧情"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》全新故事「镜中集」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1uC3WzhEFL"
+                },
+                {
+                    "name": "【《明日方舟》干员「司霆惊蛰」技能展示PV】",
+                    "url": "https://www.bilibili.com/video/BV12L3jziE79"
+                },
+                {
+                    "name": "【《明日方舟》EP - 惊蛰时】",
+                    "url": "https://www.bilibili.com/video/BV1EPGJzvEVM"
+                },
+                {
+                    "name": "【《明日方舟》×《太鼓之达人》合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1eRuyzdEER"
                 }
             ]
         },
@@ -3988,6 +5870,36 @@
                 {
                     "id": 111,
                     "reason": "必要的肉鸽预热"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》特别映像[炎：界园游览须知]】",
+                    "url": "https://www.bilibili.com/video/BV1J2jAziEm3"
+                },
+                {
+                    "name": "【「2025明日方舟：集成映射——沉浸式线下展」情报公开】",
+                    "url": "https://www.bilibili.com/video/BV1KNNtzHEfM"
+                },
+                {
+                    "name": "【「2025明日方舟：集成映射——沉浸式线下展」先遣速报】",
+                    "url": "https://www.bilibili.com/video/BV1tDuiz4ESm"
+                },
+                {
+                    "name": "【《明日方舟》集成战略「岁的界园志异」宣传PV · 玩法介绍】",
+                    "url": "https://www.bilibili.com/video/BV13VMozJEE7"
+                },
+                {
+                    "name": "【《明日方舟》2025「音律联觉-熠曲丰碑」官方录播】",
+                    "url": "https://www.bilibili.com/video/BV1dwg5zCEBD"
+                },
+                {
+                    "name": "【「2025明日方舟：集成映射——沉浸式线下展」双周精彩回顾】",
+                    "url": "https://www.bilibili.com/video/BV1Qj87z8E5j"
+                },
+                {
+                    "name": "【《明日方舟》EP - Paper Boat】",
+                    "url": "https://www.bilibili.com/video/BV1H8W6ztEwp"
                 }
             ]
         },
@@ -4060,6 +5972,44 @@
                     "id": 98,
                     "reason": "该故事中的相关角色在揭幕者们中被提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》EP - Summer Fizz Pop】",
+                    "url": "https://www.bilibili.com/video/BV1tA8TzbERP"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「墟」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1KN8tzUE4N"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「墟」活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1VQ84ztEMq"
+                },
+                {
+                    "name": "【《明日方舟》× 大白兔「甜忆回响」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1TP8tzJEY6"
+                },
+                {
+                    "name": "【《明日方舟》2025夏日嘉年华特别通讯视频】",
+                    "url": "https://www.bilibili.com/video/BV1Pb84zVEJE"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「斩业星熊」前瞻pv】",
+                    "url": "https://www.bilibili.com/video/BV1Zs8DzAE8V"
+                },
+                {
+                    "name": "【《明日方舟》EP - Undaunted】",
+                    "url": "https://www.bilibili.com/video/BV1KRh4zJEA3"
+                },
+                {
+                    "name": "【《明日方舟》EP - Little Wish】",
+                    "url": "https://www.bilibili.com/video/BV1ZRhTz2EWA"
+                },
+                {
+                    "name": "【《明日方舟》危机合约新赛季「弧光作战」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1vAtvzLEdx"
+                }
             ]
         },
         {
@@ -4117,6 +6067,32 @@
                 {
                     "id": 74,
                     "reason": "该故事部分角色在火山旅梦中被提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【明日方舟 x Ave Mujica 联动前瞻预告】",
+                    "url": "https://www.bilibili.com/video/BV1pWLRzJECK"
+                },
+                {
+                    "name": "【迷途之子!!!!!：第1话 羽丘的不可思议女孩】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep1183102"
+                },
+                {
+                    "name": "【颂乐人偶：第1话 秘密。（Sub rosa.）】",
+                    "url": "https://www.bilibili.com/bangumi/play/ep1231523"
+                },
+                {
+                    "name": "【【明日方舟 × BanG Dream! Ave Mujica】SideStory「无忧梦呓」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1bveDzcEY7"
+                },
+                {
+                    "name": "【《明日方舟》干员「丰川祥子」技能展示PV】",
+                    "url": "https://www.bilibili.com/video/BV1bgacz7E4J"
+                },
+                {
+                    "name": "【《明日方舟》EP - in your blue eyes】",
+                    "url": "https://www.bilibili.com/video/BV13Ma2zjEMA"
                 }
             ]
         },
@@ -4188,6 +6164,32 @@
                     "id": 116,
                     "reason": "可选的背景剧情"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》主题曲【反常光谱】开放 限时纪念活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1XbxHzAE9H"
+                },
+                {
+                    "name": "【《明日方舟》干员「真言」技能展示PV】",
+                    "url": "https://www.bilibili.com/video/BV1NUx2z4EhG"
+                },
+                {
+                    "name": "【《明日方舟》EP - Sealed】",
+                    "url": "https://www.bilibili.com/video/BV1GHx6zDE8i"
+                },
+                {
+                    "name": "【《明日方舟》「促融共竞#2」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1ny4vzWEQs"
+                },
+                {
+                    "name": "【《明日方舟》× 三丽鸥家族「温情时光」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV14wWazyEBt"
+                },
+                {
+                    "name": "【《明日方舟》特别映像[乌萨斯：至伟之人]】",
+                    "url": "https://www.bilibili.com/video/BV1X2sZzYExt"
+                }
             ]
         },
         {
@@ -4258,6 +6260,60 @@
                     "id": 118,
                     "reason": "该故事的主要势力在序言组曲：利锏银锋中被提及"
                 }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「雪山降临1101」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1XWsoz8EVo"
+                },
+                {
+                    "name": "【《明日方舟》2025「感谢庆典」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1JQsoz3EtK"
+                },
+                {
+                    "name": "【《明日方舟》× 海底捞「罗德岛番茄派对」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1T5sWztErE"
+                },
+                {
+                    "name": "【《明日方舟》特别映像【前探泰拉:警兆】】",
+                    "url": "https://www.bilibili.com/video/BV1ZasdzNEDm"
+                },
+                {
+                    "name": "【明日方舟2025感谢庆典印象曲 - When We Were the Most Beautiful by Higuchi Ai】",
+                    "url": "https://www.bilibili.com/video/BV1FbsdzME6E"
+                },
+                {
+                    "name": "【一分（多）钟看泰拉#3】",
+                    "url": "https://www.bilibili.com/video/BV1JesZzkEjM"
+                },
+                {
+                    "name": "【《明日方舟》2025「感谢庆典」前瞻特别直播节目（附字幕）】",
+                    "url": "https://www.bilibili.com/video/BV1oHyrBsEZU"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「凛御银灰」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1E3yUBLE5c"
+                },
+                {
+                    "name": "【《明日方舟》EP - The Walk】",
+                    "url": "https://www.bilibili.com/video/BV1kP13BEErz"
+                },
+                {
+                    "name": "【《明日方舟》EP - Follow Your Heart】",
+                    "url": "https://www.bilibili.com/video/BV1jtyRBZETq"
+                },
+                {
+                    "name": "【《明日方舟》EP - Stardust on Me】",
+                    "url": "https://www.bilibili.com/video/BV1Mh1aBHEJi"
+                },
+                {
+                    "name": "【《明日方舟》「卫戍协议：盟约」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1KLkZB2Ezu"
+                },
+                {
+                    "name": "【《明日方舟》EP - Secret Escape】",
+                    "url": "https://www.bilibili.com/video/BV19WUnBTEBo"
+                }
             ]
         },
         {
@@ -4289,6 +6345,36 @@
                 {
                     "id": 93,
                     "reason": "该故事主要角色在萨卡兹肉鸽被提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「未许之地」活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1TGSAB1EZD"
+                },
+                {
+                    "name": "【《明日方舟》干员「娜斯提」技能展示PV】",
+                    "url": "https://www.bilibili.com/video/BV1BPSaBCEjF"
+                },
+                {
+                    "name": "【《明日方舟》EP - Just Another Inch Higher】",
+                    "url": "https://www.bilibili.com/video/BV1mS25BMEvj"
+                },
+                {
+                    "name": "【《明日方舟》× 上好佳「脆享佳日」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1R5qyB3Ec9"
+                },
+                {
+                    "name": "【「特别的一天」纪念录像2025】",
+                    "url": "https://www.bilibili.com/video/BV1hrBKBAEWz"
+                },
+                {
+                    "name": "【「星语共愿」特别纪念PV】",
+                    "url": "https://www.bilibili.com/video/BV1hrBKBAEuA"
+                },
+                {
+                    "name": "【《明日方舟》EP - Slowly Flow, Hearthlight Glow】",
+                    "url": "https://www.bilibili.com/video/BV1UcBLBHEQY"
                 }
             ]
         },
@@ -4322,6 +6408,28 @@
                 {
                     "id": 86,
                     "reason": "该故事的部分角色在水晶箭行动中被提及"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》特别映像[米诺斯：英雄之乡]】",
+                    "url": "https://www.bilibili.com/video/BV1HtsZz2E19"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「雅赛努斯复仇记」活动宣传pv】",
+                    "url": "https://www.bilibili.com/video/BV1NEi8BJETo"
+                },
+                {
+                    "name": "【《明日方舟》干员「缇缇」技能展示PV】",
+                    "url": "https://www.bilibili.com/video/BV1JcifBWEks"
+                },
+                {
+                    "name": "【《明日方舟》EP - Wanna Know Me? (Too Bad)】",
+                    "url": "https://www.bilibili.com/video/BV1JJrwBkE43"
+                },
+                {
+                    "name": "【《明日方舟》× 《轻松小熊》「慵懒心意」合作宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1Ro69B5EJ9"
                 }
             ]
         },
@@ -4358,6 +6466,44 @@
                 {
                     "id": 112,
                     "reason": "必要的岁线前置剧情"
+                }
+            ],
+            "Videos": [
+                {
+                    "name": "【《明日方舟》SideStory「辞岁行」活动先导PV】",
+                    "url": "https://www.bilibili.com/video/BV1kFFCzGEkW"
+                },
+                {
+                    "name": "【《明日方舟》SideStory「辞岁行」活动宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV1VVFrzREk7"
+                },
+                {
+                    "name": "【《明日方舟》2026新春前瞻特辑视频】",
+                    "url": "https://www.bilibili.com/video/BV1hkFkz9EWj"
+                },
+                {
+                    "name": "【《明日方舟》干员「赤刃明霄陈」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1z9FszpEKz"
+                },
+                {
+                    "name": "【《明日方舟》EP - 铁花飞】",
+                    "url": "https://www.bilibili.com/video/BV1EBcFznE2H"
+                },
+                {
+                    "name": "【《明日方舟》限定干员「望」前瞻PV】",
+                    "url": "https://www.bilibili.com/video/BV1zhcTzuEai"
+                },
+                {
+                    "name": "【《明日方舟》EP - 无名策】",
+                    "url": "https://www.bilibili.com/video/BV1WrcMznEDc"
+                },
+                {
+                    "name": "【《明日方舟》EP - 花街迎春】",
+                    "url": "https://www.bilibili.com/video/BV1nMcJzkEKm"
+                },
+                {
+                    "name": "【《明日方舟》矢量突破#2「巫术之夜」宣传PV】",
+                    "url": "https://www.bilibili.com/video/BV14cZABaEPi"
                 }
             ]
         }

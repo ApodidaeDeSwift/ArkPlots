@@ -16,6 +16,7 @@ import os
 import sys
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+import webbrowser
 
 def get_app_dir():
     """获取程序实际运行目录（兼容源码/EXE两种运行方式）"""
@@ -740,6 +741,9 @@ def gui_main():
                         details_text.insert(tk.END, f"    阅读理由：{reason}\n")
             else:
                 details_text.insert(tk.END, "  ")
+                status = records.get(pid, "未读")
+                insert_status_label(status)
+                details_text.insert(tk.END, " ")
                 add_preplot_link(title, pid)
                 if show_preplot_reason_var.get():
                     reason = entry.get("reason")
@@ -984,6 +988,13 @@ def gui_main():
         matched = [p for p in plots if matches_filters(p, f)]
         refresh_list(matched)
 
+    # 将过滤按钮放到筛选区右侧（在 apply_filters 定义之后创建，避免引用错误）
+    try:
+        ttk.Button(filter_frame, text="过滤", command=apply_filters).grid(row=0, column=8, padx=6)
+    except Exception:
+        # 如果 grid 不可用或其他异常，忽略（界面仍可使用右侧按钮）
+        pass
+
     def on_select(evt=None):
         if not hasattr(items_frame, '_items'):
             return
@@ -1087,14 +1098,87 @@ def gui_main():
 
         ttk.Button(dlg, text="确定", command=apply_review).pack(pady=8)
 
+    def open_videos_dialog():
+        if not hasattr(items_frame, '_items'):
+            messagebox.showinfo("提示", "没有可用条目")
+            return
+        if not selected_indices:
+            messagebox.showinfo("提示", "请选择一个剧情条目以查看相关视频")
+            return
+        idx = min(selected_indices)
+        items = items_frame._items
+        if idx < 0 or idx >= len(items):
+            messagebox.showinfo("提示", "选择无效")
+            return
+        item = items[idx]
+        vids = item.get('Videos') or item.get('videos') or item.get('Video')
+        # support dict mapping or list formats
+        parsed: List[Dict[str, str]] = []
+        if not vids:
+            messagebox.showinfo("提示", "该条目没有相关视频")
+            return
+        if isinstance(vids, dict):
+            for name, url in vids.items():
+                parsed.append({'name': str(name), 'url': str(url)})
+        elif isinstance(vids, list):
+            for v in vids:
+                if isinstance(v, dict):
+                    name = v.get('name') or v.get('title') or v.get('label') or '视频'
+                    url = v.get('url') or v.get('link') or v.get('href')
+                    if url:
+                        parsed.append({'name': str(name), 'url': str(url)})
+                elif isinstance(v, (list, tuple)) and len(v) >= 2:
+                    parsed.append({'name': str(v[0]), 'url': str(v[1])})
+                elif isinstance(v, str):
+                    parsed.append({'name': v, 'url': v})
+        elif isinstance(vids, str):
+            parsed.append({'name': vids, 'url': vids})
+
+        if not parsed:
+            messagebox.showinfo("提示", "未能解析到有效的视频信息")
+            return
+
+        dlg = tk.Toplevel(root)
+        dlg.title(f"相关视频 - {item.get('name')}")
+        dlg.transient(root)
+        dlg.grab_set()
+        frm = ttk.Frame(dlg)
+        frm.pack(fill=tk.BOTH, expand=True, padx=8, pady=8)
+
+        def open_url(u: str):
+            try:
+                webbrowser.open(u)
+            except Exception:
+                messagebox.showerror("错误", f"无法打开链接: {u}")
+
+        def copy_url(u: str):
+            try:
+                root.clipboard_clear()
+                root.clipboard_append(u)
+                messagebox.showinfo("已复制", "链接已复制到剪贴板")
+            except Exception:
+                messagebox.showerror("错误", "无法复制到剪贴板")
+
+        for v in parsed:
+            sub = ttk.Frame(frm)
+            sub.pack(fill=tk.X, pady=4)
+            lbl = tk.Label(sub, text=v.get('name') or v.get('url'), anchor='w', justify='left', font=yahei_font, fg='#0066cc', cursor='hand2')
+            lbl.pack(side=tk.LEFT, fill=tk.X, expand=True)
+            lbl.bind('<Button-1>', lambda e, u=v.get('url'): open_url(u))
+            btn_open = ttk.Button(sub, text='打开', command=lambda u=v.get('url'): open_url(u))
+            btn_open.pack(side=tk.RIGHT, padx=4)
+            btn_copy = ttk.Button(sub, text='复制链接', command=lambda u=v.get('url'): copy_url(u))
+            btn_copy.pack(side=tk.RIGHT)
+
+
     
 
     btn_frame = ttk.Frame(right)
     btn_frame.pack(fill=tk.X)
-    ttk.Button(btn_frame, text="过滤", command=apply_filters).pack(side=tk.LEFT, padx=5, pady=3)
     ttk.Button(btn_frame, text="刷新全部", command=lambda: refresh_list(plots)).pack(side=tk.LEFT, padx=5)
     ttk.Button(btn_frame, text="设置阅读状态", command=set_status).pack(side=tk.LEFT, padx=5)
     ttk.Button(btn_frame, text="批量设置", command=lambda: batch_set_status()).pack(side=tk.LEFT, padx=5)
+    ttk.Button(btn_frame, text="相关视频", command=open_videos_dialog).pack(side=tk.LEFT, padx=5)
     ttk.Checkbutton(btn_frame, text="显示必要前置", variable=show_necessary_var, command=refresh_current_preview).pack(side=tk.LEFT, padx=5)
     ttk.Checkbutton(btn_frame, text="显示可选前置", variable=show_optional_var, command=refresh_current_preview).pack(side=tk.LEFT, padx=5)
     ttk.Checkbutton(btn_frame, text="显示前置理由", variable=show_preplot_reason_var, command=refresh_current_preview).pack(side=tk.LEFT, padx=5)
