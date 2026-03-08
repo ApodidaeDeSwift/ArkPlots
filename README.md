@@ -65,7 +65,9 @@ python main.py
 - `related_power`: 相关势力
 - `related_plot`: 相关剧情
 - `description`: 文本描述
-- `Videos`: 关联的视频信息（支持字典形式 {name: url} 或 列表形式 [{"name":..., "url":...}] 或简单的字符串 URL）
+- `necessary_plot`: 前置必要剧情
+- `optional_plot`: 前置可选剧情
+- `Videos`: 关联的视频信息
 
 ## 开发与作者
 - 程序文件：`main.py`（基于 Python + tkinter，纯标准库实现）
@@ -73,14 +75,12 @@ python main.py
 
 ```
 GitHub: https://github.com/ApodidaeDeSwift
+微信: Quantumaster233
+QQ: 3195582616
 ```
 
-## 打包与分发
-- 可将程序使用 PyInstaller 等工具打包为 Windows 可执行文件，打包后的 `exe` 与数据文件放在同一目录下即可运行。
-- 如果你已经生成了 EXE，请将 `Plotline.json`、`Read_record.json` 以及收款码图片放在与可执行文件相同的目录以便程序与说明文件能正确引用。
-
 ## 支持我们
-如果你愿意支持项目维护，可通过收款码打赏。仓库中已包含支付二维码图片：
+如果你愿意支持项目维护，请作者喝一杯蜜雪冰城，可通过收款码打赏。仓库中已包含支付二维码图片：
 
  - 支付二维码：
 
