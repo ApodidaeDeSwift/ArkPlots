@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#这里是源码，如果你是一般用户，则可以直接删除这个文件，或不要管这个文件。
 """
 ArkPlots - 简易命令行剧情检索器
 
@@ -308,7 +309,11 @@ def gui_main():
     left = ttk.Frame(root)
     left.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     right = ttk.Frame(root)
-    right.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+    # 作为中间列（详情区），右侧将留给推荐栏
+    right.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    # 推荐栏（第三栏）
+    rec_frame = ttk.Frame(root)
+    rec_frame.pack(side=tk.RIGHT, fill=tk.Y)
 
     # prepare filter options from data
     classes_set = sorted({str(p.get("class")) for p in plots if p.get("class")})
@@ -361,18 +366,18 @@ def gui_main():
     # date pickers
     ttk.Label(filter_frame, text="开始日期").grid(row=0, column=0)
     start_year = ttk.Combobox(filter_frame, values=years, width=6)
-    start_year.grid(row=0, column=1)
+    start_year.grid(row=0, column=1, padx=2, sticky=tk.W)
     start_month = ttk.Combobox(filter_frame, values=months, width=4)
-    start_month.grid(row=0, column=2)
+    start_month.grid(row=0, column=2, padx=2, sticky=tk.W)
     start_day = ttk.Combobox(filter_frame, values=days, width=4)
-    start_day.grid(row=0, column=3)
+    start_day.grid(row=0, column=3, padx=2, sticky=tk.W)
     ttk.Label(filter_frame, text="结束日期").grid(row=0, column=4)
     end_year = ttk.Combobox(filter_frame, values=years, width=6)
-    end_year.grid(row=0, column=5)
+    end_year.grid(row=0, column=5, padx=2, sticky=tk.W)
     end_month = ttk.Combobox(filter_frame, values=months, width=4)
-    end_month.grid(row=0, column=6)
+    end_month.grid(row=0, column=6, padx=2, sticky=tk.W)
     end_day = ttk.Combobox(filter_frame, values=days, width=4)
-    end_day.grid(row=0, column=7)
+    end_day.grid(row=0, column=7, padx=2, sticky=tk.W)
 
     # multi-select lists for other filters
     # helper: create a popup multi-select dialog
@@ -597,6 +602,8 @@ def gui_main():
     # selection state for multi-select behaviour
     selected_indices = set()
     last_selected_index = None
+    # 多选模式开关（界面上的“多选/取消多选”）
+    multi_select_mode = tk.BooleanVar(value=False)
     preview_history: List[str] = []
     history_position = -1
     history_suppress_push = False
@@ -637,6 +644,18 @@ def gui_main():
 
     def select_item(event, idx: int):
         nonlocal last_selected_index
+        # 如果处于多选模式，点击即切换该项的选中状态（无需 Ctrl/Shift）
+        if multi_select_mode.get():
+            if idx in selected_indices:
+                selected_indices.remove(idx)
+                highlight_index(idx, False)
+            else:
+                selected_indices.add(idx)
+                highlight_index(idx, True)
+            last_selected_index = idx
+            on_select()
+            return
+
         # modifiers: Control (toggle), Shift (range), otherwise single select
         state = event.state
         ctrl = (state & 0x0004) != 0
@@ -663,6 +682,21 @@ def gui_main():
             highlight_index(idx, True)
             last_selected_index = idx
         on_select()
+
+    def handle_item_click(event):
+        # 统一点击处理：找到被点击的 item frame（items_frame 的直接子），并根据其索引调用 select_item
+        widget = event.widget
+        # 向上查找直到找到 items_frame 的直接子或到达根
+        while widget is not None and widget.master is not None and widget.master != items_frame:
+            widget = widget.master
+        if widget is None or widget.master is None:
+            return
+        try:
+            children = items_frame.winfo_children()
+            idx = children.index(widget)
+        except Exception:
+            return
+        select_item(event, idx)
 
     # Details area with preview history and prequel controls
     details_panel = ttk.Frame(right)
@@ -823,6 +857,122 @@ def gui_main():
         if highlight:
             select_plot_in_current_list(item)
 
+    # 推荐/补充阅读计算与显示（第三栏）
+    def is_read(pid: str) -> bool:
+        return records.get(str(pid)) == "已读"
+
+    def collect_necessary_chain(pid: str, out: set):
+        # 递归收集必要前置（规范化各种格式的 id），将结果加入 out
+        item = plots_map.get(str(pid))
+        if not item:
+            return
+        for ne in item.get('necessary_plot') or []:
+            nid = None
+            if isinstance(ne, (int, str)):
+                nid = str(ne)
+            elif isinstance(ne, dict):
+                nid = str(ne.get('id') or ne.get('pid') or ne.get('plot_id') or ne.get('ID') or ne.get('Id') or '')
+            if not nid:
+                continue
+            if nid not in out:
+                out.add(nid)
+                collect_necessary_chain(nid, out)
+
+    def update_recommendations():
+        # 清空 rec_frame 内容
+        for w in rec_frame.winfo_children():
+            w.destroy()
+
+        urgent = set()
+        rec_supp = set()
+        rec_continue = set()
+        can_continue = set()
+
+        # 辅助：从各种格式中提取 id
+        def extract_id(entry) -> Optional[str]:
+            if entry is None:
+                return None
+            if isinstance(entry, (int, str)):
+                return str(entry)
+            if isinstance(entry, dict):
+                return str(entry.get('id') or entry.get('pid') or entry.get('plot_id') or entry.get('ID') or entry.get('Id') or '')
+            return None
+
+        # 1) 已读剧情的必要前置（未读）及其必要链 -> 急需补充
+        # 2) 已读剧情的可选前置（未读） -> 推荐补充
+        for p in plots:
+            pid = str(p.get('id'))
+            if not is_read(pid):
+                continue
+            # 必要前置 -> 急需（包含其所有必要前置链）
+            for ne in p.get('necessary_plot') or []:
+                nid = extract_id(ne)
+                if not nid:
+                    continue
+                if not is_read(nid):
+                    urgent.add(nid)
+                    collect_necessary_chain(nid, urgent)
+            # 可选前置 -> 推荐补充
+            for oe in p.get('optional_plot') or []:
+                oid = extract_id(oe)
+                if not oid:
+                    continue
+                if not is_read(oid):
+                    rec_supp.add(oid)
+
+        # 对于所有未读剧情，根据其前置完成情况分类为 推荐继续阅读 / 可以继续阅读
+        for p in plots:
+            pid = str(p.get('id'))
+            if is_read(pid):
+                continue
+            # 规范化必要/可选前置 id 列表
+            necessary_ids = [extract_id(x) for x in (p.get('necessary_plot') or [])]
+            necessary_ids = [x for x in necessary_ids if x]
+            optional_ids = [extract_id(x) for x in (p.get('optional_plot') or [])]
+            optional_ids = [x for x in optional_ids if x]
+
+            necessary_ok = all(is_read(n) for n in necessary_ids) if necessary_ids else True
+            optional_ok = all(is_read(o) for o in optional_ids) if optional_ids else True
+
+            # 3) 必要和可选前置都已读 -> 推荐继续阅读
+            if necessary_ok and optional_ok:
+                rec_continue.add(pid)
+            # 4) 必要已读但可选未全部读 -> 可以继续阅读
+            elif necessary_ok and not optional_ok:
+                can_continue.add(pid)
+
+        # 过滤已读并按优先级去重：急需 > 推荐补充 > 推荐继续 > 可以继续
+        urgent = {x for x in urgent if not is_read(x)}
+        rec_supp = {x for x in rec_supp if not is_read(x)} - urgent
+        rec_continue = {x for x in rec_continue if not is_read(x)} - urgent - rec_supp
+        can_continue = {x for x in can_continue if not is_read(x)} - urgent - rec_supp - rec_continue
+
+        def make_section(title: str, items: List[str]):
+            ttk.Label(rec_frame, text=f"{title} ({len(items)})", font=(yahei_font.actual('family'), 11, 'bold')).pack(anchor='w', padx=6, pady=(6,2))
+            if not items:
+                ttk.Label(rec_frame, text="（无）").pack(anchor='w', padx=12)
+                return
+            for pid in items:
+                name = plots_map.get(pid, {}).get('name') or f"ID:{pid}"
+                sub = ttk.Frame(rec_frame)
+                sub.pack(fill=tk.X, padx=6, pady=2)
+                lbl = tk.Label(sub, text=name, anchor='w', justify='left', font=yahei_font, cursor='hand2', fg='#1565c0')
+                lbl.pack(side=tk.LEFT, fill=tk.X, expand=True)
+                lbl.bind('<Button-1>', lambda e, p=pid: display_and_select(p))
+                ttk.Button(sub, text='跳转', width=6, command=lambda p=pid: display_and_select(p)).pack(side=tk.RIGHT, padx=4)
+
+        def display_and_select(pid: str):
+            target = plots_map.get(pid)
+            if not target:
+                return
+            display_plot(target)
+
+        # 按顺序显示四个分区
+        make_section('急需补充的剧情', sorted(list(urgent)))
+        make_section('推荐补充的剧情', sorted(list(rec_supp)))
+        make_section('推荐继续阅读的剧情', sorted(list(rec_continue)))
+        make_section('可以继续阅读的剧情', sorted(list(can_continue)))
+
     def refresh_current_preview() -> None:
         if not hasattr(items_frame, '_items') or not items_frame._items:
             display_plot(None, record_history=False, highlight=False)
@@ -937,14 +1087,11 @@ def gui_main():
             # spacing / visual separation
             item_f.pack(fill=tk.X, padx=4, pady=6)
 
-            # bind clicks for selection
-            def make_handler(i):
-                return lambda e: select_item(e, i)
-
-            item_f.bind('<Button-1>', make_handler(idx))
-            lbl1.bind('<Button-1>', make_handler(idx))
+            # bind clicks for selection using unified handler
+            item_f.bind('<Button-1>', handle_item_click)
+            lbl1.bind('<Button-1>', handle_item_click)
             for lbl in extra_labels:
-                lbl.bind('<Button-1>', make_handler(idx))
+                lbl.bind('<Button-1>', handle_item_click)
 
         items_frame._items = items
         # reapply selection highlight if any indices are within range
@@ -956,6 +1103,11 @@ def gui_main():
         canvas.yview_moveto(0)
         if not selected_indices:
             display_plot(None, record_history=False, highlight=False)
+        # 更新推荐列表（第三栏）
+        try:
+            update_recommendations()
+        except Exception:
+            pass
 
     def apply_filters():
         f = {}
@@ -1008,64 +1160,115 @@ def gui_main():
         display_plot(items[idx])
 
     def set_status():
-        if not hasattr(items_frame, '_items'):
+        if not hasattr(items_frame, '_items') or not items_frame._items:
             messagebox.showinfo("提示", "没有可用条目")
             return
-        if not selected_indices:
-            messagebox.showinfo("提示", "请选择一个剧情条目")
-            return
-        idx = min(selected_indices)
+
         items = items_frame._items
-        item = items[idx]
-        pid = str(item.get('id'))
-        # use combobox dialog for fixed choices
+        sel_indices = sorted(i for i in selected_indices if 0 <= i < len(items))
+        if not sel_indices:
+            messagebox.showinfo("提示", "请先选择一个或多个剧情条目（或启用多选模式后点击选择）")
+            return
+
+        # 对选中项批量设置状态（简化对话）
         dlg = tk.Toplevel(root)
-        dlg.title("设置阅读状态")
-        ttk.Label(dlg, text=f"ID: {pid} {item.get('name')}").pack(padx=10, pady=5)
-        status_cb = ttk.Combobox(dlg, values=["未读", "计划读", "正在读", "已读"])
+        dlg.title("设置阅读状态（批量）")
+        dlg.transient(root)
+        dlg.grab_set()
+        ttk.Label(dlg, text=f"选中 {len(sel_indices)} 项，设置为：").pack(padx=10, pady=6)
+        status_cb = ttk.Combobox(dlg, values=["未读", "计划读", "正在读", "已读"], state='readonly')
+        status_cb.set("已读")
         status_cb.pack(padx=10, pady=5)
 
         def apply_and_close():
             val = status_cb.get().strip()
-            if val:
+            if not val:
+                messagebox.showinfo("提示", "请选择状态")
+                return
+            for i in sel_indices:
+                pid = str(items[i].get('id'))
                 records[pid] = val
-                save_json(READ_RECORD_PATH, records)
-                refresh_list()
-                on_select()
+            save_json(READ_RECORD_PATH, records)
+            refresh_list()
+            # 显示第一个被设置的条目
+            try:
+                first = str(items[sel_indices[0]].get('id'))
+                t = plots_map.get(first)
+                if t:
+                    display_plot(t)
+            except Exception:
+                pass
             dlg.destroy()
 
-        ttk.Button(dlg, text="保存", command=apply_and_close).pack(pady=5)
+        btnf = ttk.Frame(dlg)
+        btnf.pack(fill=tk.X, pady=6)
+        ttk.Button(btnf, text="取消", command=dlg.destroy).pack(side=tk.RIGHT, padx=6)
+        ttk.Button(btnf, text="保存", command=apply_and_close).pack(side=tk.RIGHT)
 
     def batch_set_status():
-        if not hasattr(items_frame, '_items'):
+        # 更稳健的批量设置：允许对“选中项”或“当前列表全部项”一次性设置阅读状态
+        if not hasattr(items_frame, '_items') or not items_frame._items:
             messagebox.showinfo("提示", "没有可用条目")
             return
-        if not selected_indices:
-            messagebox.showinfo("提示", "请至少选择一个剧情条目（按住 Ctrl/Shift 多选）")
-            return
-        pids = [str(items_frame._items[i].get('id')) for i in sorted(selected_indices)]
+
+        # 计算目前选中的有效 pid 列表
+        items = items_frame._items
+        sel_indices = sorted(i for i in selected_indices if 0 <= i < len(items))
+
         dlg = tk.Toplevel(root)
         dlg.title("批量设置阅读状态")
         dlg.transient(root)
         dlg.grab_set()
-        ttk.Label(dlg, text=f"选中 {len(pids)} 项，设置为：").pack(padx=10, pady=6)
-        status_cb = ttk.Combobox(dlg, values=["未读", "计划读", "正在读", "已读"])
-        status_cb.pack(padx=10, pady=5)
 
-        def apply_all():
+        # 说明文字
+        if sel_indices:
+            ttk.Label(dlg, text=f"选中 {len(sel_indices)} 项，或选择对当前列表全部 {len(items)} 项操作：").pack(padx=12, pady=8)
+        else:
+            ttk.Label(dlg, text=f"当前未选中任何项。将对当前列表全部 {len(items)} 项操作：").pack(padx=12, pady=8)
+
+        apply_all_var = tk.BooleanVar(value=False)
+        cb_apply_all = ttk.Checkbutton(dlg, text="应用于当前列表全部条目", variable=apply_all_var)
+        cb_apply_all.pack(anchor='w', padx=12)
+
+        ttk.Label(dlg, text="设置为：").pack(padx=12, pady=(8,2), anchor='w')
+        status_cb = ttk.Combobox(dlg, values=["未读", "计划读", "正在读", "已读"], state='readonly')
+        status_cb.set("已读")
+        status_cb.pack(padx=12, pady=4, fill=tk.X)
+
+        note = ttk.Label(dlg, text="提示：勾选“应用于当前列表全部条目”会覆盖所有显示在列表中的条目。")
+        note.pack(padx=12, pady=(4,8), anchor='w')
+
+        def apply_batch():
             val = status_cb.get().strip()
             if not val:
                 messagebox.showinfo("提示", "请选择状态")
                 return
-            for pid in pids:
+            if apply_all_var.get():
+                targets = [str(it.get('id')) for it in items]
+            else:
+                if not sel_indices:
+                    messagebox.showinfo("提示", "未选中任何条目，请先选择或勾选“应用于当前列表全部条目”。")
+                    return
+                targets = [str(items[i].get('id')) for i in sel_indices]
+            for pid in targets:
                 records[pid] = val
             save_json(READ_RECORD_PATH, records)
             refresh_list()
-            # show details of first selected
-            on_select()
+            # 尽量选中并显示第一个目标
+            try:
+                if targets:
+                    first = targets[0]
+                    t = plots_map.get(first)
+                    if t:
+                        display_plot(t)
+            except Exception:
+                pass
             dlg.destroy()
 
-        ttk.Button(dlg, text="保存", command=apply_all).pack(pady=6)
+        btnf = ttk.Frame(dlg)
+        btnf.pack(fill=tk.X, pady=8)
+        ttk.Button(btnf, text="取消", command=dlg.destroy).pack(side=tk.RIGHT, padx=8)
+        ttk.Button(btnf, text="保存", command=apply_batch).pack(side=tk.RIGHT)
 
     def open_review_dialog():
         dlg = tk.Toplevel(root)
@@ -1090,6 +1293,14 @@ def gui_main():
             vars_map[key] = var
             cb = ttk.Checkbutton(dlg, text=label, variable=var)
             cb.pack(anchor='w', padx=12, pady=2)
+
+        # 将三项前置显示控制移入审阅对话
+        cb_need = ttk.Checkbutton(dlg, text="显示必要前置", variable=show_necessary_var, command=refresh_current_preview)
+        cb_need.pack(anchor='w', padx=12, pady=2)
+        cb_opt = ttk.Checkbutton(dlg, text="显示可选前置", variable=show_optional_var, command=refresh_current_preview)
+        cb_opt.pack(anchor='w', padx=12, pady=2)
+        cb_reason = ttk.Checkbutton(dlg, text="显示前置理由", variable=show_preplot_reason_var, command=refresh_current_preview)
+        cb_reason.pack(anchor='w', padx=12, pady=2)
 
         def apply_review():
             for k, v in vars_map.items():
@@ -1173,15 +1384,35 @@ def gui_main():
 
     
 
+    # 多选切换按钮变量占位
+    multi_btn = None
+
+    def toggle_multi_select():
+        nonlocal multi_btn
+        if multi_select_mode.get():
+            # 关闭多选模式
+            multi_select_mode.set(False)
+            try:
+                multi_btn.config(text="多选")
+            except Exception:
+                pass
+            # 关闭多选时，保留当前选区或清除？这里清空以避免误操作
+            clear_selection()
+        else:
+            # 开启多选模式
+            multi_select_mode.set(True)
+            try:
+                multi_btn.config(text="取消多选")
+            except Exception:
+                pass
+
     btn_frame = ttk.Frame(right)
     btn_frame.pack(fill=tk.X)
     ttk.Button(btn_frame, text="刷新全部", command=lambda: refresh_list(plots)).pack(side=tk.LEFT, padx=5)
     ttk.Button(btn_frame, text="设置阅读状态", command=set_status).pack(side=tk.LEFT, padx=5)
-    ttk.Button(btn_frame, text="批量设置", command=lambda: batch_set_status()).pack(side=tk.LEFT, padx=5)
+    multi_btn = ttk.Button(btn_frame, text="多选", command=toggle_multi_select)
+    multi_btn.pack(side=tk.LEFT, padx=5)
     ttk.Button(btn_frame, text="相关视频", command=open_videos_dialog).pack(side=tk.LEFT, padx=5)
-    ttk.Checkbutton(btn_frame, text="显示必要前置", variable=show_necessary_var, command=refresh_current_preview).pack(side=tk.LEFT, padx=5)
-    ttk.Checkbutton(btn_frame, text="显示可选前置", variable=show_optional_var, command=refresh_current_preview).pack(side=tk.LEFT, padx=5)
-    ttk.Checkbutton(btn_frame, text="显示前置理由", variable=show_preplot_reason_var, command=refresh_current_preview).pack(side=tk.LEFT, padx=5)
     ttk.Button(toolbar, text="审阅", command=open_review_dialog).pack(side=tk.LEFT, padx=5)
 
     # selection handled by item click handlers in the custom items_frame

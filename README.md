@@ -2,7 +2,7 @@
 # 明日方舟剧情线梳理
 
 ## 基本介绍
-在该程序内记录并检索《明日方舟》剧情线条目（主线、活动、外传等），提供图形界面筛选、预览与阅读状态管理，方便玩家或研究者快速定位与跟踪剧情信息。
+在该程序内记录并检索《明日方舟》剧情线条目（主线、活动、外传等），提供图形界面筛选、预览与阅读状态管理，方便玩家或研究者快速定位与跟踪剧情信息，查看自己可以接着查看的剧情，和需要补充的剧情。
 
 ## 已经记录的信息
     在$Plotline.json$里按照发布的顺序记录了所有的相关大剧情的以下信息：
@@ -43,7 +43,7 @@ python main.py
 
 ```bash
 # 在可执行文件所在目录双击运行，或在命令行运行：
-./Arkplot_ver1.0.1.exe
+./Arkplot_ver1.0.2.exe
 ```
 
 - 如果你想运行源码（用于调试或修改）：
@@ -52,7 +52,7 @@ python main.py
 python main.py
 ```
 
-注意：仓库中的 `main.py` 为源码参考；若已分发 `Arkplot_ver1.0.1.exe`，可直接使用 EXE 运行而无需安装 Python。
+注意：仓库中的 `main.py` 为源码参考；若已分发 `Arkplot_ver1.0.2.exe`，可直接使用 EXE 运行而无需安装 Python。
 
 ## 数据字段说明（Plotline.json 中每条目常见字段）
 - `id`: 唯一标识
@@ -70,13 +70,14 @@ python main.py
 - `Videos`: 关联的视频信息
 
 ## 开发与作者
-- 程序文件：`main.py`（基于 Python + tkinter，纯标准库实现）
+- 源码：`main.py`（基于 Python + tkinter，纯标准库实现）
 - 作者 / GitHub：ApodidaeDeSwift
 
 ```
 GitHub: https://github.com/ApodidaeDeSwift
 微信: Quantumaster233
 QQ: 3195582616
+B站: https://space.bilibili.com/281039105
 ```
 
 ## 支持我们

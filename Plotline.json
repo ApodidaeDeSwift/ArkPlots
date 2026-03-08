@@ -2328,7 +2328,7 @@
             "related_power": [
                 "罗德岛"
             ],
-            "optional_plot": [
+            "necessary_plot": [
                 {
                     "id": 4,
                     "reason": "该故事推荐了解泰拉基础世界观后查看。"
@@ -4486,6 +4486,12 @@
             "country": [],
             "new_operator": [],
             "related_plot": [],
+            "necessary_plot": [
+                {
+                    "id": 4,
+                    "reason": "该故事推荐了解泰拉基础世界观后查看。"
+                }
+            ],
             "optional_plot": [
                 {
                     "id": 20,
