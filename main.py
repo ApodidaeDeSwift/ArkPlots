@@ -290,6 +290,14 @@ def gui_main():
         style = ttk.Style(root)
         style.theme_use('clam')
         style.configure("FilterGrid.TCheckbutton", padding=(6, 4), anchor="w")
+        # Button and general styles
+        try:
+            style.configure('TButton', padding=(6,4), font=('Segoe UI', 10))
+            style.map('TButton', background=[('active','#e6f2ff')])
+            style.configure('RecHeader.TLabel', font=('Segoe UI', 11, 'bold'))
+            style.configure('Muted.TLabel', foreground='#666666')
+        except Exception:
+            pass
     except Exception:
         style = None
     if style:
@@ -304,6 +312,10 @@ def gui_main():
         yahei_font = tkfont.Font(family="Microsoft YaHei", size=12)
     except Exception:
         yahei_font = tkfont.Font(size=12)
+    try:
+        small_font = tkfont.Font(family=yahei_font.actual('family'), size=max(9, yahei_font.actual('size')-2))
+    except Exception:
+        small_font = tkfont.Font(size=10)
 
     # Frames
     left = ttk.Frame(root)
@@ -406,12 +418,18 @@ def gui_main():
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         def _on_mousewheel(event):
-            if hasattr(event, 'delta') and event.delta:
-                canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-            elif getattr(event, 'num', None) == 4:
-                canvas.yview_scroll(-1, "units")
-            elif getattr(event, 'num', None) == 5:
-                canvas.yview_scroll(1, "units")
+            # make wheel scrolling more responsive: normalize delta and scale
+            try:
+                if hasattr(event, 'delta') and event.delta:
+                    # event.delta is multiple of 120 on Windows for each detent; scale for smoother scroll
+                    step = int(event.delta / 120) if abs(event.delta) >= 120 else (1 if event.delta > 0 else -1)
+                    canvas.yview_scroll(-step * 3, "units")
+                elif getattr(event, 'num', None) == 4:
+                    canvas.yview_scroll(-3, "units")
+                elif getattr(event, 'num', None) == 5:
+                    canvas.yview_scroll(3, "units")
+            except Exception:
+                pass
 
         canvas.bind("<MouseWheel>", _on_mousewheel)
         canvas.bind("<Button-4>", _on_mousewheel)
@@ -580,12 +598,16 @@ def gui_main():
     canvas.create_window((0, 0), window=items_frame, anchor='nw')
 
     def _on_list_mousewheel(event):
-        if hasattr(event, 'delta') and event.delta:
-            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-        elif getattr(event, 'num', None) == 4:
-            canvas.yview_scroll(-1, "units")
-        elif getattr(event, 'num', None) == 5:
-            canvas.yview_scroll(1, "units")
+        try:
+            if hasattr(event, 'delta') and event.delta:
+                step = int(event.delta / 120) if abs(event.delta) >= 120 else (1 if event.delta > 0 else -1)
+                canvas.yview_scroll(int(-step * 3), "units")
+            elif getattr(event, 'num', None) == 4:
+                canvas.yview_scroll(-3, "units")
+            elif getattr(event, 'num', None) == 5:
+                canvas.yview_scroll(3, "units")
+        except Exception:
+            pass
 
     canvas.bind("<MouseWheel>", _on_list_mousewheel)
     canvas.bind("<Button-4>", _on_list_mousewheel)
@@ -593,6 +615,29 @@ def gui_main():
     items_frame.bind("<MouseWheel>", _on_list_mousewheel)
     items_frame.bind("<Button-4>", _on_list_mousewheel)
     items_frame.bind("<Button-5>", _on_list_mousewheel)
+
+    # Ensure mouse wheel works reliably on Windows: when pointer enters canvas, bind wheel globally to handler;
+    # when leaves, unbind to avoid interfering with other widgets.
+    def _on_enter_list(event):
+        try:
+            canvas.focus_set()
+            canvas.bind_all("<MouseWheel>", _on_list_mousewheel)
+            # also bind Button-4/5 for X11
+            canvas.bind_all("<Button-4>", _on_list_mousewheel)
+            canvas.bind_all("<Button-5>", _on_list_mousewheel)
+        except Exception:
+            pass
+
+    def _on_leave_list(event):
+        try:
+            canvas.unbind_all("<MouseWheel>")
+            canvas.unbind_all("<Button-4>")
+            canvas.unbind_all("<Button-5>")
+        except Exception:
+            pass
+
+    canvas.bind('<Enter>', _on_enter_list)
+    canvas.bind('<Leave>', _on_leave_list)
 
     def _on_frame_config(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
@@ -734,6 +779,75 @@ def gui_main():
         details_text.tag_bind(tag, "<Double-Button-1>", lambda e, pid=pid: jump_to_plot_by_id(pid))
         details_text.tag_bind(tag, "<Enter>", lambda e: details_text.configure(cursor="hand2"))
         details_text.tag_bind(tag, "<Leave>", lambda e: details_text.configure(cursor=""))
+
+    # 通用 tooltip 创建函数（在 widget 上悬停显示说明）
+    def attach_tooltip(widget, text: str):
+        tip = None
+        show_after_id = None
+
+        def _show_tip():
+            nonlocal tip, show_after_id
+            show_after_id = None
+            try:
+                tip = tk.Toplevel(root)
+                tip.wm_overrideredirect(True)
+                tip.attributes('-topmost', True)
+                lbl = tk.Label(tip, text=text, justify='left', background='#ffffe0', relief='solid', borderwidth=1,
+                               wraplength=300)
+                lbl.pack(ipadx=6, ipady=4)
+                tip.update_idletasks()
+                tw = tip.winfo_width()
+                th = tip.winfo_height()
+                screen_w = root.winfo_screenwidth()
+                screen_h = root.winfo_screenheight()
+                # prefer to the right of widget, otherwise to the left; keep inside screen
+                try:
+                    wx = widget.winfo_rootx()
+                    wy = widget.winfo_rooty()
+                    x = wx + 20
+                    y = wy + 2
+                except Exception:
+                    x = 100
+                    y = 100
+                if x + tw + 10 > screen_w:
+                    x = max(10, wx - tw - 6)
+                if y + th + 10 > screen_h:
+                    y = max(10, screen_h - th - 10)
+                tip.wm_geometry(f"+{x}+{y}")
+                tip.lift()
+            except Exception:
+                tip = None
+
+        def _cancel_show():
+            nonlocal show_after_id
+            if show_after_id:
+                try:
+                    root.after_cancel(show_after_id)
+                except Exception:
+                    pass
+                show_after_id = None
+
+        def on_enter(e=None):
+            nonlocal show_after_id
+            _cancel_show()
+            # delay showing to avoid flicker
+            try:
+                show_after_id = root.after(300, _show_tip)
+            except Exception:
+                show_after_id = None
+
+        def on_leave(e=None):
+            nonlocal tip
+            _cancel_show()
+            try:
+                if tip:
+                    tip.destroy()
+            except Exception:
+                pass
+            tip = None
+
+        widget.bind('<Enter>', on_enter)
+        widget.bind('<Leave>', on_leave)
 
     def insert_status_label(status: str) -> None:
         nonlocal detail_status_tags, status_tag_counter
@@ -948,18 +1062,25 @@ def gui_main():
         can_continue = {x for x in can_continue if not is_read(x)} - urgent - rec_supp - rec_continue
 
         def make_section(title: str, items: List[str]):
-            ttk.Label(rec_frame, text=f"{title} ({len(items)})", font=(yahei_font.actual('family'), 11, 'bold')).pack(anchor='w', padx=6, pady=(6,2))
+            # header with tooltip icon
+            header = ttk.Frame(rec_frame)
+            header.pack(fill=tk.X, anchor='w', padx=6, pady=(6,2))
+            q = tk.Label(header, text='?', font=(yahei_font.actual('family'), 10, 'bold'), width=2, anchor='w', fg='#666', bg='#f6f8fb')
+            q.pack(side=tk.LEFT, padx=(0,4))
+            ttk.Label(header, text=f"{title} ({len(items)})", style='RecHeader.TLabel').pack(side=tk.LEFT, padx=(4,0))
+            # attach tooltip per section via title text will be done by caller
             if not items:
                 ttk.Label(rec_frame, text="（无）").pack(anchor='w', padx=12)
-                return
+                return header
             for pid in items:
                 name = plots_map.get(pid, {}).get('name') or f"ID:{pid}"
                 sub = ttk.Frame(rec_frame)
                 sub.pack(fill=tk.X, padx=6, pady=2)
-                lbl = tk.Label(sub, text=name, anchor='w', justify='left', font=yahei_font, cursor='hand2', fg='#1565c0')
+                lbl = tk.Label(sub, text=name, anchor='w', justify='left', font=small_font, cursor='hand2', fg='#1565c0', bg='#ffffff')
                 lbl.pack(side=tk.LEFT, fill=tk.X, expand=True)
                 lbl.bind('<Button-1>', lambda e, p=pid: display_and_select(p))
                 ttk.Button(sub, text='跳转', width=6, command=lambda p=pid: display_and_select(p)).pack(side=tk.RIGHT, padx=4)
+            return header
 
         def display_and_select(pid: str):
             target = plots_map.get(pid)
@@ -968,10 +1089,31 @@ def gui_main():
             display_plot(target)
 
         # 按顺序显示四个分区
-        make_section('急需补充的剧情', sorted(list(urgent)))
-        make_section('推荐补充的剧情', sorted(list(rec_supp)))
-        make_section('推荐继续阅读的剧情', sorted(list(rec_continue)))
-        make_section('可以继续阅读的剧情', sorted(list(can_continue)))
+        # 绑定各分区的提示文本
+        tips = {
+            '急需补充的剧情': '这些剧情中包含你已经读完的剧情的必选前置，无视它们继续阅读将会有大量剧情无法读懂',
+            '推荐补充的剧情': '这些剧情中包含你已经读完的剧情中的可选前置，可以帮助你补充部分有用的前置要素。',
+            '推荐继续阅读的剧情': '你已经阅读了这些剧情的所有前置剧情，阅读它们将不会有任何障碍。',
+            '可以继续阅读的剧情': '你已经阅读了这些剧情的必选前置剧情，阅读它们将不会有很严重的障碍。'
+        }
+
+        # 创建并在问号上附加 tooltip
+        def make_and_attach(title_key, items_list):
+            header = make_section(title_key, items_list)
+            # directly find '?' label in returned header and attach tooltip
+            try:
+                if header:
+                    for sub in header.winfo_children():
+                        if isinstance(sub, tk.Label) and sub.cget('text') == '?':
+                            attach_tooltip(sub, tips.get(title_key, ''))
+                            break
+            except Exception:
+                pass
+
+        make_and_attach('急需补充的剧情', sorted(list(urgent)))
+        make_and_attach('推荐补充的剧情', sorted(list(rec_supp)))
+        make_and_attach('推荐继续阅读的剧情', sorted(list(rec_continue)))
+        make_and_attach('可以继续阅读的剧情', sorted(list(can_continue)))
 
     def refresh_current_preview() -> None:
         if not hasattr(items_frame, '_items') or not items_frame._items:
@@ -1068,8 +1210,24 @@ def gui_main():
 
             # create item frame
             item_f = tk.Frame(items_frame, bd=1, relief=tk.FLAT, padx=8, pady=6)
+            # checkbox for explicit multi-select on the left (only shown in multi-select mode)
             lbl1 = tk.Label(item_f, text=line1, anchor='w', justify='left', font=yahei_font)
-            lbl1.pack(fill=tk.X)
+            if multi_select_mode.get():
+                cb_var = tk.BooleanVar(value=(idx in selected_indices))
+                def make_cb_cmd(i=idx, var=cb_var):
+                    def _cmd():
+                        if var.get():
+                            selected_indices.add(i)
+                            highlight_index(i, True)
+                        else:
+                            selected_indices.discard(i)
+                            highlight_index(i, False)
+                    return _cmd
+                cb = tk.Checkbutton(item_f, variable=cb_var, command=make_cb_cmd(), bd=0)
+                cb.pack(side=tk.LEFT)
+                lbl1.pack(fill=tk.X, padx=(6,0))
+            else:
+                lbl1.pack(fill=tk.X)
 
             # 每一项单独占一行显示
             extra_font = (yahei_font.actual('family'), max(10, yahei_font.actual('size')-1))
@@ -1396,7 +1554,7 @@ def gui_main():
                 multi_btn.config(text="多选")
             except Exception:
                 pass
-            # 关闭多选时，保留当前选区或清除？这里清空以避免误操作
+            # 关闭多选时清空选择以避免误操作
             clear_selection()
         else:
             # 开启多选模式
@@ -1405,6 +1563,12 @@ def gui_main():
                 multi_btn.config(text="取消多选")
             except Exception:
                 pass
+        # 刷新列表以显示或隐藏复选框
+        try:
+            cur_items = getattr(items_frame, '_items', plots)
+            refresh_list(cur_items)
+        except Exception:
+            refresh_list(plots)
 
     btn_frame = ttk.Frame(right)
     btn_frame.pack(fill=tk.X)
