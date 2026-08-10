@@ -4,6 +4,13 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Node / Vite
+web/node_modules/
+UI/my-project/node_modules/
+UI/my-project/dist/
+UI/my-project/src/.umi/
+UI/my-project/src/.umi-production/
+
 # C extensions
 *.so
 

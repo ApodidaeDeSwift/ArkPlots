@@ -1585,5 +1585,26 @@ def gui_main():
     root.mainloop()
 
 
+def launch_web(port: int = 8765, open_browser: bool = True) -> None:
+    """Start local web UI (server.py) as the default front-end."""
+    from server import run_server
+
+    run_server(port=port, open_browser=open_browser)
+
+
 if __name__ == "__main__":
-    gui_main()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="ArkPlots - 剧情检索器")
+    parser.add_argument(
+        "--tk",
+        action="store_true",
+        help="使用旧版 tkinter 桌面界面",
+    )
+    parser.add_argument("--port", type=int, default=8765, help="Web 服务端口（默认 8765）")
+    parser.add_argument("--no-browser", action="store_true", help="启动服务但不自动打开浏览器")
+    args = parser.parse_args()
+    if args.tk:
+        gui_main()
+    else:
+        launch_web(port=args.port, open_browser=not args.no_browser)
