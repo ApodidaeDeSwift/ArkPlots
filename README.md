@@ -77,7 +77,7 @@ python server.py --port 8765 --no-browser
 若使用仓库中的可执行文件：
 
 ```bash
-./ArkPlot_ver1.0.2.exe
+./Arkplot_ver1.0.3.exe
 ```
 
 请确保同目录下有 `Plotline.json`，以及已构建的 `web/dist`（或按程序提示操作）。

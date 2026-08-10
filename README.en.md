@@ -77,7 +77,7 @@ python server.py --port 8765 --no-browser
 If you use the bundled EXE:
 
 ```bash
-./ArkPlot_ver1.0.2.exe
+./Arkplot_ver1.0.3.exe
 ```
 
 Keep `Plotline.json` in the same folder, and ensure `web/dist` exists (or follow the on-screen build hint).

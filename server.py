@@ -22,15 +22,36 @@ from urllib.parse import urlparse
 
 
 def get_app_dir() -> str:
+    """Directory for user data (Plotline.json / Read_record.json).
+
+    When frozen, this is the folder containing the .exe so data stays editable
+    next to the binary.
+    """
     if getattr(sys, "frozen", False):
         return os.path.dirname(os.path.abspath(sys.executable))
     return os.path.dirname(os.path.abspath(__file__))
 
 
+def get_static_dir() -> str:
+    """Directory for the built Web UI (web/dist).
+
+    When frozen, prefer the bundle extracted under ``sys._MEIPASS``; fall back
+    to ``<exe_dir>/web/dist`` for side-by-side installs.
+    """
+    if getattr(sys, "frozen", False):
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            bundled = os.path.join(meipass, "web", "dist")
+            if os.path.isdir(bundled):
+                return bundled
+        return os.path.join(get_app_dir(), "web", "dist")
+    return os.path.join(get_app_dir(), "web", "dist")
+
+
 WORKDIR = get_app_dir()
 PLOTLINE_PATH = os.path.join(WORKDIR, "Plotline.json")
 READ_RECORD_PATH = os.path.join(WORKDIR, "Read_record.json")
-STATIC_DIR = os.path.join(WORKDIR, "web", "dist")
+STATIC_DIR = get_static_dir()
 DEFAULT_PORT = 8765
 
 
