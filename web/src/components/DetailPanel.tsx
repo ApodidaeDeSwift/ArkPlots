@@ -89,7 +89,7 @@ export function DetailPanel({
           const target = plotsMap.get(pid)
           const name = plotName(pid, target?.name) || `ID:${pid}`
           const st = records[pid] || '未读'
-          const reason = extractPreplotReason(entry)
+          const reason = extractPreplotReason(entry, locale)
           return (
             <div className="preplot-item" key={`${pid}-${idx}`}>
               <span className={`status-pill status-${st}`}>{statusLabel(st)}</span>

@@ -10,6 +10,8 @@ export type PreplotRef =
       ID?: number | string
       Id?: number | string
       reason?: string
+      /** Optional English reason; used when UI locale is not zh-CN. */
+      reason_en?: string
     }
 
 export type VideoEntry = {
@@ -95,8 +97,17 @@ export function extractPreplotId(entry: PreplotRef | null | undefined): string |
   return String(id)
 }
 
-export function extractPreplotReason(entry: PreplotRef): string {
-  if (entry && typeof entry === 'object' && 'reason' in entry) {
+export function extractPreplotReason(
+  entry: PreplotRef,
+  locale?: string | null,
+): string {
+  if (!(entry && typeof entry === 'object')) return ''
+  const preferEn = locale != null && locale !== '' && locale !== 'zh-CN'
+  if (preferEn) {
+    const en = entry.reason_en
+    if (en != null && String(en).trim()) return String(en)
+  }
+  if ('reason' in entry) {
     return String(entry.reason || '')
   }
   return ''

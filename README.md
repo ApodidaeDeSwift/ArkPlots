@@ -22,6 +22,12 @@
 
 ---
 
+## 关于不同服务器的内容
+
+所有相关日期目前都以大陆服为准，推荐视频也以bilibili为准。如有外国网友愿意补充其他服务器相关信息，欢迎联系
+
+---
+
 ## 环境要求
 
 | 用途 | 依赖 |
@@ -56,7 +62,8 @@ cd ..
 python main.py
 ```
 
-默认打开浏览器访问：`http://127.0.0.1:8765/`
+默认打开浏览器访问：`http://127.0.0.1:8765/`  
+若 `8765` 已被占用，程序会自动尝试后续空闲端口。
 
 ### 3. 常用参数
 
@@ -117,7 +124,7 @@ npm run dev
 | `related_power` | 相关势力 |
 | `related_plot` | 相关标签（如源石、巨兽等） |
 | `description` | 描述 |
-| `necessary_plot` | 必要前置（可含 `id` 与 `reason`） |
+| `necessary_plot` | 必要前置（可含 `id`、`reason`，可选 `reason_en`） |
 | `optional_plot` | 可选前置 |
 | `Videos` | 关联视频 |
 
@@ -134,6 +141,7 @@ npm run dev
 - 语言偏好保存在浏览器 `localStorage`（键名 `arkplots.locale`）
 - 界面文案：`web/src/i18n/locales/`
 - 内容对照（剧情名、国家、势力、干员、相关标签）：`web/src/i18n/content/`
+- **所有翻译内容均由Cursor查询萌娘百科完成，翻译目前可能不准确**，如发现翻译错误可以上报issue或直接提pr
 
 ### 添加新语言
 

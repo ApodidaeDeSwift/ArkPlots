@@ -6918,6 +6918,11 @@
                 {
                     "id": 74,
                     "reason": "该故事地区在火山旅梦中有提及"
+                },
+                {
+                    "id": 117,
+                    "reason": "该剧情的部分重要线索在反常光谱中有提及",
+                    "reason_en": "Some important clues for this story are mentioned in Abnormal Spectrum"
                 }
             ],
             "optional_plot": [],

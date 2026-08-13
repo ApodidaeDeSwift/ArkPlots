@@ -208,11 +208,19 @@ def run_server(port: int = DEFAULT_PORT, open_browser: bool = True) -> Threading
     if isinstance(plots, list):
         ensure_read_record(plots)
 
-    server = ThreadingHTTPServer(("127.0.0.1", port), ArkPlotsHandler)
-    url = f"http://127.0.0.1:{port}/"
+    server, bound_port = _bind_server(port)
+    url = f"http://127.0.0.1:{bound_port}/"
+    if bound_port != port:
+        print(
+            f"Port {port} is unavailable; using {bound_port} instead.\n"
+            f"端口 {port} 不可用，已自动改用 {bound_port}。"
+        )
     print(f"ArkPlots server at {url}")
     if not os.path.isdir(STATIC_DIR):
-        print("WARNING: web/dist missing. Build UI with: cd web && npm install && npm run build")
+        print(
+            "WARNING: web/dist missing. Build UI with: "
+            "cd web && npm install && npm run build"
+        )
     if open_browser:
         threading.Timer(0.4, lambda: webbrowser.open(url)).start()
     try:
@@ -224,12 +232,40 @@ def run_server(port: int = DEFAULT_PORT, open_browser: bool = True) -> Threading
     return server
 
 
+def _bind_server(
+    preferred_port: int,
+    host: str = "127.0.0.1",
+    tries: int = 30,
+) -> tuple[ThreadingHTTPServer, int]:
+    """Bind to preferred_port, or the next free ports if it is busy/blocked."""
+    last_error: OSError | None = None
+    for offset in range(max(1, tries)):
+        port = preferred_port + offset
+        if port > 65535:
+            break
+        try:
+            server = ThreadingHTTPServer((host, port), ArkPlotsHandler)
+            return server, port
+        except OSError as exc:
+            last_error = exc
+            continue
+    msg = (
+        f"Could not bind any port in {preferred_port}..{preferred_port + tries - 1}. "
+        f"Last error: {last_error}"
+    )
+    raise OSError(msg) from last_error
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="ArkPlots local web server")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--no-browser", action="store_true")
     args = parser.parse_args()
-    run_server(port=args.port, open_browser=not args.no_browser)
+    try:
+        run_server(port=args.port, open_browser=not args.no_browser)
+    except OSError as exc:
+        print(f"ERROR: failed to start ArkPlots server.\n错误：无法启动服务。\n{exc}")
+        raise SystemExit(1) from exc
 
 
 if __name__ == "__main__":

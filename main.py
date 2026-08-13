@@ -1589,7 +1589,16 @@ def launch_web(port: int = 8765, open_browser: bool = True) -> None:
     """Start local web UI (server.py) as the default front-end."""
     from server import run_server
 
-    run_server(port=port, open_browser=open_browser)
+    try:
+        run_server(port=port, open_browser=open_browser)
+    except OSError as exc:
+        print(f"ERROR: failed to start ArkPlots server.\n错误：无法启动服务。\n{exc}")
+        if sys.stdin.isatty():
+            try:
+                input("\nPress Enter to exit / 按回车退出…")
+            except EOFError:
+                pass
+        raise SystemExit(1) from exc
 
 
 if __name__ == "__main__":
