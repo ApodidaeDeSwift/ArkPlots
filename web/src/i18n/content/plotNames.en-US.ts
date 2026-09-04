@@ -122,7 +122,7 @@ export const plotNamesEnUS: Record<string, string> = {
   '116': "Elite Operators: Departure", // 精英干员：启程
   '117': "EP16. Abnormal Spectrum", // EP16. 反常光谱
   '118': "Prelude Suite: Silver Blades", // 序言组曲：利锏银锋
-  '119': "Retracing Our Steps", // 雪山降临1101
+  '119': "Retracing Our Steps 1101", // 雪山降临1101
   '120': "Unrealized Realities", // 未许之地
   '121': "Medjehtiqedti Bound", // 雅赛努斯复仇记
   '122': "First of a Thousand Autumns", // 辞岁行
@@ -135,4 +135,6 @@ export const plotNamesEnUS: Record<string, string> = {
   '129': "Jungle Complex", // 丛林症结
   '130': "The Black Flow of the Drowning Seekers", // 沉沦者的黑流树海
   '131': "Till the Lands Become an Orange", // 直到大地变成一颗酸橙
+  '132': "Interactive Exhibition", // 奇象巡展
+  '133': "Sur le lac lune vivante", // 月行水上
 }
