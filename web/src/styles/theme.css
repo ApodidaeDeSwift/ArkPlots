@@ -346,6 +346,25 @@ button {
   margin: 0 0 8px;
 }
 
+.detail-cover {
+  margin: 0 0 12px;
+  border: 1px solid rgba(120, 170, 200, 0.18);
+  background: rgba(8, 18, 28, 0.35);
+  overflow: hidden;
+  max-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+  object-fit: contain;
+}
+
 .detail-kv {
   display: grid;
   gap: 6px;

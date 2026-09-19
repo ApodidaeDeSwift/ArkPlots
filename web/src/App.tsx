@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react'
-import { fetchPlots, fetchRecords, saveRecords } from './api'
+import { fetchCovers, fetchPlots, fetchRecords, saveRecords } from './api'
 import { collectFilterOptions, matchesFilters } from './filter'
 import { DetailPanel } from './components/DetailPanel'
 import { FilterBar } from './components/FilterBar'
@@ -43,6 +43,7 @@ export default function App() {
   const plotName = usePlotName()
   const [plots, setPlots] = useState<PlotItem[]>([])
   const [records, setRecords] = useState<Record<string, string>>({})
+  const [covers, setCovers] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -66,6 +67,7 @@ export default function App() {
   const [showNecessary, setShowNecessary] = useState(true)
   const [showOptional, setShowOptional] = useState(true)
   const [showReason, setShowReason] = useState(true)
+  const [showCover, setShowCover] = useState(true)
 
   const [selector, setSelector] = useState<SelectorKey | null>(null)
   const [statusModal, setStatusModal] = useState<'single' | 'batch' | null>(null)
@@ -76,10 +78,15 @@ export default function App() {
     ;(async () => {
       try {
         setLoading(true)
-        const [plotFile, rec] = await Promise.all([fetchPlots(), fetchRecords()])
+        const [plotFile, rec, cov] = await Promise.all([
+          fetchPlots(),
+          fetchRecords(),
+          fetchCovers(),
+        ])
         if (cancelled) return
         setPlots(plotFile.data || [])
         setRecords(rec)
+        setCovers(cov)
         setError(null)
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e))
@@ -346,9 +353,14 @@ export default function App() {
             onClick={() => {
               void (async () => {
                 try {
-                  const [plotFile, rec] = await Promise.all([fetchPlots(), fetchRecords()])
+                  const [plotFile, rec, cov] = await Promise.all([
+                    fetchPlots(),
+                    fetchRecords(),
+                    fetchCovers(),
+                  ])
                   setPlots(plotFile.data || [])
                   setRecords(rec)
+                  setCovers(cov)
                   setError(null)
                 } catch (e) {
                   setError(e instanceof Error ? e.message : String(e))
@@ -409,6 +421,7 @@ export default function App() {
               item={activeItem}
               plotsMap={plotsMap}
               records={records}
+              covers={covers}
               canBack={historyPos > 0}
               canForward={historyPos >= 0 && historyPos < history.length - 1}
               onBack={historyBack}
@@ -417,9 +430,11 @@ export default function App() {
               showNecessary={showNecessary}
               showOptional={showOptional}
               showReason={showReason}
+              showCover={showCover}
               onToggleNecessary={setShowNecessary}
               onToggleOptional={setShowOptional}
               onToggleReason={setShowReason}
+              onToggleCover={setShowCover}
             />
           </div>
         </section>

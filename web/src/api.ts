@@ -23,6 +23,23 @@ export function fetchRecords() {
   return jsonFetch<Record<string, string>>('/api/records')
 }
 
+/** id -> relative path under site root (e.g. covers/12.png). Missing file => {}. */
+export async function fetchCovers(): Promise<Record<string, string>> {
+  try {
+    const res = await fetch('/covers/covers.json', { cache: 'no-store' })
+    if (!res.ok) return {}
+    const data = (await res.json()) as unknown
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return {}
+    const out: Record<string, string> = {}
+    for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+      if (v != null && String(v)) out[String(k)] = String(v)
+    }
+    return out
+  } catch {
+    return {}
+  }
+}
+
 export function saveRecords(records: Record<string, string>) {
   return jsonFetch<Record<string, string>>('/api/records', {
     method: 'PUT',

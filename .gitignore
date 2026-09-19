@@ -213,3 +213,23 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ---- ArkPlots one-off scrape / temp artifacts ----
+# One-time cover crawl & debug scripts (runtime uses main.py / server.py / web/)
+scripts/
+
+# Manual cover drop folder (imported into web/public/covers then removed)
+Missing_Pic/
+
+# Probe / scrape reports and raw dumps at repo root
+_*.html
+_*.json
+_*.txt
+_*.log
+_tmp_*/
+plots_export.txt
+_import_missing_covers.py
+
+# Local PyInstaller / package leftovers (build/ and root dist/ already ignored)
+*.spec.bak
+AppVer/

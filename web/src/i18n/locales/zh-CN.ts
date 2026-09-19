@@ -74,6 +74,8 @@ const zhCN: Messages = {
     necessary: '必要前置',
     optional: '可选前置',
     showReason: '显示原因',
+    showCover: '宣传图',
+    cover: '宣传图',
     status: '状态',
     type: '类型',
     date: '日期',

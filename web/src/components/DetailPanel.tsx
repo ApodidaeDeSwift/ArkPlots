@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import type { PlotItem } from '../types'
 import {
   extractPreplotId,
@@ -17,6 +18,7 @@ type Props = {
   item: PlotItem | null
   plotsMap: Map<string, PlotItem>
   records: Record<string, string>
+  covers: Record<string, string>
   canBack: boolean
   canForward: boolean
   onBack: () => void
@@ -25,15 +27,28 @@ type Props = {
   showNecessary: boolean
   showOptional: boolean
   showReason: boolean
+  showCover: boolean
   onToggleNecessary: (v: boolean) => void
   onToggleOptional: (v: boolean) => void
   onToggleReason: (v: boolean) => void
+  onToggleCover: (v: boolean) => void
+}
+
+function resolveCoverSrc(item: PlotItem, covers: Record<string, string>): string | null {
+  const id = String(item.id)
+  const fromMap = covers[id]
+  const fromItem = item.cover || item.image
+  const raw = fromMap || fromItem
+  if (!raw) return null
+  if (/^https?:\/\//i.test(raw) || raw.startsWith('/')) return raw
+  return `/${raw.replace(/^\//, '')}`
 }
 
 export function DetailPanel({
   item,
   plotsMap,
   records,
+  covers,
   canBack,
   canForward,
   onBack,
@@ -42,9 +57,11 @@ export function DetailPanel({
   showNecessary,
   showOptional,
   showReason,
+  showCover,
   onToggleNecessary,
   onToggleOptional,
   onToggleReason,
+  onToggleCover,
 }: Props) {
   const t = useT()
   const { locale } = useI18n()
@@ -54,6 +71,11 @@ export function DetailPanel({
   const lists = useLocalizedList()
   const sep = locale === 'zh-CN' ? '、' : ', '
   const dash = t('detail.emDash')
+  const [coverBroken, setCoverBroken] = useState(false)
+
+  useEffect(() => {
+    setCoverBroken(false)
+  }, [item?.id, showCover])
 
   if (!item) {
     return (
@@ -76,6 +98,8 @@ export function DetailPanel({
   const status = records[id] || '未读'
   const typeLabel = classLabel(item.class)
   const titleName = plotName(id, item.name)
+  const coverSrc = resolveCoverSrc(item, covers)
+  const showCoverImg = showCover && !!coverSrc && !coverBroken
 
   const renderPreplots = (list: PlotItem['necessary_plot'], title: string) => {
     const entries = list || []
@@ -140,8 +164,26 @@ export function DetailPanel({
           />{' '}
           {t('detail.showReason')}
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={showCover}
+            onChange={(e) => onToggleCover(e.target.checked)}
+          />{' '}
+          {t('detail.showCover')}
+        </label>
       </div>
       <h2 className="detail-title">{titleName}</h2>
+      {showCoverImg && (
+        <div className="detail-cover">
+          <img
+            src={coverSrc}
+            alt={t('detail.cover')}
+            loading="lazy"
+            onError={() => setCoverBroken(true)}
+          />
+        </div>
+      )}
       <div className="detail-kv">
         <div>
           <span>{t('detail.status')}</span>

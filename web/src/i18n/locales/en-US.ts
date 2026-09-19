@@ -74,6 +74,8 @@ const enUS: Messages = {
     necessary: 'Required prerequisites',
     optional: 'Optional prerequisites',
     showReason: 'Show reasons',
+    showCover: 'Promo art',
+    cover: 'Promo art',
     status: 'Status',
     type: 'Type',
     date: 'Date',

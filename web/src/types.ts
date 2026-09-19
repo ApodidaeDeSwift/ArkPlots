@@ -36,6 +36,9 @@ export type PlotItem = {
   description?: string
   necessary_plot?: PreplotRef[]
   optional_plot?: PreplotRef[]
+  /** Relative path under site root, e.g. covers/12.png — optional; prefer covers.json */
+  cover?: string
+  image?: string
   Videos?: VideoEntry[] | Record<string, string> | string
   videos?: VideoEntry[] | Record<string, string> | string
   Video?: VideoEntry[] | Record<string, string> | string

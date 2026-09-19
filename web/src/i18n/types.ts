@@ -88,6 +88,8 @@ export type Messages = {
     necessary: string
     optional: string
     showReason: string
+    showCover: string
+    cover: string
     status: string
     type: string
     date: string

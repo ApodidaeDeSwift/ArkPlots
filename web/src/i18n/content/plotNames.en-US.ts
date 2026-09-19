@@ -38,9 +38,9 @@ export const plotNamesEnUS: Record<string, string> = {
   '32': "Rhodes Island's Walkabout Club", // 罗德岛闲逛部
   '33': "Preluding Lights", // 灯火序曲
   '34': "Interlocking Competition: Hymnoi Wisdom", // 荷谟伊智境
-  '35': "Rhodes Island's Records of Originium — Blacksteel", // 罗德岛源石纪事——黑钢
+  '35': "Rhodes Island's Records of Originium — Blacksteel", // 罗德岛源石记事——黑钢
   '36': "Vigilo", // 如我所见
-  '37': "Rhodes Island's Records of Originium — Rhine Lab", // 罗德岛源石纪事——莱茵生命
+  '37': "Rhodes Island's Records of Originium — Rhine Lab", // 罗德岛源石记事——莱茵生命
   '38': "Dossoles Holiday", // 多索雷斯假日
   '39': "EP9. Stormwatch", // EP9. 风暴瞭望
   '40': "Pinus Sylvestris", // 红松林
