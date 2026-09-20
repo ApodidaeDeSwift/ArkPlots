@@ -9,12 +9,21 @@ ArkPlots - 简易命令行剧情检索器
 - 支持选择要在列表中显示的字段
 - 保存/读取用户在 Read_record.json 中的阅读状态
 
-用法：运行后按菜单交互过滤、查看或标记阅读状态。
+用法：python main.py 在独立窗口打开界面（不启动系统浏览器）。
 """
 from __future__ import annotations
 import json
 import os
 import sys
+
+# Windowed PyInstaller builds (console=False / --noconsole) have no stdio.
+# pywebview and the HTTP server still write to them, so they must not be None.
+_WINDOWED = sys.stdout is None or sys.stderr is None
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w", encoding="utf-8", errors="replace")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w", encoding="utf-8", errors="replace")
+
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 import webbrowser
@@ -1585,15 +1594,130 @@ def gui_main():
     root.mainloop()
 
 
+def _stdin_is_tty() -> bool:
+    try:
+        return bool(sys.stdin is not None and sys.stdin.isatty())
+    except Exception:
+        return False
+
+
+def _notify_error(message: str) -> None:
+    try:
+        print(message, file=sys.stderr)
+    except Exception:
+        pass
+    if not _WINDOWED:
+        return
+    try:
+        import ctypes
+
+        ctypes.windll.user32.MessageBoxW(None, message, "ArkPlots", 0x00000010)
+    except Exception:
+        pass
+
+
+def _icon_path() -> Optional[str]:
+    candidates = []
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        candidates.append(os.path.join(meipass, "icon.ico"))
+    candidates.append(os.path.join(WORKDIR, "icon.ico"))
+    for path in candidates:
+        if path and os.path.isfile(path):
+            return path
+    return None
+
+
+def _webview_storage_dir() -> str:
+    base = os.environ.get("APPDATA") or WORKDIR
+    return os.path.join(base, "ArkPlots", "webview")
+
+
+def _wait_until_ready(url: str, timeout: float = 5.0) -> None:
+    import time
+    import urllib.error
+    import urllib.request
+
+    health = url.rstrip("/") + "/api/health"
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            with urllib.request.urlopen(health, timeout=0.4) as resp:
+                if getattr(resp, "status", 200) == 200:
+                    return
+        except (OSError, urllib.error.URLError):
+            time.sleep(0.05)
+
+
+def _open_webview(url: str) -> None:
+    """Show the existing UI in a native window. Must run on the main thread."""
+    try:
+        import webview
+    except ImportError as exc:
+        raise RuntimeError(
+            "未安装 pywebview，无法打开独立窗口。\n"
+            "请执行: pip install -r requirements.txt"
+        ) from exc
+
+    webview.create_window(
+        "ArkPlots",
+        url,
+        width=1400,
+        height=900,
+        resizable=True,
+        min_size=(960, 640),
+        text_select=True,
+    )
+    # private_mode=False keeps the language choice in localStorage.
+    start_kwargs: Dict[str, Any] = {"private_mode": True}
+    storage = _webview_storage_dir()
+    try:
+        os.makedirs(storage, exist_ok=True)
+        if os.access(storage, os.W_OK):
+            start_kwargs = {"private_mode": False, "storage_path": storage}
+    except OSError:
+        pass
+    icon = _icon_path()
+    if icon:
+        start_kwargs["icon"] = icon
+    webview.start(**start_kwargs)
+
+
+def launch_window(port: int = 8765) -> None:
+    """Default entry: local HTTP server inside a pywebview window (no system browser)."""
+    from server import prepare_server, serve_in_background, stop_server
+
+    try:
+        server, url = prepare_server(port)
+    except OSError as exc:
+        _notify_error(
+            f"ERROR: failed to start ArkPlots server.\n错误：无法启动服务。\n{exc}"
+        )
+        raise SystemExit(1) from exc
+
+    serve_in_background(server)
+    try:
+        _wait_until_ready(url)
+        _open_webview(url)
+    except SystemExit:
+        raise
+    except Exception as exc:
+        _notify_error(f"无法打开 ArkPlots 窗口。\n{exc}")
+        raise SystemExit(1) from exc
+    finally:
+        stop_server(server)
+
+
 def launch_web(port: int = 8765, open_browser: bool = True) -> None:
-    """Start local web UI (server.py) as the default front-end."""
+    """Optional fallback: serve the UI and maybe open the system browser."""
     from server import run_server
 
     try:
         run_server(port=port, open_browser=open_browser)
     except OSError as exc:
-        print(f"ERROR: failed to start ArkPlots server.\n错误：无法启动服务。\n{exc}")
-        if sys.stdin.isatty():
+        message = f"ERROR: failed to start ArkPlots server.\n错误：无法启动服务。\n{exc}"
+        _notify_error(message)
+        if _stdin_is_tty():
             try:
                 input("\nPress Enter to exit / 按回车退出…")
             except EOFError:
@@ -1606,14 +1730,33 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="ArkPlots - 剧情检索器")
     parser.add_argument(
+        "--port",
+        type=int,
+        default=8765,
+        help="本地服务端口（默认 8765；被占用时自动改用后续端口）",
+    )
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--browser",
+        action="store_true",
+        help="在系统浏览器中打开，而不是独立窗口",
+    )
+    mode.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="只启动本地服务，不打开窗口或浏览器",
+    )
+    mode.add_argument(
         "--tk",
         action="store_true",
         help="使用旧版 tkinter 桌面界面",
     )
-    parser.add_argument("--port", type=int, default=8765, help="Web 服务端口（默认 8765）")
-    parser.add_argument("--no-browser", action="store_true", help="启动服务但不自动打开浏览器")
     args = parser.parse_args()
     if args.tk:
         gui_main()
+    elif args.browser:
+        launch_web(port=args.port, open_browser=True)
+    elif args.no_browser:
+        launch_web(port=args.port, open_browser=False)
     else:
-        launch_web(port=args.port, open_browser=not args.no_browser)
+        launch_window(port=args.port)

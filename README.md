@@ -32,9 +32,10 @@
 
 | 用途 | 依赖 |
 | --- | --- |
-| 运行 Web UI | Python 3.10+（标准库即可，无需额外 pip 包） |
+| 独立窗口运行 | Python 3.10+，以及 [pywebview](https://pywebview.flowrl.com/)（`pip install -r requirements.txt`）。Windows 使用系统自带的 Edge WebView2 |
 | 首次构建前端 | [Node.js](https://nodejs.org/) 18+（含 npm） |
-| 可选：旧版桌面 UI | tkinter（多数 Python 安装已自带） |
+| 可选：系统浏览器 | `python main.py --browser`（不需要额外依赖） |
+| 可选：旧版桌面 UI | tkinter（多数 Python 安装已自带），`python main.py --tk` |
 
 数据文件需与程序放在同一目录：
 
@@ -59,21 +60,23 @@ cd ..
 ### 2. 启动
 
 ```bash
+pip install -r requirements.txt
 python main.py
 ```
 
-默认打开浏览器访问：`http://127.0.0.1:8765/`  
-若 `8765` 已被占用，程序会自动尝试后续空闲端口。
+默认打开标题为 **ArkPlots** 的独立窗口（约 1400×900，可调整大小），**不会**打开系统浏览器。界面仍是原来的 Web UI。  
+端口默认 `8765`；若被占用，会改用后续空闲端口，窗口加载的是**实际绑定**的地址。关闭窗口时本地服务会停止。
 
 ### 3. 常用参数
 
 ```bash
-python main.py --port 8765     # 指定端口
-python main.py --no-browser    # 不自动打开浏览器
+python main.py --port 8765     # 指定首选端口
+python main.py --browser       # 改用系统浏览器（可选回退）
+python main.py --no-browser    # 只启动本地服务，不打开窗口（给前端热更新用）
 python main.py --tk            # 使用旧版 tkinter 界面
 ```
 
-也可直接运行服务端：
+也可直接运行服务端（这条仍会尝试打开浏览器，联调请加 `--no-browser`）：
 
 ```bash
 python server.py --port 8765 --no-browser
@@ -87,7 +90,17 @@ python server.py --port 8765 --no-browser
 ./Arkplot_ver1.0.3.exe
 ```
 
-请确保同目录下有 `Plotline.json`，以及已构建的 `web/dist`（或按程序提示操作）。
+请确保同目录下有 `Plotline.json`。Web 界面已打进 exe 时不需要旁边再放一份 `web/dist`。
+
+重新打包（本次只需把启动路径准备好，不必现在构建）时，先安装依赖并构建前端，再执行：
+
+```bash
+pip install -r requirements.txt pyinstaller
+cd web && npm install && npm run build && cd ..
+pyinstaller --noconsole --windowed Arkplot_ver1.0.3.spec
+```
+
+**无命令行窗口的关键参数**是 spec 里的 `console=False`，等价于 PyInstaller 的 `--noconsole` / `--windowed`。使用 `.spec` 时以文件中的 `console=False` 为准，命令行再写 `--noconsole` 不会覆盖它。目标电脑需要已安装的 Edge WebView2 运行时（Windows 10/11 通常自带）。
 
 ---
 
@@ -160,7 +173,8 @@ npm run dev
 ArkPlots/
 ├── Plotline.json          # 剧情数据
 ├── Read_record.json       # 阅读记录
-├── main.py                # 启动器（Web 默认；--tk 旧界面）
+├── main.py                # 启动器（默认独立窗口；--browser / --tk 可选）
+├── requirements.txt       # pywebview
 ├── server.py              # 本地 HTTP API + 静态资源
 ├── web/                   # Vite + React + TypeScript 前端
 │   ├── src/i18n/          # 界面与内容国际化

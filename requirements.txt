@@ -1,0 +1,3 @@
+# Native window around the existing web UI (Windows: Edge WebView2 via pythonnet).
+# Install: pip install -r requirements.txt
+pywebview>=6.1

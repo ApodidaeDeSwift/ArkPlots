@@ -32,9 +32,10 @@ All dates currently follow the **CN (Mainland China) server**, and recommended v
 
 | Purpose | Dependency |
 | --- | --- |
-| Run the Web UI | Python 3.10+ (stdlib only; no extra pip packages) |
+| Standalone window | Python 3.10+ and [pywebview](https://pywebview.flowrl.com/) (`pip install -r requirements.txt`). On Windows this uses the system Edge WebView2 runtime |
 | First-time frontend build | [Node.js](https://nodejs.org/) 18+ (with npm) |
-| Optional: legacy desktop UI | tkinter (usually bundled with Python) |
+| Optional: system browser | `python main.py --browser` (no extra packages) |
+| Optional: legacy desktop UI | tkinter (usually bundled with Python), `python main.py --tk` |
 
 Keep these data files next to the program:
 
@@ -59,21 +60,23 @@ Output goes to `web/dist/`. If it is missing, the server will remind you to run 
 ### 2. Launch
 
 ```bash
+pip install -r requirements.txt
 python main.py
 ```
 
-Opens a browser at: `http://127.0.0.1:8765/`  
-If port `8765` is already in use, the app automatically tries the next free ports.
+This opens a native window titled **ArkPlots** (about 1400×900, resizable). It does **not** open the system browser. The UI is still the existing web front-end.  
+The preferred port is `8765`. If that port is taken, the next free port is used, and the window loads the **actually bound** URL. Closing the window stops the local server.
 
 ### 3. Common options
 
 ```bash
 python main.py --port 8765     # preferred port
-python main.py --no-browser    # do not open a browser
+python main.py --browser       # open the system browser instead
+python main.py --no-browser    # server only (for the Vite dev proxy)
 python main.py --tk            # legacy tkinter UI
 ```
 
-You can also start the server directly:
+You can also start the server directly (this still opens a browser unless you pass `--no-browser`):
 
 ```bash
 python server.py --port 8765 --no-browser
@@ -88,6 +91,16 @@ If you use the bundled EXE:
 ```
 
 Keep `Plotline.json` in the same folder. The Web UI is embedded in the EXE; for source runs you still need `web/dist` from `npm run build`.
+
+To package again (the launch path is ready; you do not have to build an EXE now):
+
+```bash
+pip install -r requirements.txt pyinstaller
+cd web && npm install && npm run build && cd ..
+pyinstaller --noconsole --windowed Arkplot_ver1.0.3.spec
+```
+
+The switch that hides the console is `console=False` in the spec, which is the same as PyInstaller `--noconsole` / `--windowed`. When a `.spec` file is used, that file wins: passing `--noconsole` on the command line does not override it. The target PC needs the Edge WebView2 runtime (already present on most Windows 10/11 systems).
 
 ---
 
@@ -160,7 +173,8 @@ The language switcher lists registered locales automatically.
 ArkPlots/
 ├── Plotline.json          # Story data
 ├── Read_record.json       # Reading progress
-├── main.py                # Launcher (Web by default; --tk for legacy UI)
+├── main.py                # Launcher (native window by default; --browser / --tk optional)
+├── requirements.txt       # pywebview
 ├── server.py              # Local HTTP API + static files
 ├── web/                   # Vite + React + TypeScript frontend
 │   ├── src/i18n/          # UI & content i18n

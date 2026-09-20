@@ -20,6 +20,12 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Dict, List
 from urllib.parse import urlparse
 
+# Windowed builds (PyInstaller console=False) have no stdio. Keep writes safe.
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w", encoding="utf-8", errors="replace")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w", encoding="utf-8", errors="replace")
+
 
 def get_app_dir() -> str:
     """Directory for user data (Plotline.json / Read_record.json).
@@ -93,7 +99,19 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=STATIC_DIR, **kwargs)
 
     def log_message(self, fmt: str, *args) -> None:
-        sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
+        stream = sys.stderr
+        if stream is None:
+            return
+        try:
+            stream.write("%s - %s\n" % (self.address_string(), fmt % args))
+        except Exception:
+            pass
+
+    def _write(self, body: bytes) -> None:
+        try:
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
+            return
 
     def _send_json(self, code: int, payload: Any) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -105,7 +123,7 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(body)
+        self._write(body)
 
     def _read_body(self) -> bytes:
         length = int(self.headers.get("Content-Length") or 0)
@@ -179,7 +197,7 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(body)
+        self._write(body)
 
     def do_PUT(self) -> None:
         parsed = urlparse(self.path)
@@ -201,15 +219,26 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
             self._send_json(500, {"error": str(e)})
 
 
-def run_server(port: int = DEFAULT_PORT, open_browser: bool = True) -> ThreadingHTTPServer:
-    # ensure records exist
+def listening_url(server: ThreadingHTTPServer) -> str:
+    """URL for the port the server actually bound, not the requested one."""
+    host, port = server.server_address[:2]
+    if not isinstance(host, str) or host in ("0.0.0.0", "::", ""):
+        host = "127.0.0.1"
+    return f"http://{host}:{port}/"
+
+
+def prepare_server(port: int = DEFAULT_PORT) -> tuple[ThreadingHTTPServer, str]:
+    """Bind the HTTP server (falling forward if the port is busy) and return (server, url).
+
+    Does not serve yet. The URL always uses the port stored on the socket.
+    """
     plotdata = load_json(PLOTLINE_PATH) or {}
     plots = plotdata.get("data") or []
     if isinstance(plots, list):
         ensure_read_record(plots)
 
     server, bound_port = _bind_server(port)
-    url = f"http://127.0.0.1:{bound_port}/"
+    url = listening_url(server)
     if bound_port != port:
         print(
             f"Port {port} is unavailable; using {bound_port} instead.\n"
@@ -221,6 +250,53 @@ def run_server(port: int = DEFAULT_PORT, open_browser: bool = True) -> Threading
             "WARNING: web/dist missing. Build UI with: "
             "cd web && npm install && npm run build"
         )
+    return server, url
+
+
+def serve_in_background(server: ThreadingHTTPServer) -> threading.Thread:
+    """Run serve_forever on a daemon thread so the GUI can own the main thread."""
+    thread = threading.Thread(
+        target=server.serve_forever,
+        name="arkplots-http",
+        daemon=True,
+    )
+    server._arkplots_thread = thread  # type: ignore[attr-defined]
+    thread.start()
+    return thread
+
+
+def stop_server(server: ThreadingHTTPServer) -> None:
+    """Stop the HTTP server. Safe to call more than once.
+
+    ``HTTPServer.shutdown()`` deadlocks unless ``serve_forever()`` is running
+    in another thread, so it is only used after ``serve_in_background``.
+    """
+    lock = getattr(server, "_arkplots_stop_lock", None)
+    if lock is None:
+        lock = threading.Lock()
+        server._arkplots_stop_lock = lock  # type: ignore[attr-defined]
+    with lock:
+        if getattr(server, "_arkplots_stopped", False):
+            return
+        server._arkplots_stopped = True  # type: ignore[attr-defined]
+    thread = getattr(server, "_arkplots_thread", None)
+    if thread is not None:
+        try:
+            server.shutdown()
+        except Exception:
+            pass
+        try:
+            thread.join(timeout=3)
+        except Exception:
+            pass
+    try:
+        server.server_close()
+    except Exception:
+        pass
+
+
+def run_server(port: int = DEFAULT_PORT, open_browser: bool = True) -> ThreadingHTTPServer:
+    server, url = prepare_server(port)
     if open_browser:
         threading.Timer(0.4, lambda: webbrowser.open(url)).start()
     try:
@@ -228,7 +304,7 @@ def run_server(port: int = DEFAULT_PORT, open_browser: bool = True) -> Threading
     except KeyboardInterrupt:
         print("\nShutting down...")
     finally:
-        server.server_close()
+        stop_server(server)
     return server
 
 
@@ -237,7 +313,11 @@ def _bind_server(
     host: str = "127.0.0.1",
     tries: int = 30,
 ) -> tuple[ThreadingHTTPServer, int]:
-    """Bind to preferred_port, or the next free ports if it is busy/blocked."""
+    """Bind to preferred_port, or the next free ports if it is busy/blocked.
+
+    The returned port is the one the socket actually got (important when the
+    caller asked for port 0, or when the OS remaps the bind).
+    """
     last_error: OSError | None = None
     for offset in range(max(1, tries)):
         port = preferred_port + offset
@@ -245,7 +325,9 @@ def _bind_server(
             break
         try:
             server = ThreadingHTTPServer((host, port), ArkPlotsHandler)
-            return server, port
+            server.daemon_threads = True
+            actual = int(server.server_address[1])
+            return server, actual
         except OSError as exc:
             last_error = exc
             continue
