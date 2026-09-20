@@ -4,49 +4,75 @@
 
 English | [简体中文](README.md)
 
-A local tool for browsing, filtering, and tracking *Arknights* story entries (Main Theme, Side Stories, Story Collections, Integrated Strategies, and more). Manage your reading progress and get recommendations for what to catch up on—or what you can safely read next.
+---
+
+## For regular players
+
+A local tool for browsing, filtering, and tracking *Arknights* story entries (Main Theme, Side Stories, Story Collections, Integrated Strategies, and more). Manage reading progress and get recommendations for what to catch up on—or what you can safely read next.
 
 If you find it useful, a ⭐ on GitHub is always appreciated.
 
+### After you download
+
+1. Keep **`Arkplot_ver1.0.4.exe`** and **`Plotline.json`** (story data) in the **same folder**.
+2. Double-click the exe. It opens a native window titled **ArkPlots** (about 1400×900, resizable). There is **no** console / command-line window, and it does **not** force open your system browser.
+3. Closing the window exits the app. Progress is saved to `Read_record.json` in that same folder.
+
+### Files next to the exe
+
+| File | Notes |
+| --- | --- |
+| `Plotline.json` | **Required.** Story entries; must sit beside the exe |
+| `Read_record.json` | Reading progress; created automatically if missing |
+
+The Web UI is embedded in the exe—you do **not** need a separate `web/dist` folder. Windows usually already has Edge WebView2; if the window fails to open, install / repair WebView2.
+
+### What you can do (short)
+
+- Filter by date, type, nation, operators, stage, factions, related tags, and more
+- Set read status: Unread / Planned / Reading / Read (single or batch)
+- See required / optional prerequisites and catch-up / continue recommendations
+- Open or copy related video links
+- Switch Simplified Chinese / English in the top bar; promo art may appear in details when available
+
+### About different servers
+
+Dates currently follow the **CN (Mainland China) server**, and recommended videos are mainly from **Bilibili**. If you play on another server and want to help add Global / JP / KR dates or links, please get in touch.
+
+### Author & support
+
+- GitHub: [@ApodidaeDeSwift](https://github.com/ApodidaeDeSwift)
+- WeChat: `Quantumaster233` · QQ: `3195582616`
+- Bilibili: [space.bilibili.com/281039105](https://space.bilibili.com/281039105)
+
+If ArkPlots helps you, feel free to buy the author a Mixue drink (蜜雪冰城):
+
+![Support](coffee.png)
+
+### License & disclaimer
+
+This is a personal learning and organizing tool. *Arknights* and related text/settings belong to Hypergryph and other rights holders. Data and UI in this repo are for study and non-commercial sharing only. Issues and PRs on GitHub are welcome.
+
 ---
 
-## Features
+## For contributors & advanced users
 
-- **Web “intel desk” UI**: three-pane layout (filters & list / detail preview / recommendations)
-- **Rich filters**: date range, story type, nation/region, concurrent operators (substring), stage, factions, related plot tags; some filters support match-any / match-all
-- **Read status**: Unread / Planned / Reading / Read; single or batch updates, stored in `Read_record.json`
-- **Details & prerequisites**: required / optional prereqs, jump links, preview history back / forward
-- **Recommendations**: urgent catch-up, recommended catch-up, recommended next, readable next
-- **Related videos**: open links or copy to clipboard
-- **i18n**: UI and display names in Simplified Chinese / English (switcher in the top bar)
+For running from source, editing the frontend / data, or rebuilding the executable.
 
----
-
-## About different servers
-
-All dates currently follow the **CN (Mainland China) server**, and recommended videos are primarily from **Bilibili**. If you play on another server and would like to help add Global / JP / KR release dates or links, please get in touch.
-
----
-
-## Requirements
+### Requirements
 
 | Purpose | Dependency |
 | --- | --- |
-| Standalone window | Python 3.10+ and [pywebview](https://pywebview.flowrl.com/) (`pip install -r requirements.txt`). On Windows this uses the system Edge WebView2 runtime |
-| First-time frontend build | [Node.js](https://nodejs.org/) 18+ (with npm) |
-| Optional: system browser | `python main.py --browser` (no extra packages) |
+| Standalone window (default) | Python 3.10+ and [pywebview](https://pywebview.flowrl.com/) (`pip install -r requirements.txt`); Windows uses Edge WebView2 |
+| Frontend build | [Node.js](https://nodejs.org/) 18+ (with npm) |
+| Optional: system browser | `python main.py --browser` |
 | Optional: legacy desktop UI | tkinter (usually bundled with Python), `python main.py --tk` |
 
-Keep these data files next to the program:
+Keep data beside the program: `Plotline.json` (required), `Read_record.json` (auto-created if missing).
 
-- `Plotline.json` — story entries (included in the repo)
-- `Read_record.json` — reading progress (created automatically if missing)
+### Build the frontend
 
----
-
-## Quick start (recommended)
-
-### 1. Build the frontend (first time, or after changes under `web/`)
+First time, or after changes under `web/`:
 
 ```bash
 cd web
@@ -55,61 +81,38 @@ npm run build
 cd ..
 ```
 
-Output goes to `web/dist/`. If it is missing, the server will remind you to run the commands above.
+Output goes to `web/dist/`. Source launches will remind you if it is missing.
 
-### 2. Launch
+### Launch from source
 
 ```bash
 pip install -r requirements.txt
 python main.py
 ```
 
-This opens a native window titled **ArkPlots** (about 1400×900, resizable). It does **not** open the system browser. The UI is still the existing web front-end.  
-The preferred port is `8765`. If that port is taken, the next free port is used, and the window loads the **actually bound** URL. Closing the window stops the local server.
+By default this opens a **pywebview** window (no system browser). Preferred port is `8765`; if taken, the next free port is used and the window loads the **actually bound** URL. Closing the window stops the local server.
 
-### 3. Common options
+Options (as implemented in `main.py`):
 
 ```bash
 python main.py --port 8765     # preferred port
-python main.py --browser       # open the system browser instead
-python main.py --no-browser    # server only (for the Vite dev proxy)
+python main.py --browser       # system browser instead of native window
+python main.py --no-browser    # server only (for Vite hot reload)
 python main.py --tk            # legacy tkinter UI
 ```
 
-You can also start the server directly (this still opens a browser unless you pass `--no-browser`):
+Or start the server directly (still opens a browser unless you pass `--no-browser`):
 
 ```bash
 python server.py --port 8765 --no-browser
 ```
 
-### Packaged executable
+`server.py` only accepts `--port` and `--no-browser`.
 
-If you use the bundled EXE:
-
-```bash
-./Arkplot_ver1.0.3.exe
-```
-
-Keep `Plotline.json` in the same folder. The Web UI is embedded in the EXE; for source runs you still need `web/dist` from `npm run build`.
-
-To package again (the launch path is ready; you do not have to build an EXE now):
+### Development
 
 ```bash
-pip install -r requirements.txt pyinstaller
-cd web && npm install && npm run build && cd ..
-pyinstaller --noconsole --windowed Arkplot_ver1.0.3.spec
-```
-
-The switch that hides the console is `console=False` in the spec, which is the same as PyInstaller `--noconsole` / `--windowed`. When a `.spec` file is used, that file wins: passing `--noconsole` on the command line does not override it. The target PC needs the Edge WebView2 runtime (already present on most Windows 10/11 systems).
-
----
-
-## Development
-
-Run API and Vite separately for hot reload:
-
-```bash
-# Terminal 1: API (default port 8765)
+# Terminal 1: API (default 8765)
 python server.py --no-browser
 
 # Terminal 2: Vite (proxies /api → 8765)
@@ -117,11 +120,9 @@ cd web
 npm run dev
 ```
 
----
+### Data fields
 
-## Data
-
-### Plotline.json
+#### Plotline.json
 
 Story entries in release order. Common fields:
 
@@ -130,55 +131,55 @@ Story entries in release order. Common fields:
 | `id` | Unique id |
 | `name` | Story title (Chinese in the file; display can be localized) |
 | `date` | Release date (`YYYY-MM-DD`, CN server) |
-| `class` | Type code: `main` / `sidestory` / `interlude` / `ministory` / `manga` / `anime` / `rougelike` / `RA` / `other` |
+| `class` | Type: `main` / `sidestory` / `interlude` / `ministory` / `manga` / `anime` / `rougelike` / `RA` / `other` |
 | `country` | Related nation / region |
 | `new_operator` | Concurrent operators |
 | `plot_stage` | Story stage |
 | `related_power` | Related factions |
-| `related_plot` | Related tags (e.g. Originium, Feranmut) |
+| `related_plot` | Related tags |
 | `description` | Description text |
 | `necessary_plot` | Required prerequisites (may include `id`, `reason`, optional `reason_en`) |
 | `optional_plot` | Optional prerequisites |
 | `Videos` | Related videos |
 
-### Read_record.json
+#### Read_record.json
 
-Keys are story `id`s (strings). Values are read-status codes: `未读` | `计划读` | `正在读` | `已读`.  
-**Note:** These Chinese codes are stable in the data layer. Switching the UI language only changes labels; it does not rewrite the file.
+Keys are story `id`s (strings). Values: `未读` | `计划读` | `正在读` | `已读`.  
+These Chinese codes are stable in the data layer. Switching the UI language only changes labels; it does not rewrite the file.
 
----
+### Internationalization
 
-## Internationalization
+- Default locale: `zh-CN`; also ships `en-US`. Preference in `localStorage` (`arkplots.locale`)
+- UI strings: `web/src/i18n/locales/`; content maps: `web/src/i18n/content/`
+- Translations were drafted with Cursor using Moegirl Wiki and **may not be fully accurate**—please open an issue or PR if you spot mistakes
 
-- Default locale: `zh-CN`; also ships `en-US`
-- Preference is stored in `localStorage` (`arkplots.locale`)
-- UI strings: `web/src/i18n/locales/`
-- Content maps (plot titles, nations, factions, operators, related tags): `web/src/i18n/content/`
-- **Translations were drafted with Cursor using Moegirl Wiki and may not be fully accurate.** Please open an issue or PR if you spot mistakes.
+To add a language: add a pack under `locales/` → register in `localeRegistry` in `locales/index.ts` → optionally add `content/` maps → `npm run build`.
 
-### Adding a language
+### Packaging the exe (no console)
 
-1. Add a message pack under `web/src/i18n/locales/` (same shape as `zh-CN.ts`)
-2. Register it in `localeRegistry` in `locales/index.ts`
-3. Optionally add content maps under `web/src/i18n/content/`
-4. Run `npm run build` again
+```bash
+pip install -r requirements.txt pyinstaller
+cd web && npm install && npm run build && cd ..
+pyinstaller --noconfirm --clean Arkplot_ver1.0.4.spec
+```
 
-The language switcher lists registered locales automatically.
+Output name: `Arkplot_ver1.0.4.exe`. `Plotline.json` / `Read_record.json` are **not** bundled; they are read from the folder that contains the exe.
 
----
+Hiding the console is controlled by `console=False` in the spec (same idea as `--noconsole` / `--windowed`). When a `.spec` is used, that file wins—passing `--noconsole` on the CLI does not override it. The target PC needs Edge WebView2 (already present on most Windows 10/11 systems).
 
-## Project layout
+### Project layout
 
 ```
 ArkPlots/
 ├── Plotline.json          # Story data
 ├── Read_record.json       # Reading progress
 ├── main.py                # Launcher (native window by default; --browser / --tk optional)
-├── requirements.txt       # pywebview
+├── requirements.txt       # pywebview, etc.
 ├── server.py              # Local HTTP API + static files
-├── web/                   # Vite + React + TypeScript frontend
+├── Arkplot_ver1.0.4.spec  # PyInstaller config (console=False)
+├── web/                   # Vite + React + TypeScript
 │   ├── src/i18n/          # UI & content i18n
-│   └── dist/              # Build output (from npm run build)
+│   └── dist/              # Build output
 ├── README.md              # Chinese README
 └── README.en.md           # This file
 ```
@@ -187,28 +188,3 @@ API sketch:
 
 - `GET /api/plots` — plotline data
 - `GET /api/records` / `PUT /api/records` — reading records
-
----
-
-## Author & contact
-
-- GitHub: [@ApodidaeDeSwift](https://github.com/ApodidaeDeSwift)
-- WeChat: `Quantumaster233`
-- QQ: `3195582616`
-- Bilibili: [space.bilibili.com/281039105](https://space.bilibili.com/281039105)
-
----
-
-## Support
-
-If ArkPlots helps you, feel free to buy the author a Mixue drink (蜜雪冰城):
-
-![Support](coffee.png)
-
-Thank you!
-
----
-
-## License & disclaimer
-
-This is a personal learning and organizing tool. *Arknights* and related text/settings belong to Hypergryph and other rights holders. Data and UI in this repo are for study and non-commercial sharing only. Issues and PRs on GitHub are welcome.
