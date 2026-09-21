@@ -143,6 +143,28 @@ export type Messages = {
   lang: {
     label: string
   }
+  settings: {
+    title: string
+    open: string
+    display: string
+    showCover: string
+    showReason: string
+    showNecessary: string
+    showOptional: string
+  }
+  version: {
+    label: string
+    current: string
+    check: string
+    unavailable: string
+  }
+  support: {
+    title: string
+    open: string
+    body: string
+    thanks: string
+    imageAlt: string
+  }
 }
 
 export type TranslateParams = Record<string, string | number>
@@ -169,3 +191,6 @@ export type MessageKey =
   | `recommend.${keyof Messages['recommend']}`
   | `video.${keyof Messages['video']}`
   | `lang.${keyof Messages['lang']}`
+  | `settings.${keyof Messages['settings']}`
+  | `version.${keyof Messages['version']}`
+  | `support.${keyof Messages['support']}`

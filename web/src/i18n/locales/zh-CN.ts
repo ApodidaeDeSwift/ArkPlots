@@ -130,6 +130,28 @@ const zhCN: Messages = {
   lang: {
     label: '语言',
   },
+  settings: {
+    title: '设置',
+    open: '设置',
+    display: '显示内容',
+    showCover: '显示宣传图',
+    showReason: '显示原因',
+    showNecessary: '显示必要前置',
+    showOptional: '显示可选前置',
+  },
+  version: {
+    label: '版本',
+    current: '当前版本 {version}',
+    check: '检查更新',
+    unavailable: '暂未开放，即将推出。',
+  },
+  support: {
+    title: '支持我们',
+    open: '支持我们',
+    body: '如果本工具对你有帮助，请作者喝一杯蜜雪冰城。',
+    thanks: '感谢支持。',
+    imageAlt: '支持我们',
+  },
 }
 
 export default zhCN

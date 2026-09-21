@@ -564,6 +564,77 @@ button {
   color: var(--text-dim);
 }
 
+.modal-backdrop-front {
+  z-index: 60;
+}
+
+.settings-section {
+  margin: 0 0 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-section:last-of-type {
+  margin-bottom: 4px;
+}
+
+.settings-section h4 {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.settings-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-checks label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.settings-checks input {
+  accent-color: var(--accent);
+}
+
+.settings-version {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  margin-bottom: 10px;
+}
+
+.settings-note {
+  margin-top: 8px;
+  color: var(--warn);
+  font-size: 0.82rem;
+}
+
+.support-copy,
+.support-thanks {
+  margin: 0 0 8px;
+  line-height: 1.55;
+}
+
+.support-thanks {
+  color: var(--text-dim);
+}
+
+.support-image {
+  display: block;
+  width: min(280px, 100%);
+  margin: 4px auto 0;
+  border: 1px solid var(--line);
+}
+
 @media (max-width: 1100px) {
   .workspace {
     grid-template-columns: 1fr;

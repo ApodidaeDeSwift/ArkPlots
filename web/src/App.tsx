@@ -7,6 +7,7 @@ import { LanguageSwitcher } from './components/LanguageSwitcher'
 import { MultiSelectModal } from './components/MultiSelectModal'
 import { PlotList } from './components/PlotList'
 import { RecommendPanel } from './components/RecommendPanel'
+import { SettingsModal } from './components/SettingsModal'
 import { StatusModal } from './components/StatusModal'
 import { VideoModal } from './components/VideoModal'
 import {
@@ -18,6 +19,11 @@ import {
   useRelatedPlotTagLabel,
   useT,
 } from './i18n'
+import {
+  loadDisplaySettings,
+  saveDisplaySettings,
+  type DisplaySettings,
+} from './settings'
 import type { Filters, PlotItem, ReadStatus } from './types'
 import { parseVideos } from './types'
 import './styles/theme.css'
@@ -64,10 +70,10 @@ export default function App() {
   const [historyPos, setHistoryPos] = useState(-1)
   const [suppressHistory, setSuppressHistory] = useState(false)
 
-  const [showNecessary, setShowNecessary] = useState(true)
-  const [showOptional, setShowOptional] = useState(true)
-  const [showReason, setShowReason] = useState(true)
-  const [showCover, setShowCover] = useState(true)
+  const [displaySettings, setDisplaySettings] = useState<DisplaySettings>(() =>
+    loadDisplaySettings(),
+  )
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const [selector, setSelector] = useState<SelectorKey | null>(null)
   const [statusModal, setStatusModal] = useState<'single' | 'batch' | null>(null)
@@ -132,6 +138,11 @@ export default function App() {
     },
     [historyPos, suppressHistory],
   )
+
+  const updateDisplaySettings = (next: DisplaySettings) => {
+    setDisplaySettings(next)
+    saveDisplaySettings(next)
+  }
 
   const applyFilters = () => {
     const next: Filters = {
@@ -366,6 +377,9 @@ export default function App() {
           >
             {t('actions.refreshData')}
           </button>
+          <button type="button" className="btn" onClick={() => setSettingsOpen(true)}>
+            {t('settings.open')}
+          </button>
         </div>
       </header>
 
@@ -423,14 +437,10 @@ export default function App() {
               onBack={historyBack}
               onForward={historyForward}
               onJump={jumpTo}
-              showNecessary={showNecessary}
-              showOptional={showOptional}
-              showReason={showReason}
-              showCover={showCover}
-              onToggleNecessary={setShowNecessary}
-              onToggleOptional={setShowOptional}
-              onToggleReason={setShowReason}
-              onToggleCover={setShowCover}
+              showNecessary={displaySettings.showNecessary}
+              showOptional={displaySettings.showOptional}
+              showReason={displaySettings.showReason}
+              showCover={displaySettings.showCover}
             />
           </div>
         </section>
@@ -501,6 +511,14 @@ export default function App() {
             }
             void persistRecords(next)
           }}
+        />
+      )}
+
+      {settingsOpen && (
+        <SettingsModal
+          settings={displaySettings}
+          onChange={updateDisplaySettings}
+          onClose={() => setSettingsOpen(false)}
         />
       )}
 
