@@ -28,10 +28,6 @@ type Props = {
   showOptional: boolean
   showReason: boolean
   showCover: boolean
-  onToggleNecessary: (v: boolean) => void
-  onToggleOptional: (v: boolean) => void
-  onToggleReason: (v: boolean) => void
-  onToggleCover: (v: boolean) => void
 }
 
 function resolveCoverSrc(item: PlotItem, covers: Record<string, string>): string | null {
@@ -58,10 +54,6 @@ export function DetailPanel({
   showOptional,
   showReason,
   showCover,
-  onToggleNecessary,
-  onToggleOptional,
-  onToggleReason,
-  onToggleCover,
 }: Props) {
   const t = useT()
   const { locale } = useI18n()
@@ -138,40 +130,6 @@ export function DetailPanel({
           ↪
         </button>
         <span className="filter-label">{t('detail.history')}</span>
-      </div>
-      <div className="toggles">
-        <label>
-          <input
-            type="checkbox"
-            checked={showNecessary}
-            onChange={(e) => onToggleNecessary(e.target.checked)}
-          />{' '}
-          {t('detail.necessary')}
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={showOptional}
-            onChange={(e) => onToggleOptional(e.target.checked)}
-          />{' '}
-          {t('detail.optional')}
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={showReason}
-            onChange={(e) => onToggleReason(e.target.checked)}
-          />{' '}
-          {t('detail.showReason')}
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={showCover}
-            onChange={(e) => onToggleCover(e.target.checked)}
-          />{' '}
-          {t('detail.showCover')}
-        </label>
       </div>
       <h2 className="detail-title">{titleName}</h2>
       {showCoverImg && (

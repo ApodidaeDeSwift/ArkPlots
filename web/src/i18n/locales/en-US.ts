@@ -132,6 +132,28 @@ const enUS: Messages = {
   lang: {
     label: 'Language',
   },
+  settings: {
+    title: 'Settings',
+    open: 'Settings',
+    display: 'Display',
+    showCover: 'Show promo art',
+    showReason: 'Show reasons',
+    showNecessary: 'Show required prerequisites',
+    showOptional: 'Show optional prerequisites',
+  },
+  version: {
+    label: 'Version',
+    current: 'Current version {version}',
+    check: 'Check for updates',
+    unavailable: 'Not available yet. Coming soon.',
+  },
+  support: {
+    title: 'Support us',
+    open: 'Support us',
+    body: 'If ArkPlots helps you, feel free to buy the author a Mixue drink (蜜雪冰城).',
+    thanks: 'Thank you for your support.',
+    imageAlt: 'Support us',
+  },
 }
 
 export default enUS
