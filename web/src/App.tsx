@@ -316,28 +316,24 @@ export default function App() {
           <button
             type="button"
             className="btn"
-            onClick={() => {
-              setMultiMode((v) => !v)
-              setSelectedIds(new Set())
-            }}
-          >
-            {multiMode ? t('actions.cancelMultiSelect') : t('actions.multiSelect')}
-          </button>
-          <button
-            type="button"
-            className="btn"
-            onClick={() => setStatusModal('single')}
-            disabled={!activeId}
+            onClick={() => setStatusModal(multiMode ? 'batch' : 'single')}
+            disabled={multiMode ? !selectedIds.size : !activeId}
           >
             {t('actions.setReadStatus')}
           </button>
           <button
             type="button"
             className="btn"
-            onClick={() => setStatusModal('batch')}
-            disabled={!selectedIds.size}
+            onClick={() => {
+              if (multiMode) {
+                setMultiMode(false)
+                setSelectedIds(new Set())
+              } else {
+                setMultiMode(true)
+              }
+            }}
           >
-            {t('actions.batchSet')}
+            {multiMode ? t('actions.cancelMultiSelect') : t('actions.batchSet')}
           </button>
           <button
             type="button"
