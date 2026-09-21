@@ -7289,7 +7289,13 @@
       "new_operator": [],
       "related_plot": [],
       "related_power": [],
-      "necessary_plot": [],
+      "necessary_plot": [
+        {
+          "id": 8,
+          "reason": "该活动主要发生在汐斯塔",
+          "reason_en": "This activity mainly takes place in Siesta"
+        }
+      ],
       "optional_plot": [],
       "Videos": [
         {
