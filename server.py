@@ -139,6 +139,15 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:
+        try:
+            self._do_GET()
+        except Exception as exc:
+            try:
+                self._send_json(500, {"error": str(exc)})
+            except Exception:
+                pass
+
+    def _do_GET(self) -> None:
         parsed = urlparse(self.path)
         path = parsed.path
 
@@ -308,6 +317,33 @@ def run_server(port: int = DEFAULT_PORT, open_browser: bool = True) -> Threading
     return server
 
 
+def _probe_health(host: str, port: int, timeout: float = 0.35) -> bool:
+    """True if something on host:port already answers ArkPlots /api/health."""
+    import urllib.error
+    import urllib.request
+
+    url = f"http://{host}:{port}/api/health"
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            if getattr(resp, "status", 200) != 200:
+                return False
+            body = resp.read(64)
+            return b'"ok"' in body or b"true" in body
+    except (OSError, urllib.error.URLError, ValueError):
+        return False
+
+
+def _tcp_accepts(host: str, port: int, timeout: float = 0.25) -> bool:
+    """True if a TCP connect to host:port succeeds (listener present)."""
+    import socket
+
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
 def _bind_server(
     preferred_port: int,
     host: str = "127.0.0.1",
@@ -317,12 +353,23 @@ def _bind_server(
 
     The returned port is the one the socket actually got (important when the
     caller asked for port 0, or when the OS remaps the bind).
+
+    Ports that accept TCP but do not answer /api/health are treated as dead
+    listeners (common cause of ERR_EMPTY_RESPONSE) and skipped when possible.
     """
     last_error: OSError | None = None
     for offset in range(max(1, tries)):
         port = preferred_port + offset
         if port > 65535:
             break
+        # Skip zombie listeners that accept then close with no HTTP body.
+        if _tcp_accepts(host, port) and not _probe_health(host, port):
+            print(
+                f"Port {port} accepts connections but is not a healthy ArkPlots server; skipping.\n"
+                f"端口 {port} 可连接但无有效响应（可能是残留进程），已跳过。"
+            )
+            last_error = OSError(f"port {port} has a dead/foreign listener")
+            continue
         try:
             server = ThreadingHTTPServer((host, port), ArkPlotsHandler)
             server.daemon_threads = True

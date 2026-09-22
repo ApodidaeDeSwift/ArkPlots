@@ -1640,13 +1640,20 @@ def _wait_until_ready(url: str, timeout: float = 5.0) -> None:
 
     health = url.rstrip("/") + "/api/health"
     deadline = time.monotonic() + timeout
+    last_error: Exception | None = None
     while time.monotonic() < deadline:
         try:
             with urllib.request.urlopen(health, timeout=0.4) as resp:
                 if getattr(resp, "status", 200) == 200:
                     return
-        except (OSError, urllib.error.URLError):
+        except (OSError, urllib.error.URLError) as exc:
+            last_error = exc
             time.sleep(0.05)
+    detail = f" ({last_error})" if last_error else ""
+    raise RuntimeError(
+        f"Local server did not become ready at {health} within {timeout:.0f}s{detail}.\n"
+        f"本地服务未在 {timeout:.0f} 秒内就绪：{health}"
+    )
 
 
 def _open_webview(url: str) -> None:
