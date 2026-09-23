@@ -1,4 +1,5 @@
 import type { LocaleCode } from '../types'
+import { chaptersEnUS } from './chapters.en-US'
 import { countriesEnUS } from './countries.en-US'
 import { operatorsEnUS } from './operators.en-US'
 import { plotNamesEnUS } from './plotNames.en-US'
@@ -27,6 +28,10 @@ const operatorPacks: Record<string, Record<string, string>> = {
 
 const relatedPlotPacks: Record<string, Record<string, string>> = {
   'en-US': relatedPlotsEnUS,
+}
+
+const chapterPacks: Record<string, Record<string, string>> = {
+  'en-US': chaptersEnUS,
 }
 
 function resolveFromPack(
@@ -69,6 +74,10 @@ export function resolveRelatedPlotTag(
   raw: string | null | undefined,
 ): string {
   return resolveFromPack(relatedPlotPacks, locale, raw)
+}
+
+export function resolveChapter(locale: LocaleCode, raw: string | null | undefined): string {
+  return resolveFromPack(chapterPacks, locale, raw)
 }
 
 export function mapTerms(

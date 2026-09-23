@@ -80,6 +80,7 @@ const enUS: Messages = {
     type: 'Type',
     date: 'Date',
     stage: 'Stage',
+    chapter: 'Chapter',
     country: 'Nation',
     power: 'Faction',
     relatedPlot: 'Related plot',

@@ -164,6 +164,10 @@ export function DetailPanel({
           <span>{item.plot_stage ?? dash}</span>
         </div>
         <div>
+          <span>{t('detail.chapter')}</span>
+          <span>{lists.chapter(item.chapter) || dash}</span>
+        </div>
+        <div>
           <span>{t('detail.country')}</span>
           <span>
             {lists.countries(normalizeList(item.country), sep) || dash}

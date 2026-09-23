@@ -94,6 +94,7 @@ export type Messages = {
     type: string
     date: string
     stage: string
+    chapter: string
     country: string
     power: string
     relatedPlot: string
