@@ -14,7 +14,7 @@
 
 ### 下载后怎么用
 
-1. 拿到发布包里的 **`Arkplot_ver26.9.23.1.exe`**，以及同目录下的 **`Plotline.json`**（剧情数据）。
+1. 拿到发布包里的 **`Arkplot_ver26.9.23.2.exe`**，以及同目录下的 **`Plotline.json`**（剧情数据）。
 2. 双击 exe 即可。会打开标题为 **ArkPlots** 的独立窗口（约 1400×900，可调大小），**不会**弹出命令行黑框，也**不会**强制打开系统浏览器。
 3. 关闭窗口即退出；阅读进度会写回同目录的 `Read_record.json`。
 
@@ -157,15 +157,19 @@ npm run dev
 
 ### 打包 exe（无命令行窗口）
 
+版本号写在仓库根目录的 `app_info.py`（`VERSION`）。一键打包：
+
 ```bash
 pip install -r requirements.txt pyinstaller
-cd web && npm install && npm run build && cd ..
-pyinstaller --noconfirm --clean Arkplot_ver26.9.23.1.spec
+cd web && npm install && cd ..
+python packaging/build_release.py
 ```
 
-产物名：`Arkplot_ver26.9.23.1.exe`。`Plotline.json` / `Read_record.json` **不**打进包，运行时从 exe 所在目录读取。
+脚本会：同步 `web/src/version.ts` → 构建前端 → 用 `packaging/ArkPlots.spec` 打出稳定名 `dist/ArkPlots.exe` → 再复制为分发名 `Arkplot_ver{VERSION}.exe`。
 
-无控制台黑框由 spec 里的 `console=False` 决定（等同 `--noconsole` / `--windowed`）。使用 `.spec` 时以文件为准，命令行再写 `--noconsole` 不会覆盖它。目标机需 Edge WebView2（Win10/11 通常已有）。
+`Plotline.json` / `Read_record.json` **不**打进包，运行时从 exe 所在目录读取。无控制台黑框由 spec 的 `console=False` 决定。目标机需 Edge WebView2（Win10/11 通常已有）。
+
+后续做自动更新时：配置 `app_info.UPDATE_MANIFEST_URL`，客户端可通过 `GET /api/version` 读取当前版本与清单地址。
 
 ### 项目结构
 
@@ -176,7 +180,9 @@ ArkPlots/
 ├── main.py                # 启动器（默认独立窗口；--browser / --tk 可选）
 ├── requirements.txt       # pywebview 等
 ├── server.py              # 本地 HTTP API + 静态资源
-├── Arkplot_ver26.9.23.1.spec  # PyInstaller 配置（console=False）
+├── app_info.py            # 版本号 / 更新元数据
+├── packaging/ArkPlots.spec # PyInstaller（console=False）
+├── packaging/build_release.py
 ├── web/                   # Vite + React + TypeScript
 │   ├── src/i18n/          # 界面与内容国际化
 │   └── dist/              # 构建输出
@@ -188,3 +194,5 @@ API 概要：
 
 - `GET /api/plots` — 剧情数据
 - `GET /api/records` / `PUT /api/records` — 阅读记录
+- `GET /api/version` — 版本与更新元数据
+- `GET /api/health` — 健康检查

@@ -5,6 +5,8 @@ Serves:
   GET  /api/plots     -> Plotline.json
   GET  /api/records   -> Read_record.json
   PUT  /api/records   -> write Read_record.json (JSON body)
+  GET  /api/version   -> app identity / version (for UI + future updates)
+  GET  /api/health    -> liveness
   static files from web/dist (production UI)
 """
 from __future__ import annotations
@@ -25,6 +27,12 @@ if sys.stdout is None:
     sys.stdout = open(os.devnull, "w", encoding="utf-8", errors="replace")
 if sys.stderr is None:
     sys.stderr = open(os.devnull, "w", encoding="utf-8", errors="replace")
+
+try:
+    from app_info import version_payload
+except ImportError:  # pragma: no cover - extremely old checkouts
+    def version_payload() -> Dict[str, Any]:
+        return {"name": "ArkPlots", "version": "0.0.0", "channel": "dev"}
 
 
 def get_app_dir() -> str:
@@ -168,6 +176,10 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
 
         if path == "/api/health":
             self._send_json(200, {"ok": True})
+            return
+
+        if path == "/api/version":
+            self._send_json(200, version_payload())
             return
 
         # SPA fallback: serve index.html for non-file routes when dist exists

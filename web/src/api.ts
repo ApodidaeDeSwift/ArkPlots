@@ -1,5 +1,14 @@
 import type { PlotlineFile } from './types'
 
+export type AppVersionInfo = {
+  name?: string
+  version: string
+  channel?: string
+  exe_stem?: string
+  release_exe?: string
+  update_manifest_url?: string | null
+}
+
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, init)
   if (!res.ok) {
@@ -21,6 +30,15 @@ export function fetchPlots() {
 
 export function fetchRecords() {
   return jsonFetch<Record<string, string>>('/api/records')
+}
+
+/** Runtime version from the local server (preferred over the build-time constant). */
+export async function fetchVersion(): Promise<AppVersionInfo | null> {
+  try {
+    return await jsonFetch<AppVersionInfo>('/api/version', { cache: 'no-store' })
+  } catch {
+    return null
+  }
 }
 
 /** id -> relative path under site root (e.g. covers/12.png). Missing file => {}. */

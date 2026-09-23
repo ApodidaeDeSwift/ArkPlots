@@ -14,7 +14,7 @@ If you find it useful, a ⭐ on GitHub is always appreciated.
 
 ### After you download
 
-1. Keep **`Arkplot_ver26.9.23.1.exe`** and **`Plotline.json`** (story data) in the **same folder**.
+1. Keep **`Arkplot_ver26.9.23.2.exe`** and **`Plotline.json`** (story data) in the **same folder**.
 2. Double-click the exe. It opens a native window titled **ArkPlots** (about 1400×900, resizable). There is **no** console / command-line window, and it does **not** force open your system browser.
 3. Closing the window exits the app. Progress is saved to `Read_record.json` in that same folder.
 
@@ -157,15 +157,19 @@ To add a language: add a pack under `locales/` → register in `localeRegistry` 
 
 ### Packaging the exe (no console)
 
+Bump `VERSION` in root `app_info.py`, then:
+
 ```bash
 pip install -r requirements.txt pyinstaller
-cd web && npm install && npm run build && cd ..
-pyinstaller --noconfirm --clean Arkplot_ver26.9.23.1.spec
+cd web && npm install && cd ..
+python packaging/build_release.py
 ```
 
-Output name: `Arkplot_ver26.9.23.1.exe`. `Plotline.json` / `Read_record.json` are **not** bundled; they are read from the folder that contains the exe.
+This syncs `web/src/version.ts`, builds the UI, runs `packaging/ArkPlots.spec` to produce stable `dist/ArkPlots.exe`, and copies the distribution alias `Arkplot_ver{VERSION}.exe`.
 
-Hiding the console is controlled by `console=False` in the spec (same idea as `--noconsole` / `--windowed`). When a `.spec` is used, that file wins—passing `--noconsole` on the CLI does not override it. The target PC needs Edge WebView2 (already present on most Windows 10/11 systems).
+`Plotline.json` / `Read_record.json` are **not** bundled. No console window (`console=False`). Edge WebView2 required.
+
+For future auto-updates: set `app_info.UPDATE_MANIFEST_URL`; clients can read `GET /api/version`.
 
 ### Project layout
 
@@ -176,7 +180,9 @@ ArkPlots/
 ├── main.py                # Launcher (native window by default; --browser / --tk optional)
 ├── requirements.txt       # pywebview, etc.
 ├── server.py              # Local HTTP API + static files
-├── Arkplot_ver26.9.23.1.spec  # PyInstaller config (console=False)
+├── app_info.py            # version / update metadata
+├── packaging/ArkPlots.spec # PyInstaller (console=False)
+├── packaging/build_release.py
 ├── web/                   # Vite + React + TypeScript
 │   ├── src/i18n/          # UI & content i18n
 │   └── dist/              # Build output
@@ -188,3 +194,5 @@ API sketch:
 
 - `GET /api/plots` — plotline data
 - `GET /api/records` / `PUT /api/records` — reading records
+- `GET /api/version` — version / update metadata
+- `GET /api/health` — health check

@@ -38,9 +38,9 @@ MANIFEST
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
-# Ignore ad-hoc / temp specs; keep tracked release specs (Arkplot_*.spec).
+# Ignore ad-hoc / temp specs; keep the stable packaging spec only.
 *.spec
-!Arkplot_*.spec
+!packaging/ArkPlots.spec
 
 # Installer logs
 pip-log.txt
@@ -235,9 +235,17 @@ _import_missing_covers.py
 # Local PyInstaller / package leftovers (build/ and root dist/ already ignored)
 *.spec.bak
 AppVer/
+Earlier_ver/
 
-# Do NOT ignore root release binaries Arkplot_*.exe (may be committed for distribution).
-# Intermediate onefile output still lands under dist/ which is already ignored.
+# Release / packaging outputs — distribute outside git; rebuild via packaging/build_release.py
+Arkplot_*.exe
+ArkPlots.exe
+# Legacy per-version specs at repo root are covered by *.spec + /Arkplot_*.spec above.
+
+# Scratch from ad-hoc scripts
+_tmp_*.py
+_tmp_*.txt
+_tmp_*.json
 
 # Misc local junk unrelated to runtime
 .DS_Store

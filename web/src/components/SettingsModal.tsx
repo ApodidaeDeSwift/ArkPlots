@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { fetchVersion } from '../api'
 import { useT } from '../i18n'
 import type { DisplaySettings } from '../settings'
 import { APP_VERSION } from '../version'
@@ -13,6 +14,19 @@ export function SettingsModal({ settings, onChange, onClose }: Props) {
   const t = useT()
   const [updateNote, setUpdateNote] = useState(false)
   const [supportOpen, setSupportOpen] = useState(false)
+  const [versionLabel, setVersionLabel] = useState(APP_VERSION)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const info = await fetchVersion()
+      if (cancelled) return
+      if (info?.version) setVersionLabel(String(info.version))
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const toggle = (key: keyof DisplaySettings) => {
     onChange({ ...settings, [key]: !settings[key] })
@@ -70,7 +84,7 @@ export function SettingsModal({ settings, onChange, onClose }: Props) {
           <section className="settings-section">
             <h4>{t('version.label')}</h4>
             <div className="settings-version">
-              {t('version.current', { version: APP_VERSION })}
+              {t('version.current', { version: versionLabel })}
             </div>
             <button type="button" className="btn" onClick={() => setUpdateNote(true)}>
               {t('version.check')}

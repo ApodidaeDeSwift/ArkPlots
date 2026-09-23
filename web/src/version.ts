@@ -1,2 +1,2 @@
-/** App release version. Bump this constant when shipping. */
-export const APP_VERSION = '26.9.21.1'
+/** App release version — generated/synced from app_info.py by build_release.py. */
+export const APP_VERSION = '26.9.23.2'
