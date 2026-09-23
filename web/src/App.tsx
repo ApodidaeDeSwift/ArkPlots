@@ -11,6 +11,7 @@ import { SettingsModal } from './components/SettingsModal'
 import { StatusModal } from './components/StatusModal'
 import { VideoModal } from './components/VideoModal'
 import {
+  useChapterLabel,
   useClassLabel,
   useCountryLabel,
   useOperatorLabel,
@@ -28,7 +29,7 @@ import type { Filters, PlotItem, ReadStatus } from './types'
 import { parseVideos } from './types'
 import './styles/theme.css'
 
-type SelectorKey = 'class' | 'country' | 'stage' | 'power' | 'rplot'
+type SelectorKey = 'class' | 'country' | 'stage' | 'power' | 'rplot' | 'chapter'
 
 function composeDate(y: string, m: string, d: string): string | null {
   if (!y) return null
@@ -45,6 +46,7 @@ export default function App() {
   const countryLabel = useCountryLabel()
   const powerLabel = usePowerLabel()
   const relatedPlotTagLabel = useRelatedPlotTagLabel()
+  const chapterLabel = useChapterLabel()
   const operatorLabel = useOperatorLabel()
   const plotName = usePlotName()
   const [plots, setPlots] = useState<PlotItem[]>([])
@@ -300,6 +302,15 @@ export default function App() {
           mode: filters.rplot_mode || 'any',
           resolveLabel: relatedPlotTagLabel as (opt: string) => string,
         }
+      case 'chapter':
+        return {
+          title: t('selector.chapter'),
+          options: options.chapters,
+          selected: filters.chapter || [],
+          showMode: false,
+          mode: 'any' as const,
+          resolveLabel: chapterLabel as (opt: string) => string,
+        }
       default:
         return null
     }
@@ -489,6 +500,11 @@ export default function App() {
                 ...f,
                 related_plot: next,
                 rplot_mode: mode || 'any',
+              }))
+            } else if (selector === 'chapter') {
+              setFilters((f) => ({
+                ...f,
+                chapter: next,
               }))
             }
           }}

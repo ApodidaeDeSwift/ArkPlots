@@ -57,6 +57,7 @@ export type Messages = {
     class: string
     country: string
     stage: string
+    chapter: string
     relatedPower: string
     relatedPlot: string
     operator: string
@@ -70,6 +71,7 @@ export type Messages = {
     class: string
     country: string
     stage: string
+    chapter: string
     power: string
     rplot: string
   }

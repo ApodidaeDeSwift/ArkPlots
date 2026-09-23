@@ -64,6 +64,7 @@ export type Filters = {
   power_mode?: 'any' | 'all'
   related_plot?: string[]
   rplot_mode?: 'any' | 'all'
+  chapter?: string[]
 }
 
 /**

@@ -86,7 +86,44 @@ export function matchesFilters(
     }
   }
 
+  const chapters = filters.chapter
+  if (chapters && chapters.length) {
+    const ch = (item.chapter || '').trim()
+    if (!ch || !chapters.includes(ch)) return false
+  }
+
   return true
+}
+
+/** Preferred display order for 章节所属 (曲谱乐章). Unknown values sort after. */
+const CHAPTER_ORDER = [
+  '为了明日·觉醒',
+  '为了明日·幻灭',
+  '为了明日·残阳',
+  '为了明日·裂变',
+  '方舟',
+  '燎原',
+  '那被祝福的',
+  '山雪与银铁',
+  '七丘的新芽',
+  '霓虹之下',
+  '岁岁今朝',
+  '摘取未来之人',
+  '自海渊的一瞥',
+  '高塔迷影',
+  '薪火重燃',
+  '夏日律动',
+  '泰拉奇谈',
+]
+
+function sortChapters(values: string[]): string[] {
+  const rank = new Map(CHAPTER_ORDER.map((c, i) => [c, i]))
+  return [...values].sort((a, b) => {
+    const ra = rank.has(a) ? rank.get(a)! : CHAPTER_ORDER.length
+    const rb = rank.has(b) ? rank.get(b)! : CHAPTER_ORDER.length
+    if (ra !== rb) return ra - rb
+    return a.localeCompare(b, 'zh-CN')
+  })
 }
 
 export function collectFilterOptions(plots: PlotItem[]) {
@@ -95,6 +132,7 @@ export function collectFilterOptions(plots: PlotItem[]) {
   const stages = new Set<number>()
   const powers = new Set<string>()
   const rplots = new Set<string>()
+  const chapters = new Set<string>()
   const years = new Set<number>()
 
   for (const p of plots) {
@@ -106,6 +144,8 @@ export function collectFilterOptions(plots: PlotItem[]) {
     }
     for (const x of normalizeList(p.related_power)) powers.add(x)
     for (const x of normalizeList(p.related_plot)) rplots.add(x)
+    const ch = (p.chapter || '').trim()
+    if (ch) chapters.add(ch)
     if (p.date && p.date.length >= 4) {
       const y = Number(p.date.slice(0, 4))
       if (!Number.isNaN(y)) years.add(y)
@@ -118,6 +158,7 @@ export function collectFilterOptions(plots: PlotItem[]) {
     stages: [...stages].sort((a, b) => a - b),
     powers: [...powers].sort(),
     rplots: [...rplots].sort(),
+    chapters: sortChapters([...chapters]),
     years: [...years].sort((a, b) => a - b),
   }
 }
