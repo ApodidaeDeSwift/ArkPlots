@@ -7,15 +7,18 @@ type Options = {
   stages: number[]
   powers: string[]
   rplots: string[]
+  chapters: string[]
   years: number[]
 }
+
+type SelectorKey = 'class' | 'country' | 'stage' | 'power' | 'rplot' | 'chapter'
 
 type Props = {
   filters: Filters
   options: Options
   operatorDraft: string
   onOperatorDraft: (v: string) => void
-  onOpenSelector: (key: 'class' | 'country' | 'stage' | 'power' | 'rplot') => void
+  onOpenSelector: (key: SelectorKey) => void
   onDateChange: (which: 'start' | 'end', part: 'y' | 'm' | 'd', value: string) => void
   dateParts: {
     start: { y: string; m: string; d: string }
@@ -37,8 +40,16 @@ export function FilterBar({
   const months = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
   const days = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'))
 
-  const countLabel = (labelKey: 'filter.class' | 'filter.country' | 'filter.stage' | 'filter.relatedPower' | 'filter.relatedPlot', n: number) =>
-    t('filter.countLabel', { label: t(labelKey), count: n })
+  const countLabel = (
+    labelKey:
+      | 'filter.class'
+      | 'filter.country'
+      | 'filter.stage'
+      | 'filter.chapter'
+      | 'filter.relatedPower'
+      | 'filter.relatedPlot',
+    n: number,
+  ) => t('filter.countLabel', { label: t(labelKey), count: n })
 
   return (
     <div className="filter-grid">
@@ -141,6 +152,12 @@ export function FilterBar({
         <span className="filter-label">{t('filter.stage')}</span>
         <button type="button" className="btn chip-btn" onClick={() => onOpenSelector('stage')}>
           {countLabel('filter.stage', filters.plot_stage?.length || 0)}
+        </button>
+      </div>
+      <div className="filter-row">
+        <span className="filter-label">{t('filter.chapter')}</span>
+        <button type="button" className="btn chip-btn" onClick={() => onOpenSelector('chapter')}>
+          {countLabel('filter.chapter', filters.chapter?.length || 0)}
         </button>
       </div>
       <div className="filter-row">
