@@ -193,7 +193,7 @@ export function DetailPanel({
         </div>
         <div>
           <span>{t('detail.description')}</span>
-          <span>{item.description || dash}</span>
+          <span className="detail-preline">{item.description || dash}</span>
         </div>
       </div>
       {showNecessary && renderPreplots(item.necessary_plot, t('detail.necessary'))}
