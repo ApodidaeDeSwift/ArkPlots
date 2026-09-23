@@ -1,4 +1,4 @@
-# ArkPlots
+﻿# ArkPlots
 
 **Arknights Plotline Tracker**
 
@@ -14,7 +14,7 @@ If you find it useful, a ⭐ on GitHub is always appreciated.
 
 ### After you download
 
-1. Keep **`Arkplot_ver1.0.4.exe`** and **`Plotline.json`** (story data) in the **same folder**.
+1. Keep **`Arkplot_ver26.9.23.1.exe`** and **`Plotline.json`** (story data) in the **same folder**.
 2. Double-click the exe. It opens a native window titled **ArkPlots** (about 1400×900, resizable). There is **no** console / command-line window, and it does **not** force open your system browser.
 3. Closing the window exits the app. Progress is saved to `Read_record.json` in that same folder.
 
@@ -160,10 +160,10 @@ To add a language: add a pack under `locales/` → register in `localeRegistry` 
 ```bash
 pip install -r requirements.txt pyinstaller
 cd web && npm install && npm run build && cd ..
-pyinstaller --noconfirm --clean Arkplot_ver1.0.4.spec
+pyinstaller --noconfirm --clean Arkplot_ver26.9.23.1.spec
 ```
 
-Output name: `Arkplot_ver1.0.4.exe`. `Plotline.json` / `Read_record.json` are **not** bundled; they are read from the folder that contains the exe.
+Output name: `Arkplot_ver26.9.23.1.exe`. `Plotline.json` / `Read_record.json` are **not** bundled; they are read from the folder that contains the exe.
 
 Hiding the console is controlled by `console=False` in the spec (same idea as `--noconsole` / `--windowed`). When a `.spec` is used, that file wins—passing `--noconsole` on the CLI does not override it. The target PC needs Edge WebView2 (already present on most Windows 10/11 systems).
 
@@ -176,7 +176,7 @@ ArkPlots/
 ├── main.py                # Launcher (native window by default; --browser / --tk optional)
 ├── requirements.txt       # pywebview, etc.
 ├── server.py              # Local HTTP API + static files
-├── Arkplot_ver1.0.4.spec  # PyInstaller config (console=False)
+├── Arkplot_ver26.9.23.1.spec  # PyInstaller config (console=False)
 ├── web/                   # Vite + React + TypeScript
 │   ├── src/i18n/          # UI & content i18n
 │   └── dist/              # Build output

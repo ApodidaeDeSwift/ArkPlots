@@ -1,4 +1,4 @@
-# ArkPlots
+﻿# ArkPlots
 
 **明日方舟剧情线梳理工具**
 
@@ -14,7 +14,7 @@
 
 ### 下载后怎么用
 
-1. 拿到发布包里的 **`Arkplot_ver1.0.4.exe`**，以及同目录下的 **`Plotline.json`**（剧情数据）。
+1. 拿到发布包里的 **`Arkplot_ver26.9.23.1.exe`**，以及同目录下的 **`Plotline.json`**（剧情数据）。
 2. 双击 exe 即可。会打开标题为 **ArkPlots** 的独立窗口（约 1400×900，可调大小），**不会**弹出命令行黑框，也**不会**强制打开系统浏览器。
 3. 关闭窗口即退出；阅读进度会写回同目录的 `Read_record.json`。
 
@@ -160,10 +160,10 @@ npm run dev
 ```bash
 pip install -r requirements.txt pyinstaller
 cd web && npm install && npm run build && cd ..
-pyinstaller --noconfirm --clean Arkplot_ver1.0.4.spec
+pyinstaller --noconfirm --clean Arkplot_ver26.9.23.1.spec
 ```
 
-产物名：`Arkplot_ver1.0.4.exe`。`Plotline.json` / `Read_record.json` **不**打进包，运行时从 exe 所在目录读取。
+产物名：`Arkplot_ver26.9.23.1.exe`。`Plotline.json` / `Read_record.json` **不**打进包，运行时从 exe 所在目录读取。
 
 无控制台黑框由 spec 里的 `console=False` 决定（等同 `--noconsole` / `--windowed`）。使用 `.spec` 时以文件为准，命令行再写 `--noconsole` 不会覆盖它。目标机需 Edge WebView2（Win10/11 通常已有）。
 
@@ -176,7 +176,7 @@ ArkPlots/
 ├── main.py                # 启动器（默认独立窗口；--browser / --tk 可选）
 ├── requirements.txt       # pywebview 等
 ├── server.py              # 本地 HTTP API + 静态资源
-├── Arkplot_ver1.0.4.spec  # PyInstaller 配置（console=False）
+├── Arkplot_ver26.9.23.1.spec  # PyInstaller 配置（console=False）
 ├── web/                   # Vite + React + TypeScript
 │   ├── src/i18n/          # 界面与内容国际化
 │   └── dist/              # 构建输出
