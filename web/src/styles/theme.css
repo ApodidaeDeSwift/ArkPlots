@@ -384,6 +384,10 @@ button {
   font-size: 0.75rem;
 }
 
+.detail-preline {
+  white-space: pre-line;
+}
+
 .preplot-block {
   margin-top: 14px;
   border-top: 1px dashed var(--line);
