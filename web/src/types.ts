@@ -34,6 +34,8 @@ export type PlotItem = {
   related_power?: string | string[]
   related_plot?: string | string[]
   description?: string
+  /** 章节所属（曲谱乐章 / 主题曲篇章），未收录则留空 */
+  chapter?: string
   necessary_plot?: PreplotRef[]
   optional_plot?: PreplotRef[]
   /** Relative path under site root, e.g. covers/12.png — optional; prefer covers.json */

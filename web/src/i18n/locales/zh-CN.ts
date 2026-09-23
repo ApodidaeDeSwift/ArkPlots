@@ -80,6 +80,7 @@ const zhCN: Messages = {
     type: '类型',
     date: '日期',
     stage: '阶段',
+    chapter: '章节所属',
     country: '国家',
     power: '势力',
     relatedPlot: '相关剧情',

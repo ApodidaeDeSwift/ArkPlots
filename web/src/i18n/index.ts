@@ -2,6 +2,7 @@ import type { ReadStatus } from '../types'
 import type { MessageKey } from './types'
 import { useI18n, useT } from './I18nProvider'
 import {
+  resolveChapter,
   resolveCountry,
   resolveOperator,
   resolvePlotName,
@@ -13,6 +14,7 @@ export { I18nProvider, useI18n, useT } from './I18nProvider'
 export { DEFAULT_LOCALE, listLocales, localeRegistry, resolveLocale } from './locales'
 export type { LocaleCode, MessageKey, Messages, TranslateParams, Translator } from './types'
 export {
+  resolveChapter,
   resolveCountry,
   resolveOperator,
   resolvePlotName,
@@ -84,17 +86,24 @@ export function useRelatedPlotTagLabel() {
   return (raw: string | null | undefined) => resolveRelatedPlotTag(locale, raw)
 }
 
+export function useChapterLabel() {
+  const { locale } = useI18n()
+  return (raw: string | null | undefined) => resolveChapter(locale, raw)
+}
+
 /** Join helper that localizes each token then joins. */
 export function useLocalizedList() {
   const country = useCountryLabel()
   const power = usePowerLabel()
   const operator = useOperatorLabel()
   const related = useRelatedPlotTagLabel()
+  const chapter = useChapterLabel()
   return {
     countries: (vals: string[], sep = ', ') => vals.map(country).join(sep),
     powers: (vals: string[], sep = ', ') => vals.map(power).join(sep),
     operators: (vals: string[], sep = ', ') => vals.map(operator).join(sep),
     relatedPlots: (vals: string[], sep = ', ') => vals.map(related).join(sep),
+    chapter: (raw: string | null | undefined) => chapter(raw),
   }
 }
 
