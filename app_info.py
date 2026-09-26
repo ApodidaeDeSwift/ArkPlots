@@ -2,8 +2,8 @@
 """ArkPlots application identity and release metadata.
 
 Single source of truth for packaging and runtime (``/api/version``).
-Bump ``VERSION`` when shipping. In-app updates read the floating GitHub
-release tag ``UPDATE_RELEASE_TAG`` (``APP版本``).
+Bump ``VERSION`` when shipping. In-app updates scan GitHub tags matching
+``APP_Ver*`` (e.g. ``APP_Ver26.9.26.2``) and pick the newest version.
 """
 from __future__ import annotations
 
@@ -15,21 +15,26 @@ APP_NAME = "ArkPlots"
 # Stable executable stem used by PyInstaller (in-place updater replaces this file).
 EXE_STEM = "ArkPlots"
 
-# Semver-like calendar build: YY.M.D.build  (e.g. 26.9.23.2)
-VERSION = "26.9.26.1"
+# Semver-like calendar build: YY.M.D.build  (e.g. 26.9.26.2 = 2026-09-26 #2)
+VERSION = "26.9.26.2"
 
-# Release channel label for update manifests / GitHub floating tag.
+# Release channel label.
 CHANNEL = "release"
 
-# Floating GitHub release tag used by the in-app updater (APP desktop builds).
+# GitHub repo + APP desktop tag prefix used by the in-app updater.
 GITHUB_REPO = "ApodidaeDeSwift/ArkPlots"
-UPDATE_RELEASE_TAG = "APP版本"
+UPDATE_TAG_PREFIX = "APP_Ver"
 
 
 def release_exe_name(version: str | None = None) -> str:
     """Distribution filename shown to users / GitHub releases."""
     ver = version or VERSION
     return f"Arkplot_ver{ver}.exe"
+
+
+def app_ver_tag(version: str | None = None) -> str:
+    """GitHub release tag for an APP build, e.g. ``APP_Ver26.9.26.2``."""
+    return f"{UPDATE_TAG_PREFIX}{version or VERSION}"
 
 
 def version_payload() -> dict[str, Any]:
@@ -41,8 +46,7 @@ def version_payload() -> dict[str, Any]:
         "exe_stem": EXE_STEM,
         "release_exe": release_exe_name(),
         "github_repo": GITHUB_REPO,
-        "update_release_tag": UPDATE_RELEASE_TAG,
-        "update_html_url": (
-            f"https://github.com/{GITHUB_REPO}/releases/tag/{UPDATE_RELEASE_TAG}"
-        ),
+        "update_tag_prefix": UPDATE_TAG_PREFIX,
+        "update_tag": app_ver_tag(),
+        "update_html_url": f"https://github.com/{GITHUB_REPO}/releases",
     }

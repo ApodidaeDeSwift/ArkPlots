@@ -6,7 +6,7 @@ Serves:
   GET  /api/records   -> Read_record.json
   PUT  /api/records   -> write Read_record.json (JSON body)
   GET  /api/version   -> app identity / version (for UI + updates)
-  GET  /api/update/check -> compare local version with GitHub APP版本 release
+  GET  /api/update/check -> find newest APP_Ver* GitHub tag and compare versions
   POST /api/update/apply -> download release exe and schedule safe replace
   GET  /api/health    -> liveness
   static files from web/dist (production UI)

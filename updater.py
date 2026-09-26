@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Check GitHub APP release and apply in-place exe updates.
+"""Check GitHub APP_Ver* tags and apply in-place exe updates.
 
-Update source: release tag ``APP版本`` on ApodidaeDeSwift/ArkPlots.
+Update source: tags named ``APP_VerYY.M.D.N`` on ApodidaeDeSwift/ArkPlots
+(e.g. ``APP_Ver26.9.26.2`` = 2026-09-26, 2nd build that day). The updater
+lists those tags, picks the highest version, and downloads that release's
+``.exe`` asset when it is newer than the installed build.
+
 Only the running executable (and optional stable ``ArkPlots.exe`` twin) is
 replaced. User data beside the exe (Plotline.json, Read_record.json, covers,
 etc.) is never deleted or overwritten by the updater.
@@ -24,19 +28,17 @@ from urllib.parse import quote
 from app_info import (
     EXE_STEM,
     GITHUB_REPO,
-    UPDATE_RELEASE_TAG,
+    UPDATE_TAG_PREFIX,
     VERSION,
     release_exe_name,
     version_payload,
 )
 
-UPDATE_API_URL = (
-    f"https://api.github.com/repos/{GITHUB_REPO}/releases/tags/"
-    f"{quote(UPDATE_RELEASE_TAG, safe='')}"
-)
-UPDATE_HTML_URL = (
-    f"https://github.com/{GITHUB_REPO}/releases/tag/"
-    f"{quote(UPDATE_RELEASE_TAG, safe='')}"
+RELEASES_HTML_URL = f"https://github.com/{GITHUB_REPO}/releases"
+RELEASES_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases"
+TAGS_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/tags"
+RELEASE_BY_TAG_API = (
+    f"https://api.github.com/repos/{GITHUB_REPO}/releases/tags/{{tag}}"
 )
 
 # Shown whenever the user checks / applies updates.
@@ -55,18 +57,33 @@ _USER_AGENT = f"ArkPlots-Updater/{VERSION} (+https://github.com/{GITHUB_REPO})"
 # (Plotline.json, Read_record.json, covers/, etc.) is left untouched.
 _UPDATE_DIR_NAME = "_update"
 
+# Match APP_Ver26.9.26.2 (optional underscore after Ver).
+_APP_VER_TAG_RE = re.compile(
+    rf"^{re.escape(UPDATE_TAG_PREFIX)}_?(\d+(?:\.\d+){{1,3}})$",
+    re.IGNORECASE,
+)
+
 
 def parse_version(text: str | None) -> tuple[int, ...] | None:
-    """Extract ``a.b.c.d`` (or shorter) from a release name / asset name."""
+    """Extract ``a.b.c.d`` (or shorter) from a tag / release / asset name."""
     if not text:
         return None
     m = re.search(r"(\d+(?:\.\d+){1,3})", str(text))
     if not m:
         return None
     parts = tuple(int(x) for x in m.group(1).split("."))
-    # Normalize to 4-tuple for comparison
     padded = parts + (0,) * (4 - len(parts))
     return padded[:4]
+
+
+def parse_app_ver_tag(tag_name: str | None) -> tuple[int, ...] | None:
+    """Parse version only from ``APP_Ver*`` tags; ignore other tags."""
+    if not tag_name:
+        return None
+    m = _APP_VER_TAG_RE.match(str(tag_name).strip())
+    if not m:
+        return None
+    return parse_version(m.group(1))
 
 
 def version_tuple_to_str(ver: tuple[int, ...]) -> str:
@@ -95,6 +112,53 @@ def _http_json(url: str, timeout: float = 25.0) -> Any:
     return json.loads(raw.decode("utf-8"))
 
 
+def _list_app_ver_from_releases(
+    per_page: int = 100, max_pages: int = 10
+) -> list[tuple[str, tuple[int, ...], dict[str, Any]]]:
+    """Scan published releases whose tag matches ``APP_Ver*``."""
+    found: list[tuple[str, tuple[int, ...], dict[str, Any]]] = []
+    for page in range(1, max_pages + 1):
+        url = f"{RELEASES_API_URL}?per_page={per_page}&page={page}"
+        batch = _http_json(url)
+        if not isinstance(batch, list) or not batch:
+            break
+        for item in batch:
+            if not isinstance(item, dict):
+                continue
+            if item.get("draft"):
+                continue
+            tag = str(item.get("tag_name") or "")
+            ver = parse_app_ver_tag(tag)
+            if ver is not None:
+                found.append((tag, ver, item))
+        if len(batch) < per_page:
+            break
+    return found
+
+
+def _list_app_ver_tags(per_page: int = 100, max_pages: int = 10) -> list[tuple[str, tuple[int, ...]]]:
+    """Return ``(tag_name, version_tuple)`` for every ``APP_Ver*`` tag found."""
+    found: list[tuple[str, tuple[int, ...]]] = []
+    for page in range(1, max_pages + 1):
+        url = f"{TAGS_API_URL}?per_page={per_page}&page={page}"
+        batch = _http_json(url)
+        if not isinstance(batch, list) or not batch:
+            break
+        for item in batch:
+            name = str((item or {}).get("name") or "")
+            ver = parse_app_ver_tag(name)
+            if ver is not None:
+                found.append((name, ver))
+        if len(batch) < per_page:
+            break
+    return found
+
+
+def _fetch_release_for_tag(tag_name: str) -> dict[str, Any]:
+    url = RELEASE_BY_TAG_API.format(tag=quote(tag_name, safe=""))
+    return _http_json(url)
+
+
 def _pick_exe_asset(assets: list[dict[str, Any]], remote_version: str) -> dict[str, Any] | None:
     if not assets:
         return None
@@ -116,66 +180,84 @@ def _pick_exe_asset(assets: list[dict[str, Any]], remote_version: str) -> dict[s
     return exes[0]
 
 
+def _base_error(error: str, message: str, **extra: Any) -> dict[str, Any]:
+    return {
+        "ok": False,
+        "error": error,
+        "message": message,
+        "warning": OVERSEAS_SOURCE_WARNING_ZH,
+        "warning_en": OVERSEAS_SOURCE_WARNING_EN,
+        "current": version_payload(),
+        "html_url": RELEASES_HTML_URL,
+        **extra,
+    }
+
+
 def check_for_update() -> dict[str, Any]:
-    """Fetch the floating ``APP版本`` release and compare with local VERSION."""
+    """Find the newest ``APP_Ver*`` tag/release and compare with local VERSION."""
     local = parse_version(VERSION)
     if local is None:
-        return {
-            "ok": False,
-            "error": "invalid_local_version",
-            "message": f"Local version is invalid: {VERSION}",
-            "warning": OVERSEAS_SOURCE_WARNING_ZH,
-            "warning_en": OVERSEAS_SOURCE_WARNING_EN,
-            "current": version_payload(),
-            "html_url": UPDATE_HTML_URL,
-        }
+        return _base_error("invalid_local_version", f"Local version is invalid: {VERSION}")
+
+    release: dict[str, Any] | None = None
+    tag_name = ""
+    remote: tuple[int, ...] | None = None
 
     try:
-        release = _http_json(UPDATE_API_URL)
+        from_releases = _list_app_ver_from_releases()
+        if from_releases:
+            tag_name, remote, release = max(from_releases, key=lambda item: item[1])
+        else:
+            # Fallback: tags may exist before a Release is published.
+            tags = _list_app_ver_tags()
+            latest = max(tags, key=lambda item: item[1]) if tags else None
+            if latest is None:
+                return _base_error(
+                    "no_app_ver_tags",
+                    f"No tags matching {UPDATE_TAG_PREFIX}* were found on GitHub",
+                )
+            tag_name, remote = latest
+            try:
+                release = _fetch_release_for_tag(tag_name)
+            except urllib.error.HTTPError as exc:
+                if exc.code != 404:
+                    raise
+                release = None
     except urllib.error.HTTPError as exc:
-        return {
-            "ok": False,
-            "error": "http_error",
-            "message": f"GitHub HTTP {exc.code}",
-            "warning": OVERSEAS_SOURCE_WARNING_ZH,
-            "warning_en": OVERSEAS_SOURCE_WARNING_EN,
-            "current": version_payload(),
-            "html_url": UPDATE_HTML_URL,
-        }
+        return _base_error("http_error", f"GitHub HTTP {exc.code}")
     except Exception as exc:
+        return _base_error("network_error", str(exc))
+
+    assert remote is not None
+    remote_str = version_tuple_to_str(remote)
+    update_available = compare_versions(local, remote) < 0
+    html_fallback = (
+        f"https://github.com/{GITHUB_REPO}/releases/tag/{quote(tag_name, safe='')}"
+    )
+
+    if release is None:
         return {
-            "ok": False,
-            "error": "network_error",
-            "message": str(exc),
+            "ok": True,
+            "update_available": update_available,
+            "up_to_date": not update_available,
+            "current_version": VERSION,
+            "remote_version": remote_str,
+            "remote_tag": tag_name,
+            "remote_name": tag_name,
+            "asset_name": None,
+            "asset_url": None,
+            "asset_size": None,
+            "has_asset": False,
+            "html_url": html_fallback,
             "warning": OVERSEAS_SOURCE_WARNING_ZH,
             "warning_en": OVERSEAS_SOURCE_WARNING_EN,
-            "current": version_payload(),
-            "html_url": UPDATE_HTML_URL,
+            "frozen": bool(getattr(sys, "frozen", False)),
+            "error": "no_release",
+            "message": f"Tag {tag_name} has no GitHub Release yet",
         }
 
     assets = release.get("assets") or []
-    remote_raw = (
-        release.get("name")
-        or release.get("tag_name")
-        or (assets[0].get("name") if assets else None)
-    )
-    remote = parse_version(str(remote_raw) if remote_raw else None)
-    if remote is None:
-        return {
-            "ok": False,
-            "error": "invalid_remote_version",
-            "message": f"Could not parse version from release: {remote_raw!r}",
-            "warning": OVERSEAS_SOURCE_WARNING_ZH,
-            "warning_en": OVERSEAS_SOURCE_WARNING_EN,
-            "current": version_payload(),
-            "html_url": release.get("html_url") or UPDATE_HTML_URL,
-        }
-
-    remote_str = version_tuple_to_str(remote)
     asset = _pick_exe_asset(list(assets), remote_str)
-    # Floating tag APP版本 holds the intended Latest; update only when it is
-    # newer than the installed build (local ahead of tag => treat as current).
-    update_available = compare_versions(local, remote) < 0
 
     return {
         "ok": True,
@@ -183,12 +265,13 @@ def check_for_update() -> dict[str, Any]:
         "up_to_date": not update_available,
         "current_version": VERSION,
         "remote_version": remote_str,
-        "remote_name": release.get("name") or "",
+        "remote_tag": tag_name,
+        "remote_name": release.get("name") or tag_name,
         "asset_name": (asset or {}).get("name"),
         "asset_url": (asset or {}).get("browser_download_url"),
         "asset_size": (asset or {}).get("size"),
         "has_asset": asset is not None,
-        "html_url": release.get("html_url") or UPDATE_HTML_URL,
+        "html_url": release.get("html_url") or html_fallback,
         "warning": OVERSEAS_SOURCE_WARNING_ZH,
         "warning_en": OVERSEAS_SOURCE_WARNING_EN,
         "frozen": bool(getattr(sys, "frozen", False)),
@@ -240,7 +323,6 @@ def _write_windows_swapper(
     """Batch file: wait for PID, replace exe only, then optionally restart."""
     update_dir = os.path.dirname(new_exe)
     bat_path = os.path.join(update_dir, "apply_update.bat")
-    # Escape for batch: use short quotes carefully
     lines = [
         "@echo off",
         "setlocal EnableExtensions",
@@ -254,7 +336,6 @@ def _write_windows_swapper(
         "  goto waitloop",
         ")",
         "timeout /t 1 /nobreak >nul",
-        # Replace only the running executable path.
         "copy /Y \"%NEW%\" \"%DST%\" >nul",
         "if errorlevel 1 (",
         "  echo UPDATE_FAILED> \"%~dp0update_failed.txt\"",
@@ -328,7 +409,6 @@ def apply_update(*, restart: bool = True) -> dict[str, Any]:
     update_dir = os.path.join(app_dir, _UPDATE_DIR_NAME)
     os.makedirs(update_dir, exist_ok=True)
     asset_name = str(check.get("asset_name") or "ArkPlots_update.exe")
-    # Keep download name predictable and confined under _update/
     safe_name = re.sub(r"[^\w.\-]+", "_", asset_name) or "update.exe"
     download_path = os.path.join(update_dir, safe_name)
 
@@ -362,7 +442,6 @@ def apply_update(*, restart: bool = True) -> dict[str, Any]:
         optional_stable=optional_stable,
         restart=restart,
     )
-    # Detached so it survives our exit
     creationflags = 0
     if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
         creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP  # type: ignore[attr-defined]

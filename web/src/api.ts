@@ -7,7 +7,8 @@ export type AppVersionInfo = {
   exe_stem?: string
   release_exe?: string
   github_repo?: string
-  update_release_tag?: string
+  update_tag_prefix?: string
+  update_tag?: string
   update_html_url?: string | null
   update_manifest_url?: string | null
 }
@@ -18,6 +19,7 @@ export type UpdateCheckResult = {
   up_to_date?: boolean
   current_version?: string
   remote_version?: string
+  remote_tag?: string
   remote_name?: string
   asset_name?: string | null
   asset_url?: string | null
