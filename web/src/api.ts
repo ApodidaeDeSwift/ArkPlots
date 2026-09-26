@@ -6,7 +6,33 @@ export type AppVersionInfo = {
   channel?: string
   exe_stem?: string
   release_exe?: string
+  github_repo?: string
+  update_release_tag?: string
+  update_html_url?: string | null
   update_manifest_url?: string | null
+}
+
+export type UpdateCheckResult = {
+  ok: boolean
+  update_available?: boolean
+  up_to_date?: boolean
+  current_version?: string
+  remote_version?: string
+  remote_name?: string
+  asset_name?: string | null
+  asset_url?: string | null
+  asset_size?: number | null
+  has_asset?: boolean
+  html_url?: string
+  warning?: string
+  warning_en?: string
+  frozen?: boolean
+  error?: string
+  message?: string
+  applied?: boolean
+  will_restart?: boolean
+  note?: string
+  target_exe?: string
 }
 
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
@@ -24,6 +50,27 @@ async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>
 }
 
+/** Like jsonFetch, but returns parsed JSON even on soft HTTP errors (e.g. 502). */
+async function jsonFetchSoft<T extends { error?: string; message?: string }>(
+  url: string,
+  init?: RequestInit,
+): Promise<T> {
+  const res = await fetch(url, init)
+  let data: T | null = null
+  try {
+    data = (await res.json()) as T
+  } catch {
+    data = null
+  }
+  if (data && typeof data === 'object') {
+    return data
+  }
+  if (!res.ok) {
+    throw new Error(res.statusText || `HTTP ${res.status}`)
+  }
+  throw new Error('Empty response')
+}
+
 export function fetchPlots() {
   return jsonFetch<PlotlineFile>('/api/plots')
 }
@@ -39,6 +86,20 @@ export async function fetchVersion(): Promise<AppVersionInfo | null> {
   } catch {
     return null
   }
+}
+
+/** Compare local build with the floating GitHub ``APP版本`` release. */
+export function checkUpdate() {
+  return jsonFetchSoft<UpdateCheckResult>('/api/update/check', { cache: 'no-store' })
+}
+
+/** Download the release exe and schedule a safe in-place replace (packaged builds only). */
+export function applyUpdate(restart = true) {
+  return jsonFetchSoft<UpdateCheckResult>('/api/update/apply', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ restart }),
+  })
 }
 
 /** id -> relative path under site root (e.g. covers/12.png). Missing file => {}. */

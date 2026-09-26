@@ -40,6 +40,7 @@ datas += collect_data_files("webview", subdir="js")
 hiddenimports = [
     "server",
     "app_info",
+    "updater",
     "clr",
     "pythonnet",
     "clr_loader",

@@ -5,7 +5,9 @@ Serves:
   GET  /api/plots     -> Plotline.json
   GET  /api/records   -> Read_record.json
   PUT  /api/records   -> write Read_record.json (JSON body)
-  GET  /api/version   -> app identity / version (for UI + future updates)
+  GET  /api/version   -> app identity / version (for UI + updates)
+  GET  /api/update/check -> compare local version with GitHub APP版本 release
+  POST /api/update/apply -> download release exe and schedule safe replace
   GET  /api/health    -> liveness
   static files from web/dist (production UI)
 """
@@ -33,6 +35,15 @@ try:
 except ImportError:  # pragma: no cover - extremely old checkouts
     def version_payload() -> Dict[str, Any]:
         return {"name": "ArkPlots", "version": "0.0.0", "channel": "dev"}
+
+try:
+    from updater import apply_update, check_for_update
+except ImportError:  # pragma: no cover
+    def check_for_update() -> Dict[str, Any]:
+        return {"ok": False, "error": "updater_missing"}
+
+    def apply_update(*, restart: bool = True) -> Dict[str, Any]:
+        return {"ok": False, "error": "updater_missing"}
 
 
 def get_app_dir() -> str:
@@ -142,7 +153,7 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
     def do_OPTIONS(self) -> None:
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, PUT, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, PUT, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
 
@@ -182,6 +193,10 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
             self._send_json(200, version_payload())
             return
 
+        if path == "/api/update/check":
+            self._send_json(200, check_for_update())
+            return
+
         # SPA fallback: serve index.html for non-file routes when dist exists
         if not os.path.isdir(STATIC_DIR):
             self._send_json(
@@ -219,6 +234,30 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self._write(body)
+
+    def do_POST(self) -> None:
+        parsed = urlparse(self.path)
+        if parsed.path != "/api/update/apply":
+            self.send_error(404)
+            return
+        restart = True
+        try:
+            raw = self._read_body()
+            if raw.strip():
+                data = json.loads(raw.decode("utf-8"))
+                if isinstance(data, dict) and "restart" in data:
+                    restart = bool(data.get("restart"))
+        except Exception:
+            restart = True
+        try:
+            result = apply_update(restart=restart)
+            code = 200 if result.get("ok") and result.get("applied") else 200
+            # Still 200 for soft failures (up to date / no asset) so UI can show message.
+            if result.get("error") in ("network_error", "http_error", "download_failed"):
+                code = 502
+            self._send_json(code, result)
+        except Exception as e:
+            self._send_json(500, {"ok": False, "error": str(e)})
 
     def do_PUT(self) -> None:
         parsed = urlparse(self.path)

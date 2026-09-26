@@ -616,10 +616,23 @@ button {
   margin-bottom: 10px;
 }
 
+.settings-version-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .settings-note {
   margin-top: 8px;
   color: var(--warn);
   font-size: 0.82rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.settings-note-error {
+  color: var(--danger, #c45c5c);
 }
 
 .support-copy,

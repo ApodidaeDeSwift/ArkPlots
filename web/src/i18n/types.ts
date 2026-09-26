@@ -159,6 +159,23 @@ export type Messages = {
     label: string
     current: string
     check: string
+    checking: string
+    apply: string
+    applying: string
+    restarting: string
+    upToDate: string
+    available: string
+    availableNoAsset: string
+    availableDevOnly: string
+    openRelease: string
+    openReleaseHint: string
+    dataSafe: string
+    networkError: string
+    downloadFailed: string
+    checkFailed: string
+    applyFailed: string
+    noAsset: string
+    devOnly: string
     unavailable: string
   }
   support: {

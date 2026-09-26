@@ -148,6 +148,26 @@ const enUS: Messages = {
     label: 'Version',
     current: 'Current version {version}',
     check: 'Check for updates',
+    checking: 'Checking for updates…',
+    apply: 'Update and restart',
+    applying: 'Downloading update…',
+    restarting: 'Update ready. The app will restart shortly.',
+    upToDate: 'You are on the latest version.',
+    available: 'A newer version is available: {version}.',
+    availableNoAsset: 'Version {version} is listed, but no installer asset was uploaded yet.',
+    availableDevOnly:
+      'Version {version} is available. In development, replace the packaged exe manually.',
+    openRelease: 'Open release page',
+    openReleaseHint: 'You can open the GitHub release page for details.',
+    dataSafe: 'Updates replace only the program binary; your progress and local data stay intact.',
+    networkError:
+      'Could not reach the update source. Updates currently use GitHub (overseas) only and may need a VPN.',
+    downloadFailed:
+      'Download failed. Updates currently use GitHub (overseas) only and may need a VPN.',
+    checkFailed: 'Update check failed.',
+    applyFailed: 'Could not apply the update.',
+    noAsset: 'This release has no downloadable .exe asset.',
+    devOnly: 'One-click update is only available in the packaged desktop build.',
     unavailable: 'Not available yet. Coming soon.',
   },
   support: {

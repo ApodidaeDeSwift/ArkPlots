@@ -247,6 +247,9 @@ _tmp_*.py
 _tmp_*.txt
 _tmp_*.json
 
+# In-place updater staging directory (created beside the .exe)
+_update/
+
 # Misc local junk unrelated to runtime
 .DS_Store
 Thumbs.db

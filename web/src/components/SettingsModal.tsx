@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { fetchVersion } from '../api'
-import { useT } from '../i18n'
+import { applyUpdate, checkUpdate, fetchVersion, type UpdateCheckResult } from '../api'
+import { useI18n, useT } from '../i18n'
 import type { DisplaySettings } from '../settings'
 import { APP_VERSION } from '../version'
 
@@ -10,11 +10,30 @@ type Props = {
   onClose: () => void
 }
 
+type UpdatePhase =
+  | 'idle'
+  | 'checking'
+  | 'ready'
+  | 'applying'
+  | 'restarting'
+  | 'error'
+
+function pickWarning(result: UpdateCheckResult | null, locale: string): string {
+  if (!result) return ''
+  if (locale.startsWith('zh')) {
+    return result.warning || result.warning_en || ''
+  }
+  return result.warning_en || result.warning || ''
+}
+
 export function SettingsModal({ settings, onChange, onClose }: Props) {
   const t = useT()
-  const [updateNote, setUpdateNote] = useState(false)
+  const { locale } = useI18n()
   const [supportOpen, setSupportOpen] = useState(false)
   const [versionLabel, setVersionLabel] = useState(APP_VERSION)
+  const [phase, setPhase] = useState<UpdatePhase>('idle')
+  const [result, setResult] = useState<UpdateCheckResult | null>(null)
+  const [statusText, setStatusText] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -31,6 +50,118 @@ export function SettingsModal({ settings, onChange, onClose }: Props) {
   const toggle = (key: keyof DisplaySettings) => {
     onChange({ ...settings, [key]: !settings[key] })
   }
+
+  const onCheckUpdate = async () => {
+    setPhase('checking')
+    setStatusText(t('version.checking'))
+    setResult(null)
+    try {
+      const data = await checkUpdate()
+      setResult(data)
+      const warn = pickWarning(data, locale)
+
+      if (!data.ok) {
+        setPhase('error')
+        if (data.error === 'network_error' || data.error === 'http_error') {
+          setStatusText([t('version.networkError'), warn].filter(Boolean).join('\n'))
+        } else {
+          setStatusText(
+            [data.message || t('version.checkFailed'), warn].filter(Boolean).join('\n'),
+          )
+        }
+        return
+      }
+
+      if (data.up_to_date || !data.update_available) {
+        setPhase('ready')
+        setStatusText([t('version.upToDate'), warn].filter(Boolean).join('\n'))
+        return
+      }
+
+      const remote = data.remote_version || '?'
+      if (!data.has_asset) {
+        setPhase('ready')
+        setStatusText(
+          [
+            t('version.availableNoAsset', { version: remote }),
+            warn,
+            data.html_url ? t('version.openReleaseHint') : '',
+          ]
+            .filter(Boolean)
+            .join('\n'),
+        )
+        return
+      }
+
+      if (!data.frozen) {
+        setPhase('ready')
+        setStatusText(
+          [t('version.availableDevOnly', { version: remote }), warn].filter(Boolean).join('\n'),
+        )
+        return
+      }
+
+      setPhase('ready')
+      setStatusText(
+        [t('version.available', { version: remote }), warn, t('version.dataSafe')]
+          .filter(Boolean)
+          .join('\n'),
+      )
+    } catch (err) {
+      setPhase('error')
+      setStatusText(
+        t('version.networkError') +
+          '\n' +
+          (err instanceof Error ? err.message : String(err)),
+      )
+    }
+  }
+
+  const onApplyUpdate = async () => {
+    setPhase('applying')
+    setStatusText(t('version.applying'))
+    try {
+      const data = await applyUpdate(true)
+      setResult(data)
+      const warn = pickWarning(data, locale)
+      if (data.applied) {
+        setPhase('restarting')
+        setStatusText([t('version.restarting'), warn, t('version.dataSafe')].filter(Boolean).join('\n'))
+        return
+      }
+      setPhase('error')
+      if (data.error === 'no_asset') {
+        setStatusText([t('version.noAsset'), warn].filter(Boolean).join('\n'))
+      } else if (data.error === 'not_frozen') {
+        setStatusText([t('version.devOnly'), warn].filter(Boolean).join('\n'))
+      } else if (data.error === 'download_failed' || data.error === 'network_error') {
+        setStatusText([t('version.downloadFailed'), warn].filter(Boolean).join('\n'))
+      } else if (data.message === 'already_up_to_date') {
+        setPhase('ready')
+        setStatusText([t('version.upToDate'), warn].filter(Boolean).join('\n'))
+      } else {
+        setStatusText(
+          [data.message || t('version.applyFailed'), warn].filter(Boolean).join('\n'),
+        )
+      }
+    } catch (err) {
+      setPhase('error')
+      setStatusText(
+        t('version.downloadFailed') +
+          '\n' +
+          (err instanceof Error ? err.message : String(err)),
+      )
+    }
+  }
+
+  const canApply =
+    phase === 'ready' &&
+    !!result?.ok &&
+    !!result.update_available &&
+    !!result.has_asset &&
+    !!result.frozen
+
+  const busy = phase === 'checking' || phase === 'applying' || phase === 'restarting'
 
   return (
     <>
@@ -86,10 +217,54 @@ export function SettingsModal({ settings, onChange, onClose }: Props) {
             <div className="settings-version">
               {t('version.current', { version: versionLabel })}
             </div>
-            <button type="button" className="btn" onClick={() => setUpdateNote(true)}>
-              {t('version.check')}
-            </button>
-            {updateNote && <div className="settings-note">{t('version.unavailable')}</div>}
+            <div className="settings-version-actions">
+              <button
+                type="button"
+                className="btn"
+                disabled={busy}
+                onClick={() => void onCheckUpdate()}
+              >
+                {phase === 'checking' ? t('version.checking') : t('version.check')}
+              </button>
+              {canApply && (
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={busy}
+                  onClick={() => void onApplyUpdate()}
+                >
+                  {t('version.apply')}
+                </button>
+              )}
+              {phase === 'applying' && (
+                <button type="button" className="btn" disabled>
+                  {t('version.applying')}
+                </button>
+              )}
+              {result?.html_url && result.update_available && !result.has_asset && (
+                <a
+                  className="btn btn-ghost"
+                  href={result.html_url}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {t('version.openRelease')}
+                </a>
+              )}
+            </div>
+            {statusText && (
+              <div
+                className={
+                  phase === 'error'
+                    ? 'settings-note settings-note-error'
+                    : 'settings-note'
+                }
+              >
+                {statusText.split('\n').map((line, i) => (
+                  <div key={i}>{line}</div>
+                ))}
+              </div>
+            )}
           </section>
 
           <section className="settings-section">
