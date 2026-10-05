@@ -15,8 +15,8 @@ APP_NAME = "ArkPlots"
 # Stable executable stem used by PyInstaller (in-place updater replaces this file).
 EXE_STEM = "ArkPlots"
 
-# Semver-like calendar build: YY.M.D.build  (e.g. 26.9.26.2 = 2026-09-26 #2)
-VERSION = "26.9.26.2"
+# Semver-like calendar build: YY.M.D.build  (e.g. 26.10.5.1 = 2026-10-05 #1)
+VERSION = "26.10.5.1"
 
 # Release channel label.
 CHANNEL = "release"
