@@ -169,7 +169,7 @@ This syncs `web/src/version.ts`, builds the UI, runs `packaging/ArkPlots.spec` t
 
 `Plotline.json` / `Read_record.json` are **not** bundled. No console window (`console=False`). Edge WebView2 required.
 
-For future auto-updates: set `app_info.UPDATE_MANIFEST_URL`; clients can read `GET /api/version`.
+GitHub does **not** build an exe from source by itself. Tag `APP_Ver{VERSION}` (or publish a Release with that tag); `.github/workflows/app-release.yml` builds on `windows-latest` and attaches `Arkplot_ver{VERSION}.exe`. The tag must match `VERSION` in `app_info.py`. In-app updates scan these `APP_Ver*` releases.
 
 ### Project layout
 

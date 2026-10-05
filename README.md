@@ -169,7 +169,7 @@ python packaging/build_release.py
 
 `Plotline.json` / `Read_record.json` **不**打进包，运行时从 exe 所在目录读取。无控制台黑框由 spec 的 `console=False` 决定。目标机需 Edge WebView2（Win10/11 通常已有）。
 
-后续做自动更新时：配置 `app_info.UPDATE_MANIFEST_URL`，客户端可通过 `GET /api/version` 读取当前版本与清单地址。
+GitHub **不会**从源码自动生成 exe。发布桌面版时请打 tag `APP_Ver{VERSION}`（或在网页上用该 tag 创建 Release），仓库里的 `.github/workflows/app-release.yml` 会在 Windows runner 上打包，并把 `Arkplot_ver{VERSION}.exe` 挂到该 Release。tag 必须与 `app_info.py` 里的 `VERSION` 一致。客户端检查更新时扫描这些 `APP_Ver*` Release。
 
 ### 项目结构
 

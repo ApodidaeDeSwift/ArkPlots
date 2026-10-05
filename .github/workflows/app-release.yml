@@ -1,0 +1,97 @@
+# Build the Windows exe and attach it to an APP_Ver* GitHub Release.
+# GitHub does not package binaries from source by itself; this workflow does.
+#
+# Typical flow:
+#   1. Bump VERSION in app_info.py (must match the tag, e.g. 26.10.5.1)
+#   2. Commit and push
+#   3. Create tag APP_Ver26.10.5.1 (or publish a Release with that tag)
+#   4. This job uploads Arkplot_ver{VERSION}.exe onto that Release
+name: APP release exe
+
+on:
+  push:
+    tags:
+      - "APP_Ver*"
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional APP_Ver* tag to attach the built exe onto (leave empty to only produce an artifact)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows-exe:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref_name, 'APP_Ver') ||
+      startsWith(github.event.release.tag_name, 'APP_Ver')
+    runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install Python build deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller pythonnet
+
+      - name: Install frontend deps
+        working-directory: web
+        run: npm ci
+
+      - name: Verify tag matches app_info.VERSION
+        if: env.RELEASE_TAG != '' && startsWith(env.RELEASE_TAG, 'APP_Ver')
+        shell: python
+        run: |
+          import os
+          import sys
+          sys.path.insert(0, os.getcwd())
+          from app_info import VERSION, app_ver_tag
+          tag = os.environ.get("RELEASE_TAG", "")
+          expected = app_ver_tag()
+          if tag != expected:
+              raise SystemExit(
+                  f"Tag {tag!r} does not match app_info.py ({expected!r}). "
+                  f"Bump VERSION to match the tag before releasing."
+              )
+          print(f"tag {tag} matches VERSION {VERSION}")
+
+      - name: Build exe
+        run: python packaging/build_release.py
+
+      - name: Upload exe to GitHub Release
+        if: startsWith(env.RELEASE_TAG, 'APP_Ver')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_TAG }}
+          files: Arkplot_ver*.exe
+          fail_on_unmatched_files: true
+          generate_release_notes: false
+
+      - name: Upload exe artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArkPlots-exe
+          path: Arkplot_ver*.exe
+          if-no-files-found: error
