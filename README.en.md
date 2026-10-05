@@ -155,21 +155,21 @@ These Chinese codes are stable in the data layer. Switching the UI language only
 
 To add a language: add a pack under `locales/` → register in `localeRegistry` in `locales/index.ts` → optionally add `content/` maps → `npm run build`.
 
-### Packaging the exe (no console)
+### Packaging the installer (no console)
 
-Bump `VERSION` in root `app_info.py`, then:
+Bump `VERSION` in root `app_info.py`. Requires [Inno Setup 6](https://jrsoftware.org/isinfo.php) (`ISCC.exe`), then:
 
 ```bash
-pip install -r requirements.txt pyinstaller
+pip install -r requirements.txt pyinstaller pillow
 cd web && npm install && cd ..
 python packaging/build_release.py
 ```
 
-This syncs `web/src/version.ts`, builds the UI, runs `packaging/ArkPlots.spec` to produce stable `dist/ArkPlots.exe`, and copies the distribution alias `Arkplot_ver{VERSION}.exe`.
+This builds `dist/ArkPlots.exe` and the installer `Arkplot_setup_ver{VERSION}.exe`.
 
-`Plotline.json` / `Read_record.json` are **not** bundled. No console window (`console=False`). Edge WebView2 required.
-
-GitHub does **not** build an exe from source by itself. Tag `APP_Ver{VERSION}` (or publish a Release with that tag); `.github/workflows/app-release.yml` builds on `windows-latest` and attaches `Arkplot_ver{VERSION}.exe`. The tag must match `VERSION` in `app_info.py`. In-app updates scan these `APP_Ver*` releases.
+- **Fresh install:** default `%LOCALAPPDATA%\ArkPlots`, optional desktop shortcut, ships initial `Plotline.json`
+- **Already installed:** confirm, then upgrade the program without deleting `Read_record.json`
+- Tag `APP_Ver{VERSION}` on **APP_Release**; Actions attaches **`Arkplot_setup_ver{VERSION}.exe`**
 
 ### Project layout
 
@@ -182,6 +182,7 @@ ArkPlots/
 ├── server.py              # Local HTTP API + static files
 ├── app_info.py            # version / update metadata
 ├── packaging/ArkPlots.spec # PyInstaller (console=False)
+├── packaging/ArkPlots.iss  # Inno Setup installer
 ├── packaging/build_release.py
 ├── web/                   # Vite + React + TypeScript
 │   ├── src/i18n/          # UI & content i18n

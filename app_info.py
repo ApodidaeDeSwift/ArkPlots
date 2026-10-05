@@ -22,14 +22,22 @@ VERSION = "26.10.6.2"
 CHANNEL = "release"
 
 # GitHub repo + APP desktop tag prefix used by the in-app updater.
+# Stable AppId for Inno Setup (detect existing installs / upgrades).
+INNO_APP_ID = "{E8B3C4A1-7D2F-4E9B-A6C1-1F2E3D4C5B6A}"
 GITHUB_REPO = "ApodidaeDeSwift/ArkPlots"
 UPDATE_TAG_PREFIX = "APP_Ver"
 
 
 def release_exe_name(version: str | None = None) -> str:
-    """Distribution filename shown to users / GitHub releases."""
+    """Portable exe filename (internal PyInstaller output alias)."""
     ver = version or VERSION
     return f"Arkplot_ver{ver}.exe"
+
+
+def release_setup_name(version: str | None = None) -> str:
+    """Installer filename published on GitHub Releases."""
+    ver = version or VERSION
+    return f"Arkplot_setup_ver{ver}.exe"
 
 
 def app_ver_tag(version: str | None = None) -> str:
@@ -45,6 +53,7 @@ def version_payload() -> dict[str, Any]:
         "channel": CHANNEL,
         "exe_stem": EXE_STEM,
         "release_exe": release_exe_name(),
+        "release_setup": release_setup_name(),
         "github_repo": GITHUB_REPO,
         "update_tag_prefix": UPDATE_TAG_PREFIX,
         "update_tag": app_ver_tag(),

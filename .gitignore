@@ -240,6 +240,7 @@ Earlier_ver/
 # Release / packaging outputs — distribute outside git; rebuild via packaging/build_release.py
 Arkplot_*.exe
 ArkPlots.exe
+Arkplot_setup_*.exe
 # Legacy per-version specs at repo root are covered by *.spec + /Arkplot_*.spec above.
 
 # Scratch from ad-hoc scripts

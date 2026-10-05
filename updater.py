@@ -31,6 +31,7 @@ from app_info import (
     UPDATE_TAG_PREFIX,
     VERSION,
     release_exe_name,
+    release_setup_name,
     version_payload,
 )
 
@@ -169,6 +170,14 @@ def _pick_exe_asset(assets: list[dict[str, Any]], remote_version: str) -> dict[s
     ]
     if not exes:
         return None
+    preferred_setup = release_setup_name(remote_version).lower()
+    for a in exes:
+        if str(a.get("name", "")).lower() == preferred_setup:
+            return a
+    for a in exes:
+        name = str(a.get("name", "")).lower()
+        if "setup" in name and name.startswith("arkplot"):
+            return a
     preferred = release_exe_name(remote_version).lower()
     for a in exes:
         if str(a.get("name", "")).lower() == preferred:
@@ -178,6 +187,11 @@ def _pick_exe_asset(assets: list[dict[str, Any]], remote_version: str) -> dict[s
         if name.startswith("arkplot_ver") or name == f"{EXE_STEM.lower()}.exe":
             return a
     return exes[0]
+
+
+def _asset_is_installer(name: str) -> bool:
+    n = name.lower()
+    return "setup" in n or n.startswith("arkplot_setup")
 
 
 def _base_error(error: str, message: str, **extra: Any) -> dict[str, Any]:
@@ -312,6 +326,51 @@ def _download_file(url: str, dest: str, timeout: float = 120.0) -> None:
                 pass
 
 
+def _write_installer_runner(
+    *,
+    pid: int,
+    installer: str,
+    app_dir: str,
+    target_exe: str,
+    restart: bool,
+) -> str:
+    """Wait for PID, run Inno silent upgrade in the existing dir, optionally restart."""
+    update_dir = os.path.dirname(installer)
+    bat_path = os.path.join(update_dir, "apply_update.bat")
+    lines = [
+        "@echo off",
+        "setlocal EnableExtensions",
+        f"set \"PID={pid}\"",
+        f"set \"SETUP={installer}\"",
+        f"set \"APPDIR={app_dir}\"",
+        f"set \"DST={target_exe}\"",
+        ":waitloop",
+        "tasklist /FI \"PID eq %PID%\" | findstr /I \"%PID%\" >nul",
+        "if not errorlevel 1 (",
+        "  timeout /t 1 /nobreak >nul",
+        "  goto waitloop",
+        ")",
+        "timeout /t 1 /nobreak >nul",
+        "\"%SETUP%\" /VERYSILENT /NORESTART /CLOSEAPPLICATIONS /DIR=\"%APPDIR%\"",
+        "if errorlevel 1 (",
+        "  echo UPDATE_FAILED> \"%~dp0update_failed.txt\"",
+        "  exit /b 1",
+        ")",
+    ]
+    if restart:
+        lines.append("start \"\" \"%DST%\"")
+    lines.extend(
+        [
+            "del /F /Q \"%SETUP%\" >nul 2>&1",
+            "del /F /Q \"%~f0\" >nul 2>&1",
+            "exit /b 0",
+        ]
+    )
+    with open(bat_path, "w", encoding="gbk", errors="replace", newline="\r\n") as f:
+        f.write("\r\n".join(lines) + "\r\n")
+    return bat_path
+
+
 def _write_windows_swapper(
     *,
     pid: int,
@@ -432,16 +491,26 @@ def apply_update(*, restart: bool = True) -> dict[str, Any]:
             "message": "Downloaded file is missing or too small",
         }
 
-    stable_twin = os.path.join(app_dir, f"{EXE_STEM}.exe")
-    optional_stable = stable_twin if os.path.isfile(stable_twin) else None
-
-    bat = _write_windows_swapper(
-        pid=os.getpid(),
-        new_exe=download_path,
-        target_exe=exe_path,
-        optional_stable=optional_stable,
-        restart=restart,
-    )
+    if _asset_is_installer(asset_name):
+        bat = _write_installer_runner(
+            pid=os.getpid(),
+            installer=download_path,
+            app_dir=app_dir,
+            target_exe=exe_path,
+            restart=restart,
+        )
+        note = "Installer upgrades the program only; Read_record.json is not modified."
+    else:
+        stable_twin = os.path.join(app_dir, f"{EXE_STEM}.exe")
+        optional_stable = stable_twin if os.path.isfile(stable_twin) else None
+        bat = _write_windows_swapper(
+            pid=os.getpid(),
+            new_exe=download_path,
+            target_exe=exe_path,
+            optional_stable=optional_stable,
+            restart=restart,
+        )
+        note = "User data files are not modified; only the executable is replaced."
     creationflags = 0
     if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
         creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP  # type: ignore[attr-defined]
@@ -463,5 +532,5 @@ def apply_update(*, restart: bool = True) -> dict[str, Any]:
         "will_restart": restart,
         "message": "update_scheduled",
         "target_exe": exe_path,
-        "note": "User data files are not modified; only the executable is replaced.",
+        "note": note,
     }

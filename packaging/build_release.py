@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Build a release exe from app_info.VERSION.
+"""Build a Windows installer from app_info.VERSION.
 
 Steps:
   1. Sync ``web/src/version.ts`` from ``app_info.py``
   2. ``npm run build`` in web/
   3. PyInstaller via ``packaging/ArkPlots.spec`` → ``dist/ArkPlots.exe``
-  4. Copy distribution alias ``Arkplot_ver{VERSION}.exe`` to repo root
+  4. Inno Setup via ``packaging/ArkPlots.iss`` → ``Arkplot_setup_ver{VERSION}.exe``
 
 Usage (from repo root):
   python packaging/build_release.py
@@ -15,6 +15,7 @@ Usage (from repo root):
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
@@ -24,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app_info import APP_NAME, EXE_STEM, VERSION, release_exe_name  # noqa: E402
+from app_info import APP_NAME, EXE_STEM, VERSION, release_setup_name  # noqa: E402
 
 
 def _run(cmd: list[str], cwd: Path) -> None:
@@ -162,15 +163,52 @@ def build_exe() -> Path:
     return built
 
 
-def publish_release_alias(built: Path) -> Path:
-    alias = ROOT / release_exe_name()
-    shutil.copy2(built, alias)
-    print(f"release alias -> {alias.name} ({alias.stat().st_size} bytes)", flush=True)
-    return alias
+def find_iscc() -> Path:
+    """Locate Inno Setup compiler (ISCC.exe)."""
+    which = shutil.which("iscc") or shutil.which("ISCC")
+    if which:
+        return Path(which)
+    pf = os.environ.get("ProgramFiles(x86)") or os.environ.get("ProgramFiles") or ""
+    pf64 = os.environ.get("ProgramFiles") or ""
+    candidates = [
+        Path(pf) / "Inno Setup 6" / "ISCC.exe",
+        Path(pf64) / "Inno Setup 6" / "ISCC.exe",
+        Path(pf) / "Inno Setup 5" / "ISCC.exe",
+    ]
+    for path in candidates:
+        if path.is_file():
+            return path
+    raise SystemExit(
+        "Inno Setup compiler (ISCC.exe) not found. Install Inno Setup 6 "
+        "(https://jrsoftware.org/isinfo.php) or `choco install innosetup`."
+    )
+
+
+def build_installer() -> Path:
+    plotline = ROOT / "Plotline.json"
+    if not plotline.is_file():
+        raise SystemExit("Plotline.json missing; installer needs it for first-time installs")
+    spec = ROOT / "packaging" / "ArkPlots.iss"
+    if not spec.is_file():
+        raise SystemExit(f"missing installer script: {spec}")
+    iscc = find_iscc()
+    _run(
+        [
+            str(iscc),
+            f"/DMyAppVersion={VERSION}",
+            str(spec),
+        ],
+        cwd=ROOT,
+    )
+    setup = ROOT / release_setup_name()
+    if not setup.is_file():
+        raise SystemExit(f"Inno Setup finished but {setup.name} is missing")
+    print(f"installer -> {setup.name} ({setup.stat().st_size} bytes)", flush=True)
+    return setup
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build ArkPlots release exe")
+    parser = argparse.ArgumentParser(description="Build ArkPlots Windows installer")
     parser.add_argument(
         "--skip-web",
         action="store_true",
@@ -192,7 +230,8 @@ def main() -> None:
     elif not (ROOT / "web" / "dist" / "index.html").is_file():
         raise SystemExit("web/dist missing; run without --skip-web")
     built = build_exe()
-    publish_release_alias(built)
+    print(f"payload exe -> {built}", flush=True)
+    setup = build_installer()
     print("done.", flush=True)
 
 

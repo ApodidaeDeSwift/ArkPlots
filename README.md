@@ -155,21 +155,25 @@ npm run dev
 
 添加新语言：在 `locales/` 新增语言包 → 在 `locales/index.ts` 的 `localeRegistry` 注册 →（可选）补 `content/` 映射 → `npm run build`。
 
-### 打包 exe（无命令行窗口）
+### 打包安装包（无命令行窗口）
 
-版本号写在仓库根目录的 `app_info.py`（`VERSION`）。一键打包：
+版本号写在仓库根目录的 `app_info.py`（`VERSION`）。需要 [Inno Setup 6](https://jrsoftware.org/isinfo.php)（`ISCC.exe`）。一键打包：
 
 ```bash
-pip install -r requirements.txt pyinstaller
+pip install -r requirements.txt pyinstaller pillow
 cd web && npm install && cd ..
 python packaging/build_release.py
 ```
 
-脚本会：同步 `web/src/version.ts` → 构建前端 → 用 `packaging/ArkPlots.spec` 打出稳定名 `dist/ArkPlots.exe` → 再复制为分发名 `Arkplot_ver{VERSION}.exe`。
+脚本会：同步版本 → 构建前端 → 打出 `dist/ArkPlots.exe` → 再用 `packaging/ArkPlots.iss` 生成安装包 `Arkplot_setup_ver{VERSION}.exe`。
 
-`Plotline.json` / `Read_record.json` **不**打进包，运行时从 exe 所在目录读取。无控制台黑框由 spec 的 `console=False` 决定。目标机需 Edge WebView2（Win10/11 通常已有）。
+安装包行为：
 
-GitHub **不会**从源码自动生成 exe。发布桌面版时请打 tag `APP_Ver{VERSION}`（或在网页上用该 tag 创建 Release），仓库里的 `.github/workflows/app-release.yml` 会在 Windows runner 上打包，并把 `Arkplot_ver{VERSION}.exe` 挂到该 Release。tag 必须与 `app_info.py` 里的 `VERSION` 一致。客户端检查更新时扫描这些 `APP_Ver*` Release。
+- **未安装**：默认装到 `%LOCALAPPDATA%\ArkPlots`，可改路径，可选桌面快捷方式；会写入初始 `Plotline.json`
+- **已安装**：确认后只更新程序；`Read_record.json` 等用户数据不会被删除
+- UI 仍打进 exe；`Read_record.json` 运行时在安装目录自动生成
+
+发布桌面版时请在 **APP_Release** 打 tag `APP_Ver{VERSION}`。GitHub Actions 会构建并把 **`Arkplot_setup_ver{VERSION}.exe`** 挂到 Release（不要只发裸 exe）。
 
 ### 项目结构
 
@@ -182,6 +186,7 @@ ArkPlots/
 ├── server.py              # 本地 HTTP API + 静态资源
 ├── app_info.py            # 版本号 / 更新元数据
 ├── packaging/ArkPlots.spec # PyInstaller（console=False）
+├── packaging/ArkPlots.iss  # Inno Setup 安装包
 ├── packaging/build_release.py
 ├── web/                   # Vite + React + TypeScript
 │   ├── src/i18n/          # 界面与内容国际化
