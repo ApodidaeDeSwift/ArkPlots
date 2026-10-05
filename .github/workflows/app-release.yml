@@ -37,6 +37,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Require APP_Release packaging tree
+        shell: bash
+        run: |
+          if [ ! -f packaging/build_release.py ]; then
+            echo "::error::This tag/commit is not the desktop packaging branch (APP_Release)."
+            echo "APP_Ver* releases must be created from APP_Release, not main."
+            echo "main still contains the old committed Arkplot_ver1.0.4.exe — do not ship that file."
+            exit 1
+          fi
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
@@ -52,7 +62,7 @@ jobs:
       - name: Install Python build deps
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt pyinstaller pythonnet
+          python -m pip install -r requirements.txt pyinstaller pythonnet pillow
 
       - name: Install frontend deps
         working-directory: web

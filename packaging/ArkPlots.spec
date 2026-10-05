@@ -21,6 +21,13 @@ if _ROOT not in sys.path:
 
 from app_info import EXE_STEM  # noqa: E402
 
+_ICON = os.path.join(_ROOT, "icon.ico")
+_VERSION_INFO = os.path.join(_ROOT, "packaging", "_version_info.txt")
+if not os.path.isfile(_VERSION_INFO):
+    raise SystemExit(
+        "missing packaging/_version_info.txt — run python packaging/build_release.py"
+    )
+
 
 def _dynlibs(package: str):
     try:
@@ -80,5 +87,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=[os.path.join(_ROOT, "icon.ico")],
+    icon=_ICON,
+    version=_VERSION_INFO,
 )
