@@ -163,12 +163,13 @@ def build_exe() -> Path:
     stale_onefile = dist_dir / f"{EXE_STEM}.exe"
     if stale_onefile.is_file():
         stale_onefile.unlink()
+    # UPX is disabled inside ArkPlots.spec (upx=False). Do not pass --noupx
+    # here: PyInstaller rejects makespec flags when a .spec file is given.
     _run(
         [
             *find_pyinstaller(),
             "--noconfirm",
             "--clean",
-            "--noupx",
             f"--distpath={dist_dir}",
             f"--workpath={work_dir}",
             str(spec),
