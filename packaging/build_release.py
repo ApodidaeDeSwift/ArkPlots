@@ -119,31 +119,96 @@ def write_version_info() -> Path:
     return dest
 
 
+def _load_brand_icon_rgba():
+    from PIL import Image
+
+    src = ROOT / "icon.jpg"
+    if not src.is_file():
+        raise SystemExit("missing icon.jpg")
+    img = Image.open(src).convert("RGBA")
+    side = max(img.size)
+    canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    canvas.paste(img, ((side - img.width) // 2, (side - img.height) // 2))
+    return canvas
+
+
 def sync_icon_ico() -> Path:
     """Rebuild icon.ico from icon.jpg so the exe uses the current artwork."""
-    src = ROOT / "icon.jpg"
     dest = ROOT / "icon.ico"
-    if not src.is_file():
+    try:
+        canvas = _load_brand_icon_rgba()
+    except SystemExit:
         if dest.is_file():
             return dest
-        raise SystemExit("missing icon.jpg / icon.ico")
-    try:
-        from PIL import Image
+        raise
     except ImportError as exc:
         if dest.is_file():
             print("Pillow missing; keeping existing icon.ico", flush=True)
             return dest
         raise SystemExit("Pillow is required to build icon.ico from icon.jpg") from exc
 
-    img = Image.open(src).convert("RGBA")
-    # Square canvas, keep the drawing centered (jpg is already square-ish).
-    side = max(img.size)
-    canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
-    canvas.paste(img, ((side - img.width) // 2, (side - img.height) // 2))
     sizes = [(256, 256), (128, 128), (64, 64), (48, 48), (32, 32), (16, 16)]
     canvas.save(dest, format="ICO", sizes=sizes)
-    print(f"synced {dest.name} from {src.name}", flush=True)
+    print(f"synced {dest.name} from icon.jpg", flush=True)
     return dest
+
+
+def _fill_vertical_gradient(img, top_rgb: tuple[int, int, int], bottom_rgb: tuple[int, int, int]) -> None:
+    """Draw a vertical gradient onto an RGB/RGBA image (in place)."""
+    from PIL import ImageDraw
+
+    draw = ImageDraw.Draw(img)
+    w, h = img.size
+    for y in range(h):
+        t = y / max(h - 1, 1)
+        r = int(top_rgb[0] * (1 - t) + bottom_rgb[0] * t)
+        g = int(top_rgb[1] * (1 - t) + bottom_rgb[1] * t)
+        b = int(top_rgb[2] * (1 - t) + bottom_rgb[2] * t)
+        draw.line([(0, y), (w, y)], fill=(r, g, b, 255) if img.mode == "RGBA" else (r, g, b))
+
+
+def sync_wizard_images() -> tuple[Path, Path]:
+    """Generate Inno Setup side/top images in the app dark-cyan look."""
+    from PIL import Image, ImageDraw, ImageFont
+
+    pack = ROOT / "packaging"
+    side_path = pack / "wizard_side.png"
+    top_path = pack / "wizard_top.png"
+    brand = _load_brand_icon_rgba()
+
+    # Large welcome/finish panel (modern wizard).
+    side = Image.new("RGBA", (240, 480), (11, 18, 25, 255))
+    _fill_vertical_gradient(side, (11, 18, 25), (22, 52, 58))
+    draw = ImageDraw.Draw(side)
+    # Accent bar
+    draw.rectangle([0, 0, 4, 480], fill=(62, 199, 199, 255))
+    # Soft glow circle behind icon
+    draw.ellipse([28, 70, 212, 254], fill=(30, 70, 78, 90))
+    icon = brand.resize((140, 140), Image.Resampling.LANCZOS)
+    side.paste(icon, (50, 92), icon)
+    try:
+        font_title = ImageFont.truetype("segoeui.ttf", 28)
+        font_sub = ImageFont.truetype("consola.ttf", 14)
+    except OSError:
+        font_title = ImageFont.load_default()
+        font_sub = font_title
+    draw.text((28, 280), "ArkPlots", fill=(215, 230, 239, 255), font=font_title)
+    draw.text((28, 318), "PLOT TRACKER", fill=(62, 199, 199, 255), font=font_sub)
+    draw.text((28, 350), f"v{VERSION}", fill=(138, 160, 178, 255), font=font_sub)
+    draw.rectangle([28, 390, 100, 392], fill=(62, 199, 199, 255))
+    side.save(side_path, format="PNG")
+
+    # Small header image.
+    top = Image.new("RGBA", (110, 110), (11, 18, 25, 255))
+    _fill_vertical_gradient(top, (17, 27, 36), (22, 52, 58))
+    tdraw = ImageDraw.Draw(top)
+    tdraw.rectangle([0, 0, 110, 3], fill=(62, 199, 199, 255))
+    small = brand.resize((78, 78), Image.Resampling.LANCZOS)
+    top.paste(small, (16, 18), small)
+    top.save(top_path, format="PNG")
+
+    print(f"synced wizard images -> {side_path.name}, {top_path.name}", flush=True)
+    return side_path, top_path
 
 
 def find_pyinstaller() -> list[str]:
@@ -253,6 +318,7 @@ def main() -> None:
     sync_frontend_version()
     write_version_info()
     sync_icon_ico()
+    sync_wizard_images()
     if not args.skip_web:
         build_web()
     elif not (ROOT / "web" / "dist" / "index.html").is_file():

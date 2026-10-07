@@ -2,10 +2,7 @@
 ; Compile via: python packaging/build_release.py
 ;   iscc /DMyAppVersion=x.y.z.w packaging/ArkPlots.iss
 ;
-; Packaging choices that reduce antivirus false positives:
-;   - Install a PyInstaller *onedir* tree (not a self-extracting onefile exe)
-;   - No UPX on the payload
-;   - Full VersionInfo metadata on the setup binary
+; Visual style matches the desktop app (dark cyan / slate).
 
 #ifndef MyAppVersion
   #error MyAppVersion must be passed as /DMyAppVersion=...
@@ -40,10 +37,15 @@ UsePreviousTasks=yes
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 AllowNoIcons=yes
-; Non-solid compression is slightly less "packed-looking" to some scanners.
 Compression=lzma2/fast
 SolidCompression=no
-WizardStyle=modern
+WizardStyle=dark
+WizardStyleFile=builtin:slate
+WizardImageFile=wizard_side.png
+WizardSmallImageFile=wizard_top.png
+WizardImageBackColor=#0b1219
+WizardSmallImageBackColor=#0b1219
+WizardBackColor=#0b1219
 SetupIconFile=..\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
@@ -62,44 +64,46 @@ VersionInfoDescription={#MyAppName} installer
 VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
 VersionInfoTextVersion={#MyAppVersion}
-; Optional: set SIGNTOOL env / SignTool in CI when you have a code-signing cert.
-; SignTool=signtool $p
-; SignedUninstaller=yes
 
 [Languages]
 Name: "chinesesimplified"; MessagesFile: "compiler:Default.isl"
 
 [Messages]
-SetupAppTitle=ArkPlots 安装
-SetupWindowTitle=ArkPlots 安装 — {#MyAppVersion}
+SetupAppTitle=ArkPlots
+SetupWindowTitle=ArkPlots  ·  安装 {#MyAppVersion}
 ButtonBack=< 上一步(&B)
 ButtonNext=下一步(&N) >
-ButtonInstall=安装(&I)
+ButtonInstall=开始安装(&I)
 ButtonFinish=完成(&F)
-SelectDirLabel3=安装程序将把 [name] 安装到下列文件夹。
-SelectDirBrowseLabel=单击「下一步」继续。若要选择其他文件夹，单击「浏览」。
-DiskSpaceMBLabel=至少需要 [mb] MB 可用磁盘空间。
-SelectTasksLabel2=请选择要执行的附加任务，然后单击「下一步」。
-ReadyLabel1=安装程序准备将 [name] 安装到你的计算机。
-InstallingLabel=正在安装 [name]，请稍候…
-FinishedHeadingLabel=正在完成 [name] 安装向导
-FinishedLabelNoIcons=安装程序已将 [name] 安装到你的计算机。
-FinishedLabel=安装程序已将 [name] 安装到你的计算机。单击「完成」退出。
-ClickFinish=单击「完成」退出安装程序。
-ConfirmUninstall=确定要完全移除 %1 及其所有组件吗？阅读进度文件不会被自动删除。
+BeveledLabel=明日方舟剧情检索 · ArkPlots
+SelectDirLabel3=选择安装位置。剧情进度会保存在该文件夹中。
+SelectDirBrowseLabel=默认路径通常无需修改。若要更换，请单击「浏览」。
+DiskSpaceMBLabel=大约需要 [mb] MB 可用空间。
+SelectTasksLabel2=可选附加项：
+ReadyLabel1=准备就绪。单击「开始安装」继续。
+ReadyLabel2a=将执行以下操作：
+InstallingLabel=正在安装 ArkPlots…
+FinishedHeadingLabel=安装完成
+FinishedLabelNoIcons=ArkPlots 已就绪。祝检索愉快。
+FinishedLabel=ArkPlots 已就绪。可从开始菜单或桌面快捷方式启动。
+ClickFinish=单击「完成」关闭向导。
+ConfirmUninstall=确定要卸载 %1 吗？%n阅读进度（Read_record.json）不会被自动删除。
+StatusExtractFiles=正在展开文件…
+StatusCreateIcons=正在创建快捷方式…
+StatusCreateDirs=正在创建目录…
+StatusSavingUninstall=正在写入卸载信息…
 
 [CustomMessages]
 CreateDesktopIcon=在桌面创建快捷方式
-LaunchAfterInstall=安装完成后运行 ArkPlots
-UpgradeConfirm=检测到本机已安装 ArkPlots。%n%n点击「是」将更新程序（不会清空阅读进度等用户数据）。%n点击「否」取消。
+LaunchAfterInstall=安装完成后启动 ArkPlots
+UpgradeConfirm=检测到本机已安装 ArkPlots。%n%n点击「是」将更新到 {#MyAppVersion}（不会清空阅读进度）。%n点击「否」取消。
+NameAndVersion=%1  %2
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "附加任务:"; Flags: unchecked
 
 [Files]
-; Onedir payload from PyInstaller (ArkPlots.exe + DLLs/data). Always replace on upgrade.
 Source: "..\dist\ArkPlots\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-; Story catalog for first install / refresh. Never ships Read_record.json.
 Source: "..\Plotline.json"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
@@ -124,7 +128,7 @@ end;
 
 function InitializeSetup(): Boolean;
 begin
-  { In-app silent upgrade must not pop a confirm dialog. }
+  { In-app silent/progress upgrade must not pop a confirm dialog. }
   if WizardSilent then
     Result := True
   else if IsUpgrade then

@@ -229,16 +229,11 @@ export function SettingsModal({ settings, onChange, onClose }: Props) {
               {canApply && (
                 <button
                   type="button"
-                  className="btn"
+                  className="btn btn-accent"
                   disabled={busy}
                   onClick={() => void onApplyUpdate()}
                 >
                   {t('version.apply')}
-                </button>
-              )}
-              {phase === 'applying' && (
-                <button type="button" className="btn" disabled>
-                  {t('version.applying')}
                 </button>
               )}
               {result?.html_url && result.update_available && !result.has_asset && (
@@ -252,12 +247,19 @@ export function SettingsModal({ settings, onChange, onClose }: Props) {
                 </a>
               )}
             </div>
+            {(phase === 'checking' || phase === 'applying' || phase === 'restarting') && (
+              <div className="settings-progress" aria-hidden>
+                <div className="settings-progress-bar" />
+              </div>
+            )}
             {statusText && (
               <div
                 className={
                   phase === 'error'
                     ? 'settings-note settings-note-error'
-                    : 'settings-note'
+                    : phase === 'restarting'
+                      ? 'settings-note settings-note-ok'
+                      : 'settings-note'
                 }
               >
                 {statusText.split('\n').map((line, i) => (

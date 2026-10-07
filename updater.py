@@ -326,6 +326,147 @@ def _download_file(url: str, dest: str, timeout: float = 120.0) -> None:
                 pass
 
 
+def _write_update_ui_ps1(
+    *,
+    pid: int,
+    installer: str,
+    app_dir: str,
+    target_exe: str,
+    restart: bool,
+    remote_version: str,
+) -> str:
+    """PowerShell WinForms splash matching the app dark-cyan theme (no console)."""
+    update_dir = os.path.dirname(installer)
+    ps1_path = os.path.join(update_dir, "apply_update_ui.ps1")
+    # Escape single quotes for PowerShell single-quoted strings.
+    def q(s: str) -> str:
+        return s.replace("'", "''")
+
+    restart_line = (
+        f"    try {{ Start-Process -FilePath '{q(target_exe)}' }} catch {{ }}\n"
+        if restart
+        else ""
+    )
+    script = f"""# ArkPlots update UI — auto-generated, do not edit
+$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$pidWait = {pid}
+$setup = '{q(installer)}'
+$appDir = '{q(app_dir)}'
+$remote = '{q(remote_version)}'
+
+$form = New-Object System.Windows.Forms.Form
+$form.Text = 'ArkPlots'
+$form.FormBorderStyle = 'FixedDialog'
+$form.MaximizeBox = $false
+$form.MinimizeBox = $false
+$form.StartPosition = 'CenterScreen'
+$form.ClientSize = New-Object System.Drawing.Size(420, 200)
+$form.BackColor = [System.Drawing.Color]::FromArgb(11, 18, 25)
+$form.ForeColor = [System.Drawing.Color]::FromArgb(215, 230, 239)
+$form.TopMost = $true
+$form.ShowInTaskbar = $true
+
+$title = New-Object System.Windows.Forms.Label
+$title.Text = 'ArkPlots'
+$title.Font = New-Object System.Drawing.Font('Segoe UI', 16, [System.Drawing.FontStyle]::Bold)
+$title.ForeColor = [System.Drawing.Color]::FromArgb(215, 230, 239)
+$title.Location = New-Object System.Drawing.Point(24, 18)
+$title.AutoSize = $true
+$form.Controls.Add($title)
+
+$sub = New-Object System.Windows.Forms.Label
+$sub.Text = 'UPDATE'
+$sub.Font = New-Object System.Drawing.Font('Consolas', 9)
+$sub.ForeColor = [System.Drawing.Color]::FromArgb(62, 199, 199)
+$sub.Location = New-Object System.Drawing.Point(26, 48)
+$sub.AutoSize = $true
+$form.Controls.Add($sub)
+
+$status = New-Object System.Windows.Forms.Label
+$status.Text = '正在准备更新…'
+$status.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 10)
+$status.ForeColor = [System.Drawing.Color]::FromArgb(215, 230, 239)
+$status.Location = New-Object System.Drawing.Point(26, 82)
+$status.Size = New-Object System.Drawing.Size(370, 24)
+$form.Controls.Add($status)
+
+$detail = New-Object System.Windows.Forms.Label
+$detail.Text = "目标版本  $remote"
+$detail.Font = New-Object System.Drawing.Font('Consolas', 9)
+$detail.ForeColor = [System.Drawing.Color]::FromArgb(138, 160, 178)
+$detail.Location = New-Object System.Drawing.Point(26, 110)
+$detail.Size = New-Object System.Drawing.Size(370, 20)
+$form.Controls.Add($detail)
+
+$bar = New-Object System.Windows.Forms.ProgressBar
+$bar.Style = 'Marquee'
+$bar.MarqueeAnimationSpeed = 28
+$bar.Location = New-Object System.Drawing.Point(26, 148)
+$bar.Size = New-Object System.Drawing.Size(370, 18)
+$form.Controls.Add($bar)
+
+$accent = New-Object System.Windows.Forms.Panel
+$accent.BackColor = [System.Drawing.Color]::FromArgb(62, 199, 199)
+$accent.Location = New-Object System.Drawing.Point(0, 0)
+$accent.Size = New-Object System.Drawing.Size(4, 200)
+$form.Controls.Add($accent)
+
+$form.Add_Shown({{
+  $form.Activate()
+  $worker = New-Object System.ComponentModel.BackgroundWorker
+  $worker.WorkerReportsProgress = $true
+  $worker.Add_DoWork({{
+    param($sender, $e)
+    $sender.ReportProgress(0, '正在关闭旧版本…')
+    while ($true) {{
+      try {{
+        $null = Get-Process -Id $pidWait -ErrorAction Stop
+      }} catch {{ break }}
+      Start-Sleep -Milliseconds 400
+    }}
+    Start-Sleep -Milliseconds 800
+    $sender.ReportProgress(0, '正在安装更新（不会清空阅读进度）…')
+    # VERYSILENT: only our branded splash is visible (no Inno wizard / console).
+    $setupArgs = @('/VERYSILENT', '/NORESTART', '/CLOSEAPPLICATIONS', "/DIR=`"$appDir`"")
+    $proc = Start-Process -FilePath $setup -ArgumentList $setupArgs -Wait -PassThru
+    if ($proc.ExitCode -ne 0) {{
+      throw "安装程序退出码 $($proc.ExitCode)"
+    }}
+    $sender.ReportProgress(0, '更新完成，正在启动…')
+    Start-Sleep -Milliseconds 500
+{restart_line}    try {{ Remove-Item -LiteralPath $setup -Force -ErrorAction SilentlyContinue }} catch {{ }}
+  }})
+  $worker.Add_ProgressChanged({{
+    param($sender, $e)
+    $status.Text = [string]$e.UserState
+  }})
+  $worker.Add_RunWorkerCompleted({{
+    param($sender, $e)
+    if ($e.Error) {{
+      $status.Text = '更新失败：' + $e.Error.Message
+      $status.ForeColor = [System.Drawing.Color]::FromArgb(214, 106, 106)
+      $bar.Style = 'Continuous'
+      $bar.Value = 0
+      $form.TopMost = $false
+    }} else {{
+      $form.Close()
+    }}
+  }})
+  $worker.RunWorkerAsync()
+}})
+
+[System.Windows.Forms.Application]::EnableVisualStyles()
+[void]$form.ShowDialog()
+try {{ Remove-Item -LiteralPath $PSCommandPath -Force -ErrorAction SilentlyContinue }} catch {{ }}
+"""
+    with open(ps1_path, "w", encoding="utf-8-sig", newline="\n") as f:
+        f.write(script)
+    return ps1_path
+
+
 def _write_installer_runner(
     *,
     pid: int,
@@ -333,42 +474,17 @@ def _write_installer_runner(
     app_dir: str,
     target_exe: str,
     restart: bool,
+    remote_version: str = "",
 ) -> str:
-    """Wait for PID, run Inno silent upgrade in the existing dir, optionally restart."""
-    update_dir = os.path.dirname(installer)
-    bat_path = os.path.join(update_dir, "apply_update.bat")
-    lines = [
-        "@echo off",
-        "setlocal EnableExtensions",
-        f"set \"PID={pid}\"",
-        f"set \"SETUP={installer}\"",
-        f"set \"APPDIR={app_dir}\"",
-        f"set \"DST={target_exe}\"",
-        ":waitloop",
-        "tasklist /FI \"PID eq %PID%\" | findstr /I \"%PID%\" >nul",
-        "if not errorlevel 1 (",
-        "  timeout /t 1 /nobreak >nul",
-        "  goto waitloop",
-        ")",
-        "timeout /t 1 /nobreak >nul",
-        "\"%SETUP%\" /VERYSILENT /NORESTART /CLOSEAPPLICATIONS /DIR=\"%APPDIR%\"",
-        "if errorlevel 1 (",
-        "  echo UPDATE_FAILED> \"%~dp0update_failed.txt\"",
-        "  exit /b 1",
-        ")",
-    ]
-    if restart:
-        lines.append("start \"\" \"%DST%\"")
-    lines.extend(
-        [
-            "del /F /Q \"%SETUP%\" >nul 2>&1",
-            "del /F /Q \"%~f0\" >nul 2>&1",
-            "exit /b 0",
-        ]
+    """Write branded PowerShell update UI (fallback: hidden bat)."""
+    return _write_update_ui_ps1(
+        pid=pid,
+        installer=installer,
+        app_dir=app_dir,
+        target_exe=target_exe,
+        restart=restart,
+        remote_version=remote_version or "latest",
     )
-    with open(bat_path, "w", encoding="gbk", errors="replace", newline="\r\n") as f:
-        f.write("\r\n".join(lines) + "\r\n")
-    return bat_path
 
 
 def _write_windows_swapper(
@@ -491,13 +607,40 @@ def apply_update(*, restart: bool = True) -> dict[str, Any]:
             "message": "Downloaded file is missing or too small",
         }
 
+    creationflags = 0
+    if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
+        creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP  # type: ignore[attr-defined]
+    if hasattr(subprocess, "DETACHED_PROCESS"):
+        creationflags |= subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
+
     if _asset_is_installer(asset_name):
-        bat = _write_installer_runner(
+        ui_script = _write_installer_runner(
             pid=os.getpid(),
             installer=download_path,
             app_dir=app_dir,
             target_exe=exe_path,
             restart=restart,
+            remote_version=str(check.get("remote_version") or ""),
+        )
+        # Hidden PowerShell host; WinForms UI is shown by the script itself.
+        # Do NOT use CREATE_NO_WINDOW — it can suppress the GUI on some hosts.
+        subprocess.Popen(
+            [
+                "powershell.exe",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-WindowStyle",
+                "Hidden",
+                "-File",
+                ui_script,
+            ],
+            cwd=update_dir,
+            close_fds=True,
+            creationflags=creationflags,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
         )
         note = "Installer upgrades the program only; Read_record.json is not modified."
     else:
@@ -510,21 +653,18 @@ def apply_update(*, restart: bool = True) -> dict[str, Any]:
             optional_stable=optional_stable,
             restart=restart,
         )
+        no_window = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        subprocess.Popen(
+            ["cmd.exe", "/c", bat],
+            cwd=update_dir,
+            close_fds=True,
+            creationflags=creationflags | no_window,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+        )
         note = "User data files are not modified; only the executable is replaced."
-    creationflags = 0
-    if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
-        creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP  # type: ignore[attr-defined]
-    if hasattr(subprocess, "DETACHED_PROCESS"):
-        creationflags |= subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
-    subprocess.Popen(
-        ["cmd.exe", "/c", bat],
-        cwd=update_dir,
-        close_fds=True,
-        creationflags=creationflags,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        stdin=subprocess.DEVNULL,
-    )
+
     _schedule_process_exit()
     return {
         **check,
