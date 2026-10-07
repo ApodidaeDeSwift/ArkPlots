@@ -21,6 +21,13 @@ import subprocess
 import sys
 from pathlib import Path
 
+# GitHub Actions Windows runners often use cp1252 for stdout; avoid UnicodeEncodeError.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+    except Exception:
+        pass
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -367,7 +374,7 @@ def find_signtool() -> Path | None:
 def sign_file(path: Path) -> bool:
     """Authenticode-sign ``path`` when SIGN_PFX / SIGN_PFX_PASSWORD are set.
 
-    Without a certificate, SmartScreen will keep showing「发布者未知」.
+    Without a certificate, SmartScreen shows publisher unknown.
     See packaging/SIGNING.md.
     """
     pfx = os.environ.get("SIGN_PFX", "").strip()
@@ -399,7 +406,7 @@ def sign_file(path: Path) -> bool:
         cmd.extend(["/p", password])
     cmd.append(str(path))
     # Avoid echoing the password in logs.
-    print(f"+ signtool sign … {path.name}", flush=True)
+    print(f"+ signtool sign ... {path.name}", flush=True)
     subprocess.check_call(cmd, cwd=str(ROOT))
     print(f"signed {path.name}", flush=True)
     return True
@@ -421,7 +428,7 @@ def build_installer() -> Path:
     if not sign_file(payload_exe):
         print(
             "skip code-sign (set SIGN_PFX + SIGN_PFX_PASSWORD to enable). "
-            "Unsigned builds show SmartScreen「发布者未知」.",
+            "Unsigned builds show SmartScreen publisher unknown.",
             flush=True,
         )
 
