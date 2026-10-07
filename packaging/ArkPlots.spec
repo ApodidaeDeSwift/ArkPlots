@@ -1,12 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
 """Stable PyInstaller spec for ArkPlots (APP_Release).
 
-- Builds ``ArkPlots.exe`` (stable name for future in-place updates).
+- Builds an **onedir** tree ``dist/ArkPlots/`` (fewer AV false positives than onefile).
 - ``console=False`` → no console window.
+- UPX is disabled (UPX packing is a common malware heuristic).
 - Version / product metadata come from ``app_info.py`` (repo root).
-- ``Plotline.json`` / ``Read_record.json`` are NOT bundled.
+- ``Plotline.json`` / ``Read_record.json`` are NOT bundled here; the installer adds Plotline.
 
-Prefer: ``python scripts/build_release.py``
+Prefer: ``python packaging/build_release.py``
 """
 
 import os
@@ -68,19 +69,17 @@ a = Analysis(
 )
 pyz = PYZ(a.pure)
 
+# Onedir layout: small launcher + sibling DLLs/data. Inno Setup wraps this folder.
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.datas,
     [],
+    exclude_binaries=True,
     name=EXE_STEM,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
+    upx=False,
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -89,4 +88,14 @@ exe = EXE(
     entitlements_file=None,
     icon=_ICON,
     version=_VERSION_INFO,
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    name=EXE_STEM,
+    strip=False,
+    upx=False,
+    upx_exclude=[],
 )

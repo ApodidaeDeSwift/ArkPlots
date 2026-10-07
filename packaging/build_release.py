@@ -5,8 +5,8 @@
 Steps:
   1. Sync ``web/src/version.ts`` from ``app_info.py``
   2. ``npm run build`` in web/
-  3. PyInstaller via ``packaging/ArkPlots.spec`` → ``dist/ArkPlots.exe``
-  4. Inno Setup via ``packaging/ArkPlots.iss`` → ``Arkplot_setup_ver{VERSION}.exe``
+  3. PyInstaller onedir (no UPX) → ``dist/ArkPlots/``
+  4. Inno Setup → ``Arkplot_setup_ver{VERSION}.exe``
 
 Usage (from repo root):
   python packaging/build_release.py
@@ -25,7 +25,13 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from app_info import APP_NAME, EXE_STEM, VERSION, release_setup_name  # noqa: E402
+from app_info import (  # noqa: E402
+    APP_NAME,
+    EXE_STEM,
+    GITHUB_REPO,
+    VERSION,
+    release_setup_name,
+)
 
 
 def _run(cmd: list[str], cwd: Path) -> None:
@@ -64,10 +70,13 @@ def parse_version_tuple(version: str) -> tuple[int, int, int, int]:
 
 
 def write_version_info() -> Path:
-    """Windows VERSIONINFO so Explorer shows the calendar build, not a leftover 1.0.x."""
+    """Windows VERSIONINFO — clear publisher metadata reduces SmartScreen suspicion."""
     dest = ROOT / "packaging" / "_version_info.txt"
     major, minor, patch, build = parse_version_tuple(VERSION)
     filevers = f"{major}, {minor}, {patch}, {build}"
+    company = "ApodidaeDeSwift"
+    copyright_ = "Copyright (C) 2024-2026 ApodidaeDeSwift"
+    comments = f"Open-source Arknights plot tracker — https://github.com/{GITHUB_REPO}"
     dest.write_text(
         "\n".join(
             [
@@ -86,13 +95,15 @@ def write_version_info() -> Path:
                 "  kids=[",
                 "    StringFileInfo([",
                 "      StringTable('040904B0', [",
-                f"        StringStruct('CompanyName', '{APP_NAME}'),",
+                f"        StringStruct('CompanyName', '{company}'),",
                 f"        StringStruct('FileDescription', '{APP_NAME}'),",
                 f"        StringStruct('FileVersion', '{VERSION}'),",
                 f"        StringStruct('InternalName', '{EXE_STEM}'),",
+                f"        StringStruct('LegalCopyright', '{copyright_}'),",
                 f"        StringStruct('OriginalFilename', '{EXE_STEM}.exe'),",
                 f"        StringStruct('ProductName', '{APP_NAME}'),",
                 f"        StringStruct('ProductVersion', '{VERSION}'),",
+                f"        StringStruct('Comments', '{comments}'),",
                 "      ])",
                 "    ]),",
                 "    VarFileInfo([VarStruct('Translation', [1033, 1200])]),",
@@ -141,23 +152,30 @@ def find_pyinstaller() -> list[str]:
 
 
 def build_exe() -> Path:
+    """Build onedir payload at ``dist/ArkPlots/ArkPlots.exe`` (no UPX, not onefile)."""
     spec = ROOT / "packaging" / "ArkPlots.spec"
     if not spec.is_file():
         raise SystemExit(f"missing spec: {spec}")
     dist_dir = ROOT / "dist"
     work_dir = ROOT / "build"
+    # Remove stale onefile leftovers from older packaging so the installer
+    # cannot accidentally pick up a packed single-file exe.
+    stale_onefile = dist_dir / f"{EXE_STEM}.exe"
+    if stale_onefile.is_file():
+        stale_onefile.unlink()
     _run(
         [
             *find_pyinstaller(),
             "--noconfirm",
             "--clean",
+            "--noupx",
             f"--distpath={dist_dir}",
             f"--workpath={work_dir}",
             str(spec),
         ],
         cwd=ROOT,
     )
-    built = dist_dir / f"{EXE_STEM}.exe"
+    built = dist_dir / EXE_STEM / f"{EXE_STEM}.exe"
     if not built.is_file():
         raise SystemExit(f"PyInstaller finished but {built} is missing")
     return built
@@ -188,6 +206,9 @@ def build_installer() -> Path:
     plotline = ROOT / "Plotline.json"
     if not plotline.is_file():
         raise SystemExit("Plotline.json missing; installer needs it for first-time installs")
+    payload_dir = ROOT / "dist" / EXE_STEM
+    if not (payload_dir / f"{EXE_STEM}.exe").is_file():
+        raise SystemExit(f"missing onedir payload: {payload_dir}")
     spec = ROOT / "packaging" / "ArkPlots.iss"
     if not spec.is_file():
         raise SystemExit(f"missing installer script: {spec}")
@@ -204,6 +225,12 @@ def build_installer() -> Path:
     if not setup.is_file():
         raise SystemExit(f"Inno Setup finished but {setup.name} is missing")
     print(f"installer -> {setup.name} ({setup.stat().st_size} bytes)", flush=True)
+    print(
+        "Note: unsigned installers may still trigger SmartScreen until the "
+        "build has reputation or is code-signed. Submit false positives at "
+        "https://www.microsoft.com/wdsi/filesubmission",
+        flush=True,
+    )
     return setup
 
 

@@ -62,7 +62,8 @@ jobs:
       - name: Install Python build deps
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt pyinstaller pythonnet pillow
+          # Latest PyInstaller bootloader tends to attract fewer stale AV signatures.
+          python -m pip install -r requirements.txt "pyinstaller>=6.11" pythonnet pillow
 
       - name: Install frontend deps
         working-directory: web

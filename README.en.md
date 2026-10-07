@@ -165,11 +165,13 @@ cd web && npm install && cd ..
 python packaging/build_release.py
 ```
 
-This builds `dist/ArkPlots.exe` and the installer `Arkplot_setup_ver{VERSION}.exe`.
+This builds a PyInstaller **onedir** tree at `dist/ArkPlots/` (UPX off, fewer AV false positives) and the installer `Arkplot_setup_ver{VERSION}.exe`.
 
 - **Fresh install:** default `%LOCALAPPDATA%\ArkPlots`, optional desktop shortcut, ships initial `Plotline.json`
 - **Already installed:** confirm, then upgrade the program without deleting `Read_record.json`
 - Tag `APP_Ver{VERSION}` on **APP_Release**; Actions attaches **`Arkplot_setup_ver{VERSION}.exe`**
+
+If SmartScreen still warns: common for new unsigned builds. Submit a false-positive report at [Microsoft Security Intelligence](https://www.microsoft.com/wdsi/filesubmission); lasting fix is a code-signing certificate.
 
 ### Project layout
 

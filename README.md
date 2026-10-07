@@ -165,15 +165,17 @@ cd web && npm install && cd ..
 python packaging/build_release.py
 ```
 
-脚本会：同步版本 → 构建前端 → 打出 `dist/ArkPlots.exe` → 再用 `packaging/ArkPlots.iss` 生成安装包 `Arkplot_setup_ver{VERSION}.exe`。
+脚本会：同步版本 → 构建前端 → 打出 **onedir** 目录 `dist/ArkPlots/`（关闭 UPX，降低杀软误报）→ 再用 `packaging/ArkPlots.iss` 生成安装包 `Arkplot_setup_ver{VERSION}.exe`。
 
 安装包行为：
 
 - **未安装**：默认装到 `%LOCALAPPDATA%\ArkPlots`，可改路径，可选桌面快捷方式；会写入初始 `Plotline.json`
 - **已安装**：确认后只更新程序；`Read_record.json` 等用户数据不会被删除
-- UI 仍打进 exe；`Read_record.json` 运行时在安装目录自动生成
+- UI 打进安装目录；`Read_record.json` 运行时自动生成
 
 发布桌面版时请在 **APP_Release** 打 tag `APP_Ver{VERSION}`。GitHub Actions 会构建并把 **`Arkplot_setup_ver{VERSION}.exe`** 挂到 Release（不要只发裸 exe）。
+
+若 Windows 仍提示「可能有害」：多为未签名 + 新文件无信誉的误报。可到 [Microsoft 安全智能提交](https://www.microsoft.com/wdsi/filesubmission) 报假阳性；长期方案是购买代码签名证书并在打包后签名。
 
 ### 项目结构
 

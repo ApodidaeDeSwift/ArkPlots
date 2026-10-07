@@ -1,6 +1,11 @@
 ; ArkPlots Windows installer (Inno Setup 6).
 ; Compile via: python packaging/build_release.py
 ;   iscc /DMyAppVersion=x.y.z.w packaging/ArkPlots.iss
+;
+; Packaging choices that reduce antivirus false positives:
+;   - Install a PyInstaller *onedir* tree (not a self-extracting onefile exe)
+;   - No UPX on the payload
+;   - Full VersionInfo metadata on the setup binary
 
 #ifndef MyAppVersion
   #error MyAppVersion must be passed as /DMyAppVersion=...
@@ -12,8 +17,9 @@
 
 #define MyAppName "ArkPlots"
 #define MyAppExeName "ArkPlots.exe"
-#define MyAppPublisher "ArkPlots"
+#define MyAppPublisher "ApodidaeDeSwift"
 #define MyAppURL "https://github.com/ApodidaeDeSwift/ArkPlots"
+#define MyAppCopyright "Copyright (C) 2024-2026 ApodidaeDeSwift"
 
 [Setup]
 AppId={{E8B3C4A1-7D2F-4E9B-A6C1-1F2E3D4C5B6A}
@@ -23,6 +29,8 @@ AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
+AppUpdatesURL={#MyAppURL}/releases
+AppCopyright={#MyAppCopyright}
 DefaultDirName={localappdata}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
@@ -32,11 +40,13 @@ UsePreviousTasks=yes
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 AllowNoIcons=yes
-Compression=lzma2
-SolidCompression=yes
+; Non-solid compression is slightly less "packed-looking" to some scanners.
+Compression=lzma2/fast
+SolidCompression=no
 WizardStyle=modern
 SetupIconFile=..\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
+UninstallDisplayName={#MyAppName}
 OutputDir=..
 OutputBaseFilename=Arkplot_setup_ver{#MyAppVersion}
 ArchitecturesInstallIn64BitMode=x64
@@ -46,8 +56,15 @@ RestartApplications=no
 MinVersion=10.0
 ShowLanguageDialog=no
 VersionInfoVersion={#MyAppVersion}
+VersionInfoCompany={#MyAppPublisher}
+VersionInfoCopyright={#MyAppCopyright}
+VersionInfoDescription={#MyAppName} installer
 VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
+VersionInfoTextVersion={#MyAppVersion}
+; Optional: set SIGNTOOL env / SignTool in CI when you have a code-signing cert.
+; SignTool=signtool $p
+; SignedUninstaller=yes
 
 [Languages]
 Name: "chinesesimplified"; MessagesFile: "compiler:Default.isl"
@@ -80,8 +97,9 @@ UpgradeConfirm=检测到本机已安装 ArkPlots。%n%n点击「是」将更新�
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "附加任务:"; Flags: unchecked
 
 [Files]
-; Program binary — always replaced on upgrade.
-Source: "..\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+; Onedir payload from PyInstaller (ArkPlots.exe + DLLs/data). Always replace on upgrade.
+Source: "..\dist\ArkPlots\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Story catalog for first install / refresh. Never ships Read_record.json.
 Source: "..\Plotline.json"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
