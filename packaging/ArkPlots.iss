@@ -120,7 +120,6 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchAfterInstall}"; Flags
 const
   { Delphi TColor is BGR; mirrors web/src/styles/theme.css }
   CBg0 = $19120B;      { #0b1219 }
-  CBg1 = $241B11;      { #111b24 }
   CAccent = $C7C73E;   { #3ec7c7 }
   CText = $EFE6D7;     { #d7e6ef }
   CTextDim = $B2A08A;  { #8aa0b2 }
@@ -137,10 +136,10 @@ begin
     RegKeyExists(HKLM, UninstallRegKey);
 end;
 
-procedure StyleLabel(L: TNewStaticText; Color: Integer; Bold: Boolean);
+procedure StyleLabel(L: TNewStaticText; TextColor: Integer; Bold: Boolean);
 begin
   if L = nil then Exit;
-  L.Font.Color := Color;
+  L.Font.Color := TextColor;
   L.Font.Name := 'Segoe UI';
   if Bold then
     L.Font.Style := [fsBold]
@@ -150,15 +149,10 @@ end;
 
 procedure ApplyArkPlotsTheme;
 begin
+  { Only touch properties exposed by Inno's Pascal Script class stubs. }
   WizardForm.Color := CBg0;
   WizardForm.MainPanel.Color := CBg0;
-  WizardForm.InnerPage.Color := CBg1;
-  WizardForm.InnerNotebook.Color := CBg1;
-  WizardForm.OuterNotebook.Color := CBg0;
   WizardForm.Bevel.Visible := False;
-
-  WizardForm.WizardBitmapImage.BackColor := CBg0;
-  WizardForm.WizardSmallBitmapImage.BackColor := CBg0;
 
   StyleLabel(WizardForm.PageNameLabel, CAccent, True);
   StyleLabel(WizardForm.PageDescriptionLabel, CTextDim, False);

@@ -16,7 +16,7 @@ APP_NAME = "ArkPlots"
 EXE_STEM = "ArkPlots"
 
 # Semver-like calendar build: YY.M.D.build  (e.g. 26.10.5.1 = 2026-10-05 #1)
-VERSION = "26.10.7.10"
+VERSION = "26.10.7.11"
 
 # Release channel label.
 CHANNEL = "release"
