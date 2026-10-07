@@ -14,26 +14,38 @@ If you find it useful, a ⭐ on GitHub is always appreciated.
 
 ### After you download
 
-1. Keep **`Arkplot_ver26.9.23.2.exe`** and **`Plotline.json`** (story data) in the **same folder**.
-2. Double-click the exe. It opens a native window titled **ArkPlots** (about 1400×900, resizable). There is **no** console / command-line window, and it does **not** force open your system browser.
-3. Closing the window exits the app. Progress is saved to `Read_record.json` in that same folder.
+1. Open [GitHub Releases](https://github.com/ApodidaeDeSwift/ArkPlots/releases) and download the latest **`Arkplot_setup_ver*.exe`** installer (tags look like `APP_Ver…`).
+2. Run the installer. Default path is `%LOCALAPPDATA%\ArkPlots` (changeable); optional desktop shortcut. A fresh install ships `Plotline.json`.
+3. Launch from the Start menu or desktop shortcut. A native window titled **ArkPlots** opens (about 1400×900, resizable). There is **no** console window.
+4. Closing the window exits the app. Progress is saved as `Read_record.json` in the install folder (upgrades do **not** wipe it).
 
-### Files next to the exe
+> The older portable layout (exe + `Plotline.json` in one folder) still works, but new builds are meant to be installed via the setup package.
 
-| File | Notes |
+### Files in the install folder
+
+| File / folder | Notes |
 | --- | --- |
-| `Plotline.json` | **Required.** Story entries; must sit beside the exe |
-| `Read_record.json` | Reading progress; created automatically if missing |
+| `ArkPlots.exe` and program files | Written by the installer; replaced on upgrade |
+| `Plotline.json` | Story data (bundled with the installer) |
+| `Read_record.json` | Reading progress; created if missing. On startup, new plot ids missing from the file are added as Unread |
 
-The Web UI is embedded in the exe—you do **not** need a separate `web/dist` folder. Windows usually already has Edge WebView2; if the window fails to open, install / repair WebView2.
+The Web UI is embedded—you do **not** need a separate `web/dist` folder. Windows usually already has Edge WebView2; if the window fails to open, install / repair WebView2.
 
 ### What you can do (short)
 
-- Filter by date, type, nation, operators, stage, factions, related tags, and more
+- Filter by date, type, nation, operators, stage, chapter ownership, factions, related tags, and **read status**
 - Set read status: Unread / Planned / Reading / Read (single or batch)
 - See required / optional prerequisites and catch-up / continue recommendations
 - Open or copy related video links
-- Switch Simplified Chinese / English in the top bar; promo art may appear in details when available
+- **Settings**: toggles for promo art / reasons / prerequisites; in-app **check for updates and one-click upgrade** (needs GitHub access)
+- Switch Simplified Chinese / English in the top bar
+
+### Updates
+
+- Settings → Version → “Check for updates” scans GitHub tags matching `APP_Ver*`
+- When an installer asset is available, “Update and restart” replaces the program only—**progress is kept**
+- Updates currently use GitHub only (may need a VPN outside mainland China)
+- If SmartScreen shows **Publisher: Unknown**, the build is unsigned — see [packaging/SIGNING.md](packaging/SIGNING.md)
 
 ### About different servers
 
@@ -45,7 +57,7 @@ Dates currently follow the **CN (Mainland China) server**, and recommended video
 - WeChat: `Quantumaster233` · QQ: `3195582616`
 - Bilibili: [space.bilibili.com/281039105](https://space.bilibili.com/281039105)
 
-If ArkPlots helps you, feel free to buy the author a Mixue drink (蜜雪冰城):
+If ArkPlots helps you, feel free to buy the author a cup of coffee—the same page is also available from in-app Settings:
 
 ![Support](coffee.png)
 
@@ -57,7 +69,7 @@ This is a personal learning and organizing tool. *Arknights* and related text/se
 
 ## For contributors & advanced users
 
-For running from source, editing the frontend / data, or rebuilding the executable.
+For running from source, editing the frontend / data, or rebuilding the installer.
 
 ### Requirements
 
@@ -135,6 +147,7 @@ Story entries in release order. Common fields:
 | `country` | Related nation / region |
 | `new_operator` | Concurrent operators |
 | `plot_stage` | Story stage |
+| `chapter` | Chapter / scorebook ownership |
 | `related_power` | Related factions |
 | `related_plot` | Related tags |
 | `description` | Description text |
@@ -145,7 +158,7 @@ Story entries in release order. Common fields:
 #### Read_record.json
 
 Keys are story `id`s (strings). Values: `未读` | `计划读` | `正在读` | `已读`.  
-These Chinese codes are stable in the data layer. Switching the UI language only changes labels; it does not rewrite the file.
+These Chinese codes are stable in the data layer. Switching the UI language only changes labels; it does not rewrite the file. On startup, ids present in `Plotline.json` but missing from the record file are added as Unread.
 
 ### Internationalization
 
@@ -165,13 +178,14 @@ cd web && npm install && cd ..
 python packaging/build_release.py
 ```
 
-This builds a PyInstaller **onedir** tree at `dist/ArkPlots/` (UPX off, fewer AV false positives) and the installer `Arkplot_setup_ver{VERSION}.exe`.
+This syncs version/wizard art, builds the frontend, produces a PyInstaller **onedir** tree at `dist/ArkPlots/` (UPX off), and compiles `Arkplot_setup_ver{VERSION}.exe` via `packaging/ArkPlots.iss`.
 
 - **Fresh install:** default `%LOCALAPPDATA%\ArkPlots`, optional desktop shortcut, ships initial `Plotline.json`
 - **Already installed:** confirm, then upgrade the program without deleting `Read_record.json`
+- Installer UI follows the in-app teal terminal look (not stock Inno chrome)
 - Tag `APP_Ver{VERSION}` on **APP_Release**; Actions attaches **`Arkplot_setup_ver{VERSION}.exe`**
 
-If SmartScreen says **Publisher: Unknown**, the build is unsigned — see [`packaging/SIGNING.md`](packaging/SIGNING.md). Set `SIGN_PFX` / `SIGN_PFX_PASSWORD` (or GitHub secrets `SIGN_PFX_BASE64` + `SIGN_PFX_PASSWORD`) before packaging. You can also [submit samples to Microsoft](https://www.microsoft.com/wdsi/filesubmission), but signing is the real fix.
+Code signing / SmartScreen: see [`packaging/SIGNING.md`](packaging/SIGNING.md). Set `SIGN_PFX` / `SIGN_PFX_PASSWORD` (or GitHub secrets `SIGN_PFX_BASE64` + `SIGN_PFX_PASSWORD`) before packaging. You can also [submit samples to Microsoft](https://www.microsoft.com/wdsi/filesubmission), but signing is the real fix.
 
 ### Project layout
 
@@ -182,10 +196,12 @@ ArkPlots/
 ├── main.py                # Launcher (native window by default; --browser / --tk optional)
 ├── requirements.txt       # pywebview, etc.
 ├── server.py              # Local HTTP API + static files
+├── updater.py             # In-app updater (APP_Ver* tags)
 ├── app_info.py            # version / update metadata
-├── packaging/ArkPlots.spec # PyInstaller (console=False)
+├── packaging/ArkPlots.spec # PyInstaller (onedir, console=False)
 ├── packaging/ArkPlots.iss  # Inno Setup installer
 ├── packaging/build_release.py
+├── packaging/SIGNING.md   # Code-signing notes
 ├── web/                   # Vite + React + TypeScript
 │   ├── src/i18n/          # UI & content i18n
 │   └── dist/              # Build output
@@ -198,4 +214,6 @@ API sketch:
 - `GET /api/plots` — plotline data
 - `GET /api/records` / `PUT /api/records` — reading records
 - `GET /api/version` — version / update metadata
+- `GET /api/update/check` — check newest GitHub `APP_Ver*` release
+- `POST /api/update/apply` — download installer and schedule replace/restart (packaged desktop only)
 - `GET /api/health` — health check

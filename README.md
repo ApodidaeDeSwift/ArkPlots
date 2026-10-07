@@ -14,26 +14,38 @@
 
 ### 下载后怎么用
 
-1. 拿到发布包里的 **`Arkplot_ver26.9.23.2.exe`**，以及同目录下的 **`Plotline.json`**（剧情数据）。
-2. 双击 exe 即可。会打开标题为 **ArkPlots** 的独立窗口（约 1400×900，可调大小），**不会**弹出命令行黑框，也**不会**强制打开系统浏览器。
-3. 关闭窗口即退出；阅读进度会写回同目录的 `Read_record.json`。
+1. 打开 [GitHub Releases](https://github.com/ApodidaeDeSwift/ArkPlots/releases)，下载最新 **`Arkplot_setup_ver*.exe`** 安装包（标签形如 `APP_Ver…`）。
+2. 运行安装程序：默认装到 `%LOCALAPPDATA%\ArkPlots`，可改路径，可选桌面快捷方式。首次安装会写入剧情数据 `Plotline.json`。
+3. 从开始菜单或桌面快捷方式启动，打开标题为 **ArkPlots** 的独立窗口（约 1400×900，可调大小）。**不会**弹出命令行黑框。
+4. 关闭窗口即退出；阅读进度保存在安装目录下的 `Read_record.json`（升级程序时不会被清空）。
 
-### 同目录需要有什么
+> 旧版「把 exe 和 Plotline.json 放同一文件夹」的便携用法仍可用，但新版本请优先使用安装包。
 
-| 文件 | 说明 |
+### 安装目录里有什么
+
+| 文件 / 目录 | 说明 |
 | --- | --- |
-| `Plotline.json` | **必需**。剧情条目数据，须与 exe 放在同一文件夹 |
-| `Read_record.json` | 阅读记录。没有时会自动生成 |
+| `ArkPlots.exe` 等程序文件 | 由安装包写入；升级时会被替换 |
+| `Plotline.json` | 剧情数据（安装包自带） |
+| `Read_record.json` | 阅读记录。没有时会自动生成；缺少的新剧情 id 启动时会补成「未读」 |
 
-Web 界面已打进 exe，旁边**不需要**再放 `web/dist`。Windows 一般已自带 Edge WebView2；若窗口打不开，请确认系统已安装 WebView2。
+Web 界面已打进程序，旁边**不需要**再放 `web/dist`。Windows 一般已自带 Edge WebView2；若窗口打不开，请确认系统已安装 WebView2。
 
 ### 能做什么（简述）
 
-- 按日期、类型、国家、干员、阶段、势力、相关标签等筛选
+- 按日期、类型、国家、干员、阶段、章节所属、势力、相关标签、**阅读状态**等筛选
 - 设置阅读状态：未读 / 计划读 / 正在读 / 已读（可单条或批量）
 - 查看必要 / 可选前置，并按进度给出补读与续读推荐
 - 关联视频：打开链接或复制
-- 右上角切换简体中文 / English；详情可显示宣传图（有数据时）
+- **设置**：显示宣传图 / 原因 / 前置开关；应用内**检查更新并一键升级**（需能访问 GitHub）
+- 右上角切换简体中文 / English
+
+### 关于更新
+
+- 设置 → 版本 →「检查更新」：从 GitHub 的 `APP_Ver*` 标签查找新版本
+- 有安装包资源时，可「立即更新并重启」；只会替换程序，**不会清空**阅读进度
+- 更新源目前仅走 GitHub（海外），没有稳定国际网络时可能失败
+- 若 Windows SmartScreen 提示「发布者未知」，是未做代码签名导致的，见 [packaging/SIGNING.md](packaging/SIGNING.md)
 
 ### 关于不同服务器
 
@@ -45,7 +57,7 @@ Web 界面已打进 exe，旁边**不需要**再放 `web/dist`。Windows 一般�
 - 微信：`Quantumaster233` · QQ：`3195582616`
 - B站：[space.bilibili.com/281039105](https://space.bilibili.com/281039105)
 
-如果本工具对你有帮助，请作者喝一杯蜜雪冰城：
+如果本工具对你有帮助，请作者喝一杯蜜雪冰城（应用内设置也可打开同一页）：
 
 ![支持我们](coffee.png)
 
@@ -135,6 +147,7 @@ npm run dev
 | `country` | 相关国家 / 地区 |
 | `new_operator` | 同期干员 |
 | `plot_stage` | 剧情阶段 |
+| `chapter` | 章节所属（如曲谱 / 篇章归属） |
 | `related_power` | 相关势力 |
 | `related_plot` | 相关标签 |
 | `description` | 描述 |
@@ -145,7 +158,7 @@ npm run dev
 #### Read_record.json
 
 键为剧情 `id`（字符串），值为：`未读` | `计划读` | `正在读` | `已读`。  
-数据层状态值固定为中文；切换界面语言只改显示文案，不改写文件。
+数据层状态值固定为中文；切换界面语言只改显示文案，不改写文件。启动时会对 `Plotline.json` 中尚未出现在记录里的 id 自动补「未读」。
 
 ### 多语言（i18n）
 
@@ -165,17 +178,17 @@ cd web && npm install && cd ..
 python packaging/build_release.py
 ```
 
-脚本会：同步版本 → 构建前端 → 打出 **onedir** 目录 `dist/ArkPlots/`（关闭 UPX，降低杀软误报）→ 再用 `packaging/ArkPlots.iss` 生成安装包 `Arkplot_setup_ver{VERSION}.exe`。
+脚本会：同步版本与向导图 → 构建前端 → 打出 **onedir** 目录 `dist/ArkPlots/`（关闭 UPX，降低杀软误报）→ 再用 `packaging/ArkPlots.iss` 生成安装包 `Arkplot_setup_ver{VERSION}.exe`。
 
 安装包行为：
 
 - **未安装**：默认装到 `%LOCALAPPDATA%\ArkPlots`，可改路径，可选桌面快捷方式；会写入初始 `Plotline.json`
 - **已安装**：确认后只更新程序；`Read_record.json` 等用户数据不会被删除
-- UI 打进安装目录；`Read_record.json` 运行时自动生成
+- 安装向导 UI 与应用内风格对齐（青蓝终端主题，非 Inno 默认皮肤）
 
-发布桌面版时请在 **APP_Release** 打 tag `APP_Ver{VERSION}`。GitHub Actions 会构建并把 **`Arkplot_setup_ver{VERSION}.exe`** 挂到 Release（不要只发裸 exe）。
+发布桌面版时请在 **APP_Release** 分支打 tag `APP_Ver{VERSION}`。GitHub Actions 会构建并把 **`Arkplot_setup_ver{VERSION}.exe`** 挂到对应 Release（不要只发裸 exe）。
 
-若出现 SmartScreen「发布者未知」：这是**未做代码签名**导致的，不是杀软误杀文件内容。见 [`packaging/SIGNING.md`](packaging/SIGNING.md)（购买证书 → 设置 `SIGN_PFX` 后重新打包）。亦可向 [Microsoft 安全智能](https://www.microsoft.com/wdsi/filesubmission) 提交样本积累信誉，但不如签名彻底。
+代码签名与 SmartScreen：见 [`packaging/SIGNING.md`](packaging/SIGNING.md)（可选 `SIGN_PFX` / GitHub secrets）。亦可向 [Microsoft 安全智能](https://www.microsoft.com/wdsi/filesubmission) 提交样本，但不如签名彻底。
 
 ### 项目结构
 
@@ -186,10 +199,12 @@ ArkPlots/
 ├── main.py                # 启动器（默认独立窗口；--browser / --tk 可选）
 ├── requirements.txt       # pywebview 等
 ├── server.py              # 本地 HTTP API + 静态资源
+├── updater.py             # 应用内更新（扫描 APP_Ver*）
 ├── app_info.py            # 版本号 / 更新元数据
-├── packaging/ArkPlots.spec # PyInstaller（console=False）
+├── packaging/ArkPlots.spec # PyInstaller（onedir，console=False）
 ├── packaging/ArkPlots.iss  # Inno Setup 安装包
 ├── packaging/build_release.py
+├── packaging/SIGNING.md   # 代码签名说明
 ├── web/                   # Vite + React + TypeScript
 │   ├── src/i18n/          # 界面与内容国际化
 │   └── dist/              # 构建输出
@@ -202,4 +217,6 @@ API 概要：
 - `GET /api/plots` — 剧情数据
 - `GET /api/records` / `PUT /api/records` — 阅读记录
 - `GET /api/version` — 版本与更新元数据
+- `GET /api/update/check` — 检查 GitHub `APP_Ver*` 新版本
+- `POST /api/update/apply` — 下载安装包并安排替换重启（仅打包桌面版）
 - `GET /api/health` — 健康检查
