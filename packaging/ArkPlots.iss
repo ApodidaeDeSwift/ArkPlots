@@ -65,7 +65,9 @@ VersionInfoProductVersion={#MyAppVersion}
 VersionInfoTextVersion={#MyAppVersion}
 
 [Languages]
-Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
+; Chocolatey / minimal Inno installs often omit Languages\*.isl — use Default
+; and override UI strings in [Messages] (Chinese copy below).
+Name: "chinesesimplified"; MessagesFile: "compiler:Default.isl"
 
 [Messages]
 SetupAppTitle=ArkPlots
