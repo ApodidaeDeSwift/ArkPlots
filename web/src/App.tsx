@@ -18,6 +18,7 @@ import {
   usePlotName,
   usePowerLabel,
   useRelatedPlotTagLabel,
+  useStatusLabel,
   useT,
 } from './i18n'
 import {
@@ -26,10 +27,10 @@ import {
   type DisplaySettings,
 } from './settings'
 import type { Filters, PlotItem, ReadStatus } from './types'
-import { parseVideos } from './types'
+import { READ_STATUSES, parseVideos } from './types'
 import './styles/theme.css'
 
-type SelectorKey = 'class' | 'country' | 'stage' | 'power' | 'rplot' | 'chapter'
+type SelectorKey = 'class' | 'country' | 'stage' | 'power' | 'rplot' | 'chapter' | 'status'
 
 function composeDate(y: string, m: string, d: string): string | null {
   if (!y) return null
@@ -48,6 +49,7 @@ export default function App() {
   const relatedPlotTagLabel = useRelatedPlotTagLabel()
   const chapterLabel = useChapterLabel()
   const operatorLabel = useOperatorLabel()
+  const statusLabel = useStatusLabel()
   const plotName = usePlotName()
   const [plots, setPlots] = useState<PlotItem[]>([])
   const [records, setRecords] = useState<Record<string, string>>({})
@@ -92,10 +94,29 @@ export default function App() {
           fetchCovers(),
         ])
         if (cancelled) return
-        setPlots(plotFile.data || [])
-        setRecords(rec)
+        const list = plotFile.data || []
+        // Fill missing Plotline ids as 未读 (server also does this; keep client in sync).
+        const nextRec = { ...rec }
+        let patched = false
+        for (const p of list) {
+          if (p?.id == null) continue
+          const key = String(p.id)
+          if (!(key in nextRec)) {
+            nextRec[key] = '未读'
+            patched = true
+          }
+        }
+        setPlots(list)
+        setRecords(nextRec)
         setCovers(cov)
         setError(null)
+        if (patched) {
+          try {
+            await saveRecords(nextRec)
+          } catch {
+            /* server ensure_read_record is the durable path; ignore soft save errors here */
+          }
+        }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e))
       } finally {
@@ -116,9 +137,12 @@ export default function App() {
   const filtered = useMemo(
     () =>
       plots.filter((p) =>
-        matchesFilters(p, appliedFilters, { operatorLabel }),
+        matchesFilters(p, appliedFilters, {
+          operatorLabel,
+          recordStatus: (id) => records[id] || '未读',
+        }),
       ),
-    [plots, appliedFilters, operatorLabel],
+    [plots, appliedFilters, operatorLabel, records],
   )
 
   const activeItem = activeId ? plotsMap.get(activeId) || null : null
@@ -305,6 +329,15 @@ export default function App() {
           showMode: false,
           mode: 'any' as const,
           resolveLabel: chapterLabel as (opt: string) => string,
+        }
+      case 'status':
+        return {
+          title: t('selector.status'),
+          options: [...READ_STATUSES],
+          selected: filters.status || [],
+          showMode: false,
+          mode: 'any' as const,
+          resolveLabel: statusLabel as (opt: string) => string,
         }
       default:
         return null
@@ -500,6 +533,11 @@ export default function App() {
               setFilters((f) => ({
                 ...f,
                 chapter: next,
+              }))
+            } else if (selector === 'status') {
+              setFilters((f) => ({
+                ...f,
+                status: next as ReadStatus[],
               }))
             }
           }}

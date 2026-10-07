@@ -60,6 +60,7 @@ export type Messages = {
     chapter: string
     relatedPower: string
     relatedPlot: string
+    status: string
     operator: string
     operatorPlaceholder: string
     selectedClasses: string
@@ -74,6 +75,7 @@ export type Messages = {
     chapter: string
     power: string
     rplot: string
+    status: string
   }
   list: {
     empty: string

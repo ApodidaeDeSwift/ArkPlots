@@ -46,6 +46,7 @@ const zhCN: Messages = {
     chapter: '章节所属',
     relatedPower: '相关势力',
     relatedPlot: '相关剧情',
+    status: '阅读状态',
     operator: '同期角色（子串）',
     operatorPlaceholder: '例如：凯尔希',
     selectedClasses: '已选类型：{list}',
@@ -60,6 +61,7 @@ const zhCN: Messages = {
     chapter: '选择章节所属',
     power: '选择相关势力',
     rplot: '选择相关剧情',
+    status: '选择阅读状态',
   },
   list: {
     empty: '没有匹配的剧情条目',

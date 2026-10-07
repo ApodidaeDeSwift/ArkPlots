@@ -96,21 +96,32 @@ def save_json(path: str, data: Any) -> None:
 
 
 def ensure_read_record(plots: List[Dict[str, Any]]) -> Dict[str, str]:
+    """Ensure every Plotline id has a Read_record entry (default 「未读」).
+
+    Called on server start and on GET /api/records so newly added plots after
+    an update are written into Read_record.json without clearing existing status.
+    """
     data = load_json(READ_RECORD_PATH)
     if not isinstance(data, dict):
         data = {}
-    changed = False
+    # Normalize keys to str so "12" and 12 never diverge across reloads.
+    normalized: Dict[str, str] = {str(k): str(v) for k, v in data.items()}
+    changed = len(normalized) != len(data) or any(
+        not isinstance(k, str) for k in data.keys()
+    )
     for p in plots:
+        if not isinstance(p, dict):
+            continue
         pid = p.get("id")
-        if pid is None:
+        if pid is None or pid == "":
             continue
         key = str(pid)
-        if key not in data:
-            data[key] = "未读"
+        if key not in normalized:
+            normalized[key] = "未读"
             changed = True
     if changed or not os.path.exists(READ_RECORD_PATH):
-        save_json(READ_RECORD_PATH, data)
-    return {str(k): str(v) for k, v in data.items()}
+        save_json(READ_RECORD_PATH, normalized)
+    return normalized
 
 
 class ArkPlotsHandler(SimpleHTTPRequestHandler):
@@ -175,6 +186,9 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
             if data is None:
                 self._send_json(404, {"error": f"Plotline.json not found at {PLOTLINE_PATH}"})
                 return
+            plots = data.get("data") if isinstance(data, dict) else None
+            if isinstance(plots, list):
+                ensure_read_record(plots)
             self._send_json(200, data)
             return
 

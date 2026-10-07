@@ -1,4 +1,4 @@
-import type { Filters, PlotItem } from './types'
+import type { Filters, PlotItem, ReadStatus } from './types'
 import { normalizeList } from './types'
 
 function parseItemDate(s?: string): Date | null {
@@ -17,6 +17,8 @@ function parseFilterDate(s?: string | null): Date | null {
 export type FilterMatchers = {
   /** Optional: localize operator CN name for substring search (e.g. EN UI). */
   operatorLabel?: (cnName: string) => string
+  /** Current read status for a plot id (defaults to 未读 when omitted). */
+  recordStatus?: (id: string) => string
 }
 
 export function matchesFilters(
@@ -29,6 +31,12 @@ export function matchesFilters(
   const end = parseFilterDate(filters.end)
   if (start && itemDate && itemDate < start) return false
   if (end && itemDate && itemDate > end) return false
+
+  const statuses = filters.status
+  if (statuses && statuses.length) {
+    const st = (matchers.recordStatus?.(String(item.id)) || '未读') as ReadStatus
+    if (!statuses.includes(st)) return false
+  }
 
   const types = filters.class
   if (types && types.length) {

@@ -46,6 +46,7 @@ const enUS: Messages = {
     chapter: 'Chapter',
     relatedPower: 'Related faction',
     relatedPlot: 'Related plot',
+    status: 'Read status',
     operator: 'Concurrent operators (substring)',
     operatorPlaceholder: "e.g. Kal'tsit",
     selectedClasses: 'Selected types: {list}',
@@ -60,6 +61,7 @@ const enUS: Messages = {
     chapter: 'Select chapter',
     power: 'Select related faction',
     rplot: 'Select related plot',
+    status: 'Select read status',
   },
   list: {
     empty: 'No matching plot entries',

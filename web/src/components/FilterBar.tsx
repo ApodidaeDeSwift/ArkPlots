@@ -11,7 +11,7 @@ type Options = {
   years: number[]
 }
 
-type SelectorKey = 'class' | 'country' | 'stage' | 'power' | 'rplot' | 'chapter'
+type SelectorKey = 'class' | 'country' | 'stage' | 'power' | 'rplot' | 'chapter' | 'status'
 
 type Props = {
   filters: Filters
@@ -47,7 +47,8 @@ export function FilterBar({
       | 'filter.stage'
       | 'filter.chapter'
       | 'filter.relatedPower'
-      | 'filter.relatedPlot',
+      | 'filter.relatedPlot'
+      | 'filter.status',
     n: number,
   ) => t('filter.countLabel', { label: t(labelKey), count: n })
 
@@ -164,6 +165,12 @@ export function FilterBar({
         <span className="filter-label">{t('filter.relatedPower')}</span>
         <button type="button" className="btn chip-btn" onClick={() => onOpenSelector('power')}>
           {countLabel('filter.relatedPower', filters.related_power?.length || 0)}
+        </button>
+      </div>
+      <div className="filter-row">
+        <span className="filter-label">{t('filter.status')}</span>
+        <button type="button" className="btn chip-btn" onClick={() => onOpenSelector('status')}>
+          {countLabel('filter.status', filters.status?.length || 0)}
         </button>
       </div>
       <div className="filter-row full">

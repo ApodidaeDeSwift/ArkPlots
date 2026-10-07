@@ -65,6 +65,8 @@ export type Filters = {
   related_plot?: string[]
   rplot_mode?: 'any' | 'all'
   chapter?: string[]
+  /** Stored ReadStatus values; empty / omitted = no status filter. */
+  status?: ReadStatus[]
 }
 
 /**
