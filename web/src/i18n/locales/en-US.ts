@@ -148,7 +148,11 @@ const enUS: Messages = {
   },
   version: {
     label: 'Version',
+    panelTag: 'VERSION / SYNC',
+    currentKey: 'LOCAL',
+    remoteKey: 'REMOTE',
     current: 'Current version {version}',
+    idleHint: 'Tap “Check for updates” to sync version info from GitHub Releases.',
     check: 'Check for updates',
     checking: 'Checking for updates…',
     apply: 'Update and restart',

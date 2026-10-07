@@ -146,7 +146,11 @@ const zhCN: Messages = {
   },
   version: {
     label: '版本',
+    panelTag: 'VERSION / SYNC',
+    currentKey: 'LOCAL',
+    remoteKey: 'REMOTE',
     current: '当前版本 {version}',
+    idleHint: '点击「检查更新」从 GitHub Release 同步版本信息。',
     check: '检查更新',
     checking: '正在检查更新…',
     apply: '立即更新并重启',

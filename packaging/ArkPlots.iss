@@ -1,6 +1,6 @@
 ; ArkPlots Windows installer (Inno Setup 6).
-; Arknights-inspired industrial dark theme: charcoal panels, amber hazard accents,
-; high-contrast light text (avoid medium-gray "slate" styles that wash out labels).
+; Visual language mirrors the in-app UI (teal terminal / plotline archive),
+; not Inno's stock modern-dark chrome.
 
 #ifndef MyAppVersion
   #error MyAppVersion must be passed as /DMyAppVersion=...
@@ -37,15 +37,14 @@ PrivilegesRequiredOverridesAllowed=dialog
 AllowNoIcons=yes
 Compression=lzma2/fast
 SolidCompression=no
-; Built-in dark (not slate): slate mid-grays make labels hard to read.
-WizardStyle=modern dark
+; classic + custom art = less stock "modern dark" chrome
+WizardStyle=classic
+WizardSizePercent=120
 WizardImageFile=wizard_side.png
 WizardSmallImageFile=wizard_top.png
-WizardBackImageFile=wizard_back.png
-WizardImageBackColor=#0a0c10
-WizardSmallImageBackColor=#0a0c10
-WizardBackColor=#0a0c10
-WizardBackImageOpacity=40
+WizardImageStretch=yes
+WizardImageBackColor=$19120B
+WizardSmallImageBackColor=$19120B
 SetupIconFile=..\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
@@ -66,41 +65,43 @@ VersionInfoProductVersion={#MyAppVersion}
 VersionInfoTextVersion={#MyAppVersion}
 
 [Languages]
-Name: "chinesesimplified"; MessagesFile: "compiler:Default.isl"
+Name: "chinesesimplified"; MessagesFile: "compiler:Languages\ChineseSimplified.isl"
 
 [Messages]
 SetupAppTitle=ArkPlots
-SetupWindowTitle=ArkPlots  //  INSTALL  {#MyAppVersion}
+SetupWindowTitle=ArkPlots  ·  {#MyAppVersion}
 ButtonBack=< 返回(&B)
 ButtonNext=继续(&N) >
-ButtonInstall=执行安装(&I)
+ButtonInstall=开始安装(&I)
 ButtonFinish=完成(&F)
-BeveledLabel=RHODES  ·  PLOTLINE  ·  ARKPLOTS
-SelectDirLabel3=指定安装目录。阅读进度将保存在该路径下。
-SelectDirBrowseLabel=可使用默认路径，或单击「浏览」选择其他位置。
-DiskSpaceMBLabel=预计占用 [mb] MB。
-SelectTasksLabel2=附加任务：
-ReadyLabel1=系统检查完毕。单击「执行安装」开始部署。
+BeveledLabel=PLOTLINE ARCHIVE
+WelcomeLabel1=欢迎使用 ArkPlots
+WelcomeLabel2=接下来会把程序安装到本机。%n%n阅读进度保存在安装目录的本地文件里；升级不会清空它们。
+SelectDirLabel3=选择安装目录。阅读进度与配置会保存在此路径下。
+SelectDirBrowseLabel=可保留默认路径，或单击「浏览」选择其他位置。
+DiskSpaceMBLabel=预计占用 [mb] MB
+SelectTasksLabel2=附加选项
+ReadyLabel1=准备就绪。单击「开始安装」继续。
 ReadyLabel2a=将执行：
-InstallingLabel=正在部署 ArkPlots…
-FinishedHeadingLabel=部署完成
-FinishedLabelNoIcons=ArkPlots 已就绪。祝检索愉快。
+InstallingLabel=正在安装 ArkPlots…
+FinishedHeadingLabel=安装完成
+FinishedLabelNoIcons=ArkPlots 已就绪，可以开始检索剧情。
 FinishedLabel=ArkPlots 已就绪。可通过开始菜单或桌面快捷方式启动。
 ClickFinish=单击「完成」关闭安装程序。
 ConfirmUninstall=确定卸载 %1？%n阅读进度文件不会被自动删除。
-StatusExtractFiles=解包组件…
-StatusCreateIcons=写入快捷方式…
-StatusCreateDirs=创建目录…
-StatusSavingUninstall=写入卸载信息…
+StatusExtractFiles=正在解包…
+StatusCreateIcons=正在创建快捷方式…
+StatusCreateDirs=正在创建目录…
+StatusSavingUninstall=正在写入卸载信息…
 
 [CustomMessages]
 CreateDesktopIcon=在桌面创建快捷方式
-LaunchAfterInstall=部署完成后启动 ArkPlots
-UpgradeConfirm=检测到本机已部署 ArkPlots。%n%n「是」= 更新至 {#MyAppVersion}（保留阅读进度）%n「否」= 取消
+LaunchAfterInstall=安装完成后启动 ArkPlots
+UpgradeConfirm=本机已安装 ArkPlots。%n%n「是」= 更新到 {#MyAppVersion}（保留阅读进度）%n「否」= 取消
 NameAndVersion=%1  %2
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "附加任务:"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "附加选项:"; Flags: unchecked
 
 [Files]
 Source: "..\dist\ArkPlots\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -114,6 +115,14 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchAfterInstall}"; Flags: nowait postinstall skipifsilent
 
 [Code]
+const
+  { Delphi TColor is BGR; mirrors web/src/styles/theme.css }
+  CBg0 = $19120B;      { #0b1219 }
+  CBg1 = $241B11;      { #111b24 }
+  CAccent = $C7C73E;   { #3ec7c7 }
+  CText = $EFE6D7;     { #d7e6ef }
+  CTextDim = $B2A08A;  { #8aa0b2 }
+
 function UninstallRegKey: String;
 begin
   Result := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#MyAppId}_is1';
@@ -126,6 +135,48 @@ begin
     RegKeyExists(HKLM, UninstallRegKey);
 end;
 
+procedure StyleLabel(L: TNewStaticText; Color: Integer; Bold: Boolean);
+begin
+  if L = nil then Exit;
+  L.Font.Color := Color;
+  L.Font.Name := 'Segoe UI';
+  if Bold then
+    L.Font.Style := [fsBold]
+  else
+    L.Font.Style := [];
+end;
+
+procedure ApplyArkPlotsTheme;
+begin
+  WizardForm.Color := CBg0;
+  WizardForm.MainPanel.Color := CBg0;
+  WizardForm.InnerPage.Color := CBg1;
+  WizardForm.InnerNotebook.Color := CBg1;
+  WizardForm.OuterNotebook.Color := CBg0;
+  WizardForm.Bevel.Visible := False;
+
+  WizardForm.WizardBitmapImage.BackColor := CBg0;
+  WizardForm.WizardSmallBitmapImage.BackColor := CBg0;
+
+  StyleLabel(WizardForm.PageNameLabel, CAccent, True);
+  StyleLabel(WizardForm.PageDescriptionLabel, CTextDim, False);
+  StyleLabel(WizardForm.WelcomeLabel1, CText, True);
+  StyleLabel(WizardForm.WelcomeLabel2, CTextDim, False);
+  StyleLabel(WizardForm.FinishedLabel, CTextDim, False);
+  StyleLabel(WizardForm.FinishedHeadingLabel, CText, True);
+
+  WizardForm.PageNameLabel.Font.Name := 'Consolas';
+  WizardForm.PageNameLabel.Font.Size := 9;
+  WizardForm.BeveledLabel.Font.Name := 'Consolas';
+  WizardForm.BeveledLabel.Font.Color := CAccent;
+  WizardForm.BeveledLabel.Font.Size := 8;
+
+  WizardForm.DirEdit.Color := CBg0;
+  WizardForm.DirEdit.Font.Color := CText;
+  WizardForm.GroupEdit.Color := CBg0;
+  WizardForm.GroupEdit.Font.Color := CText;
+end;
+
 function InitializeSetup(): Boolean;
 begin
   if WizardSilent then
@@ -134,4 +185,46 @@ begin
     Result := MsgBox(ExpandConstant('{cm:UpgradeConfirm}'), mbConfirmation, MB_YESNO) = IDYES
   else
     Result := True;
+end;
+
+procedure InitializeWizard;
+begin
+  ApplyArkPlotsTheme;
+  WizardForm.WelcomeLabel1.Caption := 'ArkPlots';
+  WizardForm.WelcomeLabel1.Font.Size := 16;
+  WizardForm.WelcomeLabel2.Caption :=
+    'PLOTLINE ARCHIVE  ·  BUILD {#MyAppVersion}' + #13#10#13#10 +
+    '将程序安装到本机。阅读进度保存在安装目录的本地文件中；' + #13#10 +
+    '升级只会替换程序，不会清空你的剧情进度。';
+  WizardForm.FinishedHeadingLabel.Caption := '安装完成';
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  ApplyArkPlotsTheme;
+  if CurPageID = wpSelectDir then
+  begin
+    WizardForm.PageNameLabel.Caption := 'INSTALL PATH';
+    WizardForm.PageDescriptionLabel.Caption := '指定程序与本地数据的存放位置';
+  end
+  else if CurPageID = wpSelectTasks then
+  begin
+    WizardForm.PageNameLabel.Caption := 'OPTIONS';
+    WizardForm.PageDescriptionLabel.Caption := '可选的附加任务';
+  end
+  else if CurPageID = wpReady then
+  begin
+    WizardForm.PageNameLabel.Caption := 'READY';
+    WizardForm.PageDescriptionLabel.Caption := '确认后开始安装';
+  end
+  else if CurPageID = wpInstalling then
+  begin
+    WizardForm.PageNameLabel.Caption := 'INSTALLING';
+    WizardForm.PageDescriptionLabel.Caption := '正在写入文件…';
+  end
+  else if CurPageID = wpFinished then
+  begin
+    WizardForm.PageNameLabel.Caption := 'DONE';
+    WizardForm.PageDescriptionLabel.Caption := 'ArkPlots 已就绪';
+  end;
 end;

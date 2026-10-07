@@ -212,61 +212,81 @@ export function SettingsModal({ settings, onChange, onClose }: Props) {
             </div>
           </section>
 
-          <section className="settings-section">
+          <section className="settings-section settings-section-flush">
             <h4>{t('version.label')}</h4>
-            <div className="settings-version">
-              {t('version.current', { version: versionLabel })}
-            </div>
-            <div className="settings-version-actions">
-              <button
-                type="button"
-                className="btn"
-                disabled={busy}
-                onClick={() => void onCheckUpdate()}
-              >
-                {phase === 'checking' ? t('version.checking') : t('version.check')}
-              </button>
-              {canApply && (
-                <button
-                  type="button"
-                  className="btn btn-accent"
-                  disabled={busy}
-                  onClick={() => void onApplyUpdate()}
-                >
-                  {t('version.apply')}
-                </button>
-              )}
-              {result?.html_url && result.update_available && !result.has_asset && (
-                <a
-                  className="btn btn-ghost"
-                  href={result.html_url}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {t('version.openRelease')}
-                </a>
-              )}
-            </div>
-            {(phase === 'checking' || phase === 'applying' || phase === 'restarting') && (
-              <div className="settings-progress" aria-hidden>
-                <div className="settings-progress-bar" />
+            <div className="update-console" data-phase={phase}>
+              <div className="update-console-head">
+                <span className="update-console-tag">{t('version.panelTag')}</span>
+                <span className="update-console-build">v{versionLabel}</span>
               </div>
-            )}
-            {statusText && (
-              <div
-                className={
-                  phase === 'error'
-                    ? 'settings-note settings-note-error'
-                    : phase === 'restarting'
-                      ? 'settings-note settings-note-ok'
-                      : 'settings-note'
-                }
-              >
-                {statusText.split('\n').map((line, i) => (
-                  <div key={i}>{line}</div>
-                ))}
+              <div className="update-console-body">
+                <div className="update-console-meta">
+                  <span className="update-console-meta-key">{t('version.currentKey')}</span>
+                  <span className="update-console-meta-val">{versionLabel}</span>
+                  {result?.remote_version && result.update_available && (
+                    <>
+                      <span className="update-console-meta-key">{t('version.remoteKey')}</span>
+                      <span className="update-console-meta-val update-console-meta-accent">
+                        {result.remote_version}
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                <div className="update-console-actions">
+                  <button
+                    type="button"
+                    className="btn"
+                    disabled={busy}
+                    onClick={() => void onCheckUpdate()}
+                  >
+                    {phase === 'checking' ? t('version.checking') : t('version.check')}
+                  </button>
+                  {canApply && (
+                    <button
+                      type="button"
+                      className="btn btn-accent"
+                      disabled={busy}
+                      onClick={() => void onApplyUpdate()}
+                    >
+                      {t('version.apply')}
+                    </button>
+                  )}
+                  {result?.html_url && result.update_available && !result.has_asset && (
+                    <a
+                      className="btn btn-ghost"
+                      href={result.html_url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t('version.openRelease')}
+                    </a>
+                  )}
+                </div>
+
+                {(phase === 'checking' || phase === 'applying' || phase === 'restarting') && (
+                  <div className="settings-progress" aria-hidden>
+                    <div className="settings-progress-bar" />
+                  </div>
+                )}
+
+                <div
+                  className={
+                    phase === 'error'
+                      ? 'update-console-log update-console-log-error'
+                      : phase === 'restarting'
+                        ? 'update-console-log update-console-log-ok'
+                        : statusText
+                          ? 'update-console-log'
+                          : 'update-console-log update-console-log-idle'
+                  }
+                >
+                  {statusText
+                    ? statusText.split('\n').map((line, i) => <div key={i}>{line}</div>)
+                    : t('version.idleHint')}
+                </div>
               </div>
-            )}
+            </div>
           </section>
 
           <section className="settings-section">

@@ -174,54 +174,65 @@ def _fill_vertical_gradient(img, top_rgb: tuple[int, int, int], bottom_rgb: tupl
         draw.line([(0, y), (w, y)], fill=(r, g, b, 255) if img.mode == "RGBA" else (r, g, b))
 
 
-def _draw_hazard_stripe_band(
-    draw,
-    box: tuple[int, int, int, int],
-    *,
-    color_a=(255, 159, 26, 255),
-    color_b=(18, 18, 18, 255),
-    stripe_w: int = 10,
+def _blend_radial_glow(
+    img,
+    cx: float,
+    cy: float,
+    radius: float,
+    color: tuple[int, int, int],
+    strength: float = 0.22,
 ) -> None:
-    """Diagonal hazard stripes (Arknights / industrial look)."""
-    x0, y0, x1, y1 = box
-    # Cover the band with alternating diagonals.
-    for offset in range(-((y1 - y0) + (x1 - x0)), (x1 - x0) + (y1 - y0), stripe_w * 2):
-        points = [
-            (x0 + offset, y0),
-            (x0 + offset + stripe_w, y0),
-            (x0 + offset + stripe_w - (y1 - y0), y1),
-            (x0 + offset - (y1 - y0), y1),
-        ]
-        draw.polygon(points, fill=color_a)
-        points_b = [
-            (x0 + offset + stripe_w, y0),
-            (x0 + offset + stripe_w * 2, y0),
-            (x0 + offset + stripe_w * 2 - (y1 - y0), y1),
-            (x0 + offset + stripe_w - (y1 - y0), y1),
-        ]
-        draw.polygon(points_b, fill=color_b)
-    # Clip visually with outer frame redraw by caller if needed.
+    """Soft radial wash matching the in-app background glows."""
+    from PIL import Image, ImageDraw
+
+    overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    steps = max(12, int(radius / 18))
+    for i in range(steps, 0, -1):
+        t = i / steps
+        a = int(255 * strength * (t**2))
+        r = radius * t
+        draw.ellipse(
+            [cx - r, cy - r, cx + r, cy + r],
+            fill=(color[0], color[1], color[2], a),
+        )
+    img.alpha_composite(overlay)
 
 
 def _draw_corner_brackets(draw, box: tuple[int, int, int, int], color, arm: int = 18, thick: int = 2) -> None:
     x0, y0, x1, y1 = box
-    # Top-left
     draw.rectangle([x0, y0, x0 + arm, y0 + thick], fill=color)
     draw.rectangle([x0, y0, x0 + thick, y0 + arm], fill=color)
-    # Top-right
     draw.rectangle([x1 - arm, y0, x1, y0 + thick], fill=color)
     draw.rectangle([x1 - thick, y0, x1, y0 + arm], fill=color)
-    # Bottom-left
     draw.rectangle([x0, y1 - thick, x0 + arm, y1], fill=color)
     draw.rectangle([x0, y1 - arm, x0 + thick, y1], fill=color)
-    # Bottom-right
     draw.rectangle([x1 - arm, y1 - thick, x1, y1], fill=color)
     draw.rectangle([x1 - thick, y1 - arm, x1, y1], fill=color)
 
 
+def _load_wizard_fonts():
+    from PIL import ImageFont
+
+    try:
+        return (
+            ImageFont.truetype("segoeuib.ttf", 28),
+            ImageFont.truetype("consola.ttf", 12),
+            ImageFont.truetype("consola.ttf", 11),
+        )
+    except OSError:
+        try:
+            title = ImageFont.truetype("segoeui.ttf", 28)
+            mono = ImageFont.truetype("consola.ttf", 12)
+            return title, mono, mono
+        except OSError:
+            fallback = ImageFont.load_default()
+            return fallback, fallback, fallback
+
+
 def sync_wizard_images() -> tuple[Path, Path, Path]:
-    """Generate industrial (Arknights-like) Inno Setup wizard art."""
-    from PIL import Image, ImageDraw, ImageFont
+    """Generate Inno wizard art in the same teal terminal palette as the app UI."""
+    from PIL import Image, ImageDraw
 
     pack = ROOT / "packaging"
     side_path = pack / "wizard_side.png"
@@ -229,70 +240,66 @@ def sync_wizard_images() -> tuple[Path, Path, Path]:
     back_path = pack / "wizard_back.png"
     brand = _load_brand_icon_rgba()
 
-    amber = (255, 159, 26, 255)
-    amber_dim = (180, 100, 20, 255)
-    ink = (10, 12, 16, 255)
-    panel = (22, 24, 28, 255)
-    text = (245, 245, 245, 255)
-    text_dim = (200, 200, 200, 255)
+    # Mirror web/src/styles/theme.css tokens.
+    bg0 = (11, 18, 25)
+    bg1 = (17, 27, 36)
+    panel = (22, 34, 48, 255)
+    accent = (62, 199, 199, 255)
+    accent2 = (110, 184, 232, 255)
+    line = (120, 170, 200, 80)
+    text = (215, 230, 239, 255)
+    text_dim = (138, 160, 178, 255)
 
-    try:
-        font_title = ImageFont.truetype("segoeuib.ttf", 26)
-        font_sub = ImageFont.truetype("consola.ttf", 13)
-        font_tiny = ImageFont.truetype("consola.ttf", 11)
-    except OSError:
-        try:
-            font_title = ImageFont.truetype("segoeui.ttf", 26)
-            font_sub = ImageFont.truetype("consola.ttf", 13)
-            font_tiny = font_sub
-        except OSError:
-            font_title = ImageFont.load_default()
-            font_sub = font_title
-            font_tiny = font_title
+    font_title, font_sub, font_tiny = _load_wizard_fonts()
 
     # --- Side panel (welcome / finished) ---
-    side = Image.new("RGBA", (240, 480), ink)
-    _fill_vertical_gradient(side, (10, 12, 16), (28, 30, 34))
+    side = Image.new("RGBA", (240, 480), (*bg0, 255))
+    _fill_vertical_gradient(side, bg0, bg1)
+    _blend_radial_glow(side, 40, -20, 220, (62, 199, 199), 0.18)
+    _blend_radial_glow(side, 220, 80, 180, (110, 184, 232), 0.12)
     draw = ImageDraw.Draw(side)
-    # Hazard band at top
-    draw.rectangle([0, 0, 240, 22], fill=(18, 18, 18, 255))
-    _draw_hazard_stripe_band(draw, (0, 0, 240, 22), stripe_w=9)
-    # Metal panel behind icon
-    draw.rectangle([24, 48, 216, 248], fill=panel)
-    _draw_corner_brackets(draw, (24, 48, 216, 248), amber, arm=16, thick=2)
-    icon = brand.resize((132, 132), Image.Resampling.LANCZOS)
-    side.paste(icon, (54, 82), icon)
-    # Caption block
-    draw.rectangle([24, 268, 216, 272], fill=amber)
-    draw.text((28, 288), "ArkPlots", fill=text, font=font_title)
-    draw.text((28, 324), "INDUSTRIAL  DEPLOY", fill=amber, font=font_sub)
-    draw.text((28, 350), f"BUILD  {VERSION}", fill=text_dim, font=font_tiny)
-    draw.text((28, 380), "PLOTLINE / LOCAL", fill=text_dim, font=font_tiny)
-    # Bottom hazard strip
-    draw.rectangle([0, 458, 240, 480], fill=(18, 18, 18, 255))
-    _draw_hazard_stripe_band(draw, (0, 458, 240, 480), stripe_w=9)
+    # Top accent bar (same cue as .panel::before)
+    draw.rectangle([0, 0, 42, 3], fill=accent)
+    draw.rectangle([0, 3, 240, 4], fill=line)
+    # Icon frame
+    draw.rectangle([28, 52, 212, 236], fill=panel)
+    draw.rectangle([28, 52, 212, 236], outline=(140, 200, 230, 90), width=1)
+    _draw_corner_brackets(draw, (28, 52, 212, 236), accent, arm=14, thick=2)
+    icon = brand.resize((120, 120), Image.Resampling.LANCZOS)
+    side.paste(icon, (60, 84), icon)
+    # Brand block — matches .brand / .brand-sub
+    draw.rectangle([28, 256, 70, 258], fill=accent)
+    draw.text((28, 274), "ArkPlots", fill=text, font=font_title)
+    draw.text((28, 312), "PLOTLINE  ARCHIVE", fill=accent, font=font_sub)
+    draw.text((28, 338), f"BUILD  {VERSION}", fill=text_dim, font=font_tiny)
+    draw.text((28, 362), "LOCAL  INSTALL", fill=accent2, font=font_tiny)
+    draw.rectangle([0, 476, 240, 480], fill=accent)
     side.save(side_path, format="PNG")
 
     # --- Small header image ---
-    top = Image.new("RGBA", (110, 110), ink)
-    _fill_vertical_gradient(top, (10, 12, 16), (30, 32, 36))
+    top = Image.new("RGBA", (110, 110), (*bg0, 255))
+    _fill_vertical_gradient(top, bg0, bg1)
+    _blend_radial_glow(top, 20, 10, 90, (62, 199, 199), 0.2)
     tdraw = ImageDraw.Draw(top)
-    tdraw.rectangle([0, 0, 110, 14], fill=(18, 18, 18, 255))
-    _draw_hazard_stripe_band(tdraw, (0, 0, 110, 14), stripe_w=7)
-    _draw_corner_brackets(tdraw, (8, 22, 102, 102), amber, arm=12, thick=2)
-    small = brand.resize((68, 68), Image.Resampling.LANCZOS)
-    top.paste(small, (21, 28), small)
+    tdraw.rectangle([0, 0, 36, 2], fill=accent)
+    tdraw.rectangle([10, 16, 100, 100], fill=panel)
+    tdraw.rectangle([10, 16, 100, 100], outline=(140, 200, 230, 90), width=1)
+    _draw_corner_brackets(tdraw, (10, 16, 100, 100), accent, arm=10, thick=2)
+    small = brand.resize((64, 64), Image.Resampling.LANCZOS)
+    top.paste(small, (23, 26), small)
     top.save(top_path, format="PNG")
 
-    # --- Soft page background (grid + faint stripes) ---
-    back = Image.new("RGBA", (640, 480), (10, 12, 16, 255))
+    # --- Soft page background (grid + glows like app body) ---
+    back = Image.new("RGBA", (640, 480), (*bg0, 255))
+    _fill_vertical_gradient(back, bg0, (14, 23, 32))
+    _blend_radial_glow(back, 80, -40, 420, (62, 199, 199), 0.14)
+    _blend_radial_glow(back, 560, 40, 360, (110, 184, 232), 0.11)
     bdraw = ImageDraw.Draw(back)
-    for x in range(0, 640, 32):
-        bdraw.line([(x, 0), (x, 480)], fill=(40, 42, 46, 255))
-    for y in range(0, 480, 32):
-        bdraw.line([(0, y), (640, y)], fill=(40, 42, 46, 255))
-    # Faint amber corner marks
-    _draw_corner_brackets(bdraw, (12, 12, 628, 468), amber_dim, arm=28, thick=2)
+    for x in range(0, 640, 40):
+        bdraw.line([(x, 0), (x, 480)], fill=(120, 170, 200, 28))
+    for y in range(0, 480, 40):
+        bdraw.line([(0, y), (640, y)], fill=(120, 170, 200, 22))
+    _draw_corner_brackets(bdraw, (16, 16, 624, 464), (62, 199, 199, 90), arm=26, thick=2)
     back.save(back_path, format="PNG")
 
     print(

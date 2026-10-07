@@ -159,7 +159,11 @@ export type Messages = {
   }
   version: {
     label: string
+    panelTag: string
+    currentKey: string
+    remoteKey: string
     current: string
+    idleHint: string
     check: string
     checking: string
     apply: string
