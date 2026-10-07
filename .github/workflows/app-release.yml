@@ -89,13 +89,17 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup -y --no-progress
 
+      # Note: `secrets` cannot be used in step `if:` expressions; check inside the script.
       - name: Prepare code-signing certificate
-        if: ${{ secrets.SIGN_PFX_BASE64 != '' }}
         shell: pwsh
         env:
           SIGN_PFX_BASE64: ${{ secrets.SIGN_PFX_BASE64 }}
           SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:SIGN_PFX_BASE64)) {
+            Write-Host "No SIGN_PFX_BASE64 secret; skipping code signing."
+            exit 0
+          }
           $bytes = [Convert]::FromBase64String($env:SIGN_PFX_BASE64)
           $path = Join-Path $env:RUNNER_TEMP "codesign.pfx"
           [IO.File]::WriteAllBytes($path, $bytes)
