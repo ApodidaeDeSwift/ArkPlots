@@ -171,7 +171,7 @@ This builds a PyInstaller **onedir** tree at `dist/ArkPlots/` (UPX off, fewer AV
 - **Already installed:** confirm, then upgrade the program without deleting `Read_record.json`
 - Tag `APP_Ver{VERSION}` on **APP_Release**; Actions attaches **`Arkplot_setup_ver{VERSION}.exe`**
 
-If SmartScreen still warns: common for new unsigned builds. Submit a false-positive report at [Microsoft Security Intelligence](https://www.microsoft.com/wdsi/filesubmission); lasting fix is a code-signing certificate.
+If SmartScreen says **Publisher: Unknown**, the build is unsigned — see [`packaging/SIGNING.md`](packaging/SIGNING.md). Set `SIGN_PFX` / `SIGN_PFX_PASSWORD` (or GitHub secrets `SIGN_PFX_BASE64` + `SIGN_PFX_PASSWORD`) before packaging. You can also [submit samples to Microsoft](https://www.microsoft.com/wdsi/filesubmission), but signing is the real fix.
 
 ### Project layout
 

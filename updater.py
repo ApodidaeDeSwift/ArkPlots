@@ -335,10 +335,10 @@ def _write_update_ui_ps1(
     restart: bool,
     remote_version: str,
 ) -> str:
-    """PowerShell WinForms splash matching the app dark-cyan theme (no console)."""
+    """PowerShell WinForms splash — industrial dark / amber, high-contrast text."""
     update_dir = os.path.dirname(installer)
     ps1_path = os.path.join(update_dir, "apply_update_ui.ps1")
-    # Escape single quotes for PowerShell single-quoted strings.
+
     def q(s: str) -> str:
         return s.replace("'", "''")
 
@@ -357,62 +357,85 @@ $setup = '{q(installer)}'
 $appDir = '{q(app_dir)}'
 $remote = '{q(remote_version)}'
 
+$ink = [System.Drawing.Color]::FromArgb(10, 12, 16)
+$panel = [System.Drawing.Color]::FromArgb(22, 24, 28)
+$amber = [System.Drawing.Color]::FromArgb(255, 159, 26)
+$text = [System.Drawing.Color]::FromArgb(245, 245, 245)
+$muted = [System.Drawing.Color]::FromArgb(200, 200, 200)
+$danger = [System.Drawing.Color]::FromArgb(230, 90, 90)
+
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'ArkPlots'
+$form.Text = 'ArkPlots // UPDATE'
 $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false
 $form.MinimizeBox = $false
 $form.StartPosition = 'CenterScreen'
-$form.ClientSize = New-Object System.Drawing.Size(420, 200)
-$form.BackColor = [System.Drawing.Color]::FromArgb(11, 18, 25)
-$form.ForeColor = [System.Drawing.Color]::FromArgb(215, 230, 239)
+$form.ClientSize = New-Object System.Drawing.Size(440, 220)
+$form.BackColor = $ink
+$form.ForeColor = $text
 $form.TopMost = $true
 $form.ShowInTaskbar = $true
+
+# Top hazard strip (amber blocks)
+$hazard = New-Object System.Windows.Forms.Panel
+$hazard.Location = New-Object System.Drawing.Point(0, 0)
+$hazard.Size = New-Object System.Drawing.Size(440, 10)
+$hazard.BackColor = $amber
+$form.Controls.Add($hazard)
+for ($i = 0; $i -lt 22; $i++) {{
+  if ($i % 2 -eq 1) {{
+    $blk = New-Object System.Windows.Forms.Panel
+    $blk.BackColor = $ink
+    $blk.Location = New-Object System.Drawing.Point(($i * 20), 0)
+    $blk.Size = New-Object System.Drawing.Size(10, 10)
+    $hazard.Controls.Add($blk)
+  }}
+}}
+
+$panelBox = New-Object System.Windows.Forms.Panel
+$panelBox.Location = New-Object System.Drawing.Point(16, 24)
+$panelBox.Size = New-Object System.Drawing.Size(408, 176)
+$panelBox.BackColor = $panel
+$form.Controls.Add($panelBox)
 
 $title = New-Object System.Windows.Forms.Label
 $title.Text = 'ArkPlots'
 $title.Font = New-Object System.Drawing.Font('Segoe UI', 16, [System.Drawing.FontStyle]::Bold)
-$title.ForeColor = [System.Drawing.Color]::FromArgb(215, 230, 239)
-$title.Location = New-Object System.Drawing.Point(24, 18)
+$title.ForeColor = $text
+$title.Location = New-Object System.Drawing.Point(18, 14)
 $title.AutoSize = $true
-$form.Controls.Add($title)
+$panelBox.Controls.Add($title)
 
 $sub = New-Object System.Windows.Forms.Label
-$sub.Text = 'UPDATE'
-$sub.Font = New-Object System.Drawing.Font('Consolas', 9)
-$sub.ForeColor = [System.Drawing.Color]::FromArgb(62, 199, 199)
-$sub.Location = New-Object System.Drawing.Point(26, 48)
+$sub.Text = 'SYSTEM  UPDATE'
+$sub.Font = New-Object System.Drawing.Font('Consolas', 9, [System.Drawing.FontStyle]::Bold)
+$sub.ForeColor = $amber
+$sub.Location = New-Object System.Drawing.Point(20, 46)
 $sub.AutoSize = $true
-$form.Controls.Add($sub)
+$panelBox.Controls.Add($sub)
 
 $status = New-Object System.Windows.Forms.Label
 $status.Text = '正在准备更新…'
 $status.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 10)
-$status.ForeColor = [System.Drawing.Color]::FromArgb(215, 230, 239)
-$status.Location = New-Object System.Drawing.Point(26, 82)
-$status.Size = New-Object System.Drawing.Size(370, 24)
-$form.Controls.Add($status)
+$status.ForeColor = $text
+$status.Location = New-Object System.Drawing.Point(20, 78)
+$status.Size = New-Object System.Drawing.Size(368, 24)
+$panelBox.Controls.Add($status)
 
 $detail = New-Object System.Windows.Forms.Label
-$detail.Text = "目标版本  $remote"
+$detail.Text = "TARGET  BUILD  $remote"
 $detail.Font = New-Object System.Drawing.Font('Consolas', 9)
-$detail.ForeColor = [System.Drawing.Color]::FromArgb(138, 160, 178)
-$detail.Location = New-Object System.Drawing.Point(26, 110)
-$detail.Size = New-Object System.Drawing.Size(370, 20)
-$form.Controls.Add($detail)
+$detail.ForeColor = $muted
+$detail.Location = New-Object System.Drawing.Point(20, 108)
+$detail.Size = New-Object System.Drawing.Size(368, 20)
+$panelBox.Controls.Add($detail)
 
 $bar = New-Object System.Windows.Forms.ProgressBar
 $bar.Style = 'Marquee'
-$bar.MarqueeAnimationSpeed = 28
-$bar.Location = New-Object System.Drawing.Point(26, 148)
-$bar.Size = New-Object System.Drawing.Size(370, 18)
-$form.Controls.Add($bar)
-
-$accent = New-Object System.Windows.Forms.Panel
-$accent.BackColor = [System.Drawing.Color]::FromArgb(62, 199, 199)
-$accent.Location = New-Object System.Drawing.Point(0, 0)
-$accent.Size = New-Object System.Drawing.Size(4, 200)
-$form.Controls.Add($accent)
+$bar.MarqueeAnimationSpeed = 26
+$bar.Location = New-Object System.Drawing.Point(20, 140)
+$bar.Size = New-Object System.Drawing.Size(368, 16)
+$panelBox.Controls.Add($bar)
 
 $form.Add_Shown({{
   $form.Activate()
@@ -428,14 +451,13 @@ $form.Add_Shown({{
       Start-Sleep -Milliseconds 400
     }}
     Start-Sleep -Milliseconds 800
-    $sender.ReportProgress(0, '正在安装更新（不会清空阅读进度）…')
-    # VERYSILENT: only our branded splash is visible (no Inno wizard / console).
+    $sender.ReportProgress(0, '正在部署更新（阅读进度不会被清空）…')
     $setupArgs = @('/VERYSILENT', '/NORESTART', '/CLOSEAPPLICATIONS', "/DIR=`"$appDir`"")
     $proc = Start-Process -FilePath $setup -ArgumentList $setupArgs -Wait -PassThru
     if ($proc.ExitCode -ne 0) {{
       throw "安装程序退出码 $($proc.ExitCode)"
     }}
-    $sender.ReportProgress(0, '更新完成，正在启动…')
+    $sender.ReportProgress(0, '部署完成，正在启动…')
     Start-Sleep -Milliseconds 500
 {restart_line}    try {{ Remove-Item -LiteralPath $setup -Force -ErrorAction SilentlyContinue }} catch {{ }}
   }})
@@ -447,7 +469,7 @@ $form.Add_Shown({{
     param($sender, $e)
     if ($e.Error) {{
       $status.Text = '更新失败：' + $e.Error.Message
-      $status.ForeColor = [System.Drawing.Color]::FromArgb(214, 106, 106)
+      $status.ForeColor = $danger
       $bar.Style = 'Continuous'
       $bar.Value = 0
       $form.TopMost = $false

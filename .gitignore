@@ -252,6 +252,9 @@ _tmp_*.json
 packaging/_version_info.txt
 packaging/wizard_side.png
 packaging/wizard_top.png
+packaging/wizard_back.png
+*.pfx
+*.p12
 
 # Misc local junk unrelated to runtime
 .DS_Store

@@ -1,8 +1,6 @@
 ; ArkPlots Windows installer (Inno Setup 6).
-; Compile via: python packaging/build_release.py
-;   iscc /DMyAppVersion=x.y.z.w packaging/ArkPlots.iss
-;
-; Visual style matches the desktop app (dark cyan / slate).
+; Arknights-inspired industrial dark theme: charcoal panels, amber hazard accents,
+; high-contrast light text (avoid medium-gray "slate" styles that wash out labels).
 
 #ifndef MyAppVersion
   #error MyAppVersion must be passed as /DMyAppVersion=...
@@ -39,13 +37,15 @@ PrivilegesRequiredOverridesAllowed=dialog
 AllowNoIcons=yes
 Compression=lzma2/fast
 SolidCompression=no
-WizardStyle=dark
-WizardStyleFile=builtin:slate
+; Built-in dark (not slate): slate mid-grays make labels hard to read.
+WizardStyle=modern dark
 WizardImageFile=wizard_side.png
 WizardSmallImageFile=wizard_top.png
-WizardImageBackColor=#0b1219
-WizardSmallImageBackColor=#0b1219
-WizardBackColor=#0b1219
+WizardBackImageFile=wizard_back.png
+WizardImageBackColor=#0a0c10
+WizardSmallImageBackColor=#0a0c10
+WizardBackColor=#0a0c10
+WizardBackImageOpacity=40
 SetupIconFile=..\icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
@@ -70,33 +70,33 @@ Name: "chinesesimplified"; MessagesFile: "compiler:Default.isl"
 
 [Messages]
 SetupAppTitle=ArkPlots
-SetupWindowTitle=ArkPlots  ·  安装 {#MyAppVersion}
-ButtonBack=< 上一步(&B)
-ButtonNext=下一步(&N) >
-ButtonInstall=开始安装(&I)
+SetupWindowTitle=ArkPlots  //  INSTALL  {#MyAppVersion}
+ButtonBack=< 返回(&B)
+ButtonNext=继续(&N) >
+ButtonInstall=执行安装(&I)
 ButtonFinish=完成(&F)
-BeveledLabel=明日方舟剧情检索 · ArkPlots
-SelectDirLabel3=选择安装位置。剧情进度会保存在该文件夹中。
-SelectDirBrowseLabel=默认路径通常无需修改。若要更换，请单击「浏览」。
-DiskSpaceMBLabel=大约需要 [mb] MB 可用空间。
-SelectTasksLabel2=可选附加项：
-ReadyLabel1=准备就绪。单击「开始安装」继续。
-ReadyLabel2a=将执行以下操作：
-InstallingLabel=正在安装 ArkPlots…
-FinishedHeadingLabel=安装完成
+BeveledLabel=RHODES  ·  PLOTLINE  ·  ARKPLOTS
+SelectDirLabel3=指定安装目录。阅读进度将保存在该路径下。
+SelectDirBrowseLabel=可使用默认路径，或单击「浏览」选择其他位置。
+DiskSpaceMBLabel=预计占用 [mb] MB。
+SelectTasksLabel2=附加任务：
+ReadyLabel1=系统检查完毕。单击「执行安装」开始部署。
+ReadyLabel2a=将执行：
+InstallingLabel=正在部署 ArkPlots…
+FinishedHeadingLabel=部署完成
 FinishedLabelNoIcons=ArkPlots 已就绪。祝检索愉快。
-FinishedLabel=ArkPlots 已就绪。可从开始菜单或桌面快捷方式启动。
-ClickFinish=单击「完成」关闭向导。
-ConfirmUninstall=确定要卸载 %1 吗？%n阅读进度（Read_record.json）不会被自动删除。
-StatusExtractFiles=正在展开文件…
-StatusCreateIcons=正在创建快捷方式…
-StatusCreateDirs=正在创建目录…
-StatusSavingUninstall=正在写入卸载信息…
+FinishedLabel=ArkPlots 已就绪。可通过开始菜单或桌面快捷方式启动。
+ClickFinish=单击「完成」关闭安装程序。
+ConfirmUninstall=确定卸载 %1？%n阅读进度文件不会被自动删除。
+StatusExtractFiles=解包组件…
+StatusCreateIcons=写入快捷方式…
+StatusCreateDirs=创建目录…
+StatusSavingUninstall=写入卸载信息…
 
 [CustomMessages]
 CreateDesktopIcon=在桌面创建快捷方式
-LaunchAfterInstall=安装完成后启动 ArkPlots
-UpgradeConfirm=检测到本机已安装 ArkPlots。%n%n点击「是」将更新到 {#MyAppVersion}（不会清空阅读进度）。%n点击「否」取消。
+LaunchAfterInstall=部署完成后启动 ArkPlots
+UpgradeConfirm=检测到本机已部署 ArkPlots。%n%n「是」= 更新至 {#MyAppVersion}（保留阅读进度）%n「否」= 取消
 NameAndVersion=%1  %2
 
 [Tasks]
@@ -128,7 +128,6 @@ end;
 
 function InitializeSetup(): Boolean;
 begin
-  { In-app silent/progress upgrade must not pop a confirm dialog. }
   if WizardSilent then
     Result := True
   else if IsUpgrade then

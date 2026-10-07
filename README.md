@@ -175,7 +175,7 @@ python packaging/build_release.py
 
 发布桌面版时请在 **APP_Release** 打 tag `APP_Ver{VERSION}`。GitHub Actions 会构建并把 **`Arkplot_setup_ver{VERSION}.exe`** 挂到 Release（不要只发裸 exe）。
 
-若 Windows 仍提示「可能有害」：多为未签名 + 新文件无信誉的误报。可到 [Microsoft 安全智能提交](https://www.microsoft.com/wdsi/filesubmission) 报假阳性；长期方案是购买代码签名证书并在打包后签名。
+若出现 SmartScreen「发布者未知」：这是**未做代码签名**导致的，不是杀软误杀文件内容。见 [`packaging/SIGNING.md`](packaging/SIGNING.md)（购买证书 → 设置 `SIGN_PFX` 后重新打包）。亦可向 [Microsoft 安全智能](https://www.microsoft.com/wdsi/filesubmission) 提交样本积累信誉，但不如签名彻底。
 
 ### 项目结构
 

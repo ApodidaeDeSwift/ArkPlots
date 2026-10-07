@@ -89,6 +89,22 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup -y --no-progress
 
+      - name: Prepare code-signing certificate
+        if: ${{ secrets.SIGN_PFX_BASE64 != '' }}
+        shell: pwsh
+        env:
+          SIGN_PFX_BASE64: ${{ secrets.SIGN_PFX_BASE64 }}
+          SIGN_PFX_PASSWORD: ${{ secrets.SIGN_PFX_PASSWORD }}
+        run: |
+          $bytes = [Convert]::FromBase64String($env:SIGN_PFX_BASE64)
+          $path = Join-Path $env:RUNNER_TEMP "codesign.pfx"
+          [IO.File]::WriteAllBytes($path, $bytes)
+          "SIGN_PFX=$path" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          if ($env:SIGN_PFX_PASSWORD) {
+            "SIGN_PFX_PASSWORD=$env:SIGN_PFX_PASSWORD" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          }
+          Write-Host "Code-signing certificate prepared."
+
       - name: Build installer
         run: python packaging/build_release.py
 

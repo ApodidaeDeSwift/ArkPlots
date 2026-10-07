@@ -167,48 +167,132 @@ def _fill_vertical_gradient(img, top_rgb: tuple[int, int, int], bottom_rgb: tupl
         draw.line([(0, y), (w, y)], fill=(r, g, b, 255) if img.mode == "RGBA" else (r, g, b))
 
 
-def sync_wizard_images() -> tuple[Path, Path]:
-    """Generate Inno Setup side/top images in the app dark-cyan look."""
+def _draw_hazard_stripe_band(
+    draw,
+    box: tuple[int, int, int, int],
+    *,
+    color_a=(255, 159, 26, 255),
+    color_b=(18, 18, 18, 255),
+    stripe_w: int = 10,
+) -> None:
+    """Diagonal hazard stripes (Arknights / industrial look)."""
+    x0, y0, x1, y1 = box
+    # Cover the band with alternating diagonals.
+    for offset in range(-((y1 - y0) + (x1 - x0)), (x1 - x0) + (y1 - y0), stripe_w * 2):
+        points = [
+            (x0 + offset, y0),
+            (x0 + offset + stripe_w, y0),
+            (x0 + offset + stripe_w - (y1 - y0), y1),
+            (x0 + offset - (y1 - y0), y1),
+        ]
+        draw.polygon(points, fill=color_a)
+        points_b = [
+            (x0 + offset + stripe_w, y0),
+            (x0 + offset + stripe_w * 2, y0),
+            (x0 + offset + stripe_w * 2 - (y1 - y0), y1),
+            (x0 + offset + stripe_w - (y1 - y0), y1),
+        ]
+        draw.polygon(points_b, fill=color_b)
+    # Clip visually with outer frame redraw by caller if needed.
+
+
+def _draw_corner_brackets(draw, box: tuple[int, int, int, int], color, arm: int = 18, thick: int = 2) -> None:
+    x0, y0, x1, y1 = box
+    # Top-left
+    draw.rectangle([x0, y0, x0 + arm, y0 + thick], fill=color)
+    draw.rectangle([x0, y0, x0 + thick, y0 + arm], fill=color)
+    # Top-right
+    draw.rectangle([x1 - arm, y0, x1, y0 + thick], fill=color)
+    draw.rectangle([x1 - thick, y0, x1, y0 + arm], fill=color)
+    # Bottom-left
+    draw.rectangle([x0, y1 - thick, x0 + arm, y1], fill=color)
+    draw.rectangle([x0, y1 - arm, x0 + thick, y1], fill=color)
+    # Bottom-right
+    draw.rectangle([x1 - arm, y1 - thick, x1, y1], fill=color)
+    draw.rectangle([x1 - thick, y1 - arm, x1, y1], fill=color)
+
+
+def sync_wizard_images() -> tuple[Path, Path, Path]:
+    """Generate industrial (Arknights-like) Inno Setup wizard art."""
     from PIL import Image, ImageDraw, ImageFont
 
     pack = ROOT / "packaging"
     side_path = pack / "wizard_side.png"
     top_path = pack / "wizard_top.png"
+    back_path = pack / "wizard_back.png"
     brand = _load_brand_icon_rgba()
 
-    # Large welcome/finish panel (modern wizard).
-    side = Image.new("RGBA", (240, 480), (11, 18, 25, 255))
-    _fill_vertical_gradient(side, (11, 18, 25), (22, 52, 58))
-    draw = ImageDraw.Draw(side)
-    # Accent bar
-    draw.rectangle([0, 0, 4, 480], fill=(62, 199, 199, 255))
-    # Soft glow circle behind icon
-    draw.ellipse([28, 70, 212, 254], fill=(30, 70, 78, 90))
-    icon = brand.resize((140, 140), Image.Resampling.LANCZOS)
-    side.paste(icon, (50, 92), icon)
+    amber = (255, 159, 26, 255)
+    amber_dim = (180, 100, 20, 255)
+    ink = (10, 12, 16, 255)
+    panel = (22, 24, 28, 255)
+    text = (245, 245, 245, 255)
+    text_dim = (200, 200, 200, 255)
+
     try:
-        font_title = ImageFont.truetype("segoeui.ttf", 28)
-        font_sub = ImageFont.truetype("consola.ttf", 14)
+        font_title = ImageFont.truetype("segoeuib.ttf", 26)
+        font_sub = ImageFont.truetype("consola.ttf", 13)
+        font_tiny = ImageFont.truetype("consola.ttf", 11)
     except OSError:
-        font_title = ImageFont.load_default()
-        font_sub = font_title
-    draw.text((28, 280), "ArkPlots", fill=(215, 230, 239, 255), font=font_title)
-    draw.text((28, 318), "PLOT TRACKER", fill=(62, 199, 199, 255), font=font_sub)
-    draw.text((28, 350), f"v{VERSION}", fill=(138, 160, 178, 255), font=font_sub)
-    draw.rectangle([28, 390, 100, 392], fill=(62, 199, 199, 255))
+        try:
+            font_title = ImageFont.truetype("segoeui.ttf", 26)
+            font_sub = ImageFont.truetype("consola.ttf", 13)
+            font_tiny = font_sub
+        except OSError:
+            font_title = ImageFont.load_default()
+            font_sub = font_title
+            font_tiny = font_title
+
+    # --- Side panel (welcome / finished) ---
+    side = Image.new("RGBA", (240, 480), ink)
+    _fill_vertical_gradient(side, (10, 12, 16), (28, 30, 34))
+    draw = ImageDraw.Draw(side)
+    # Hazard band at top
+    draw.rectangle([0, 0, 240, 22], fill=(18, 18, 18, 255))
+    _draw_hazard_stripe_band(draw, (0, 0, 240, 22), stripe_w=9)
+    # Metal panel behind icon
+    draw.rectangle([24, 48, 216, 248], fill=panel)
+    _draw_corner_brackets(draw, (24, 48, 216, 248), amber, arm=16, thick=2)
+    icon = brand.resize((132, 132), Image.Resampling.LANCZOS)
+    side.paste(icon, (54, 82), icon)
+    # Caption block
+    draw.rectangle([24, 268, 216, 272], fill=amber)
+    draw.text((28, 288), "ArkPlots", fill=text, font=font_title)
+    draw.text((28, 324), "INDUSTRIAL  DEPLOY", fill=amber, font=font_sub)
+    draw.text((28, 350), f"BUILD  {VERSION}", fill=text_dim, font=font_tiny)
+    draw.text((28, 380), "PLOTLINE / LOCAL", fill=text_dim, font=font_tiny)
+    # Bottom hazard strip
+    draw.rectangle([0, 458, 240, 480], fill=(18, 18, 18, 255))
+    _draw_hazard_stripe_band(draw, (0, 458, 240, 480), stripe_w=9)
     side.save(side_path, format="PNG")
 
-    # Small header image.
-    top = Image.new("RGBA", (110, 110), (11, 18, 25, 255))
-    _fill_vertical_gradient(top, (17, 27, 36), (22, 52, 58))
+    # --- Small header image ---
+    top = Image.new("RGBA", (110, 110), ink)
+    _fill_vertical_gradient(top, (10, 12, 16), (30, 32, 36))
     tdraw = ImageDraw.Draw(top)
-    tdraw.rectangle([0, 0, 110, 3], fill=(62, 199, 199, 255))
-    small = brand.resize((78, 78), Image.Resampling.LANCZOS)
-    top.paste(small, (16, 18), small)
+    tdraw.rectangle([0, 0, 110, 14], fill=(18, 18, 18, 255))
+    _draw_hazard_stripe_band(tdraw, (0, 0, 110, 14), stripe_w=7)
+    _draw_corner_brackets(tdraw, (8, 22, 102, 102), amber, arm=12, thick=2)
+    small = brand.resize((68, 68), Image.Resampling.LANCZOS)
+    top.paste(small, (21, 28), small)
     top.save(top_path, format="PNG")
 
-    print(f"synced wizard images -> {side_path.name}, {top_path.name}", flush=True)
-    return side_path, top_path
+    # --- Soft page background (grid + faint stripes) ---
+    back = Image.new("RGBA", (640, 480), (10, 12, 16, 255))
+    bdraw = ImageDraw.Draw(back)
+    for x in range(0, 640, 32):
+        bdraw.line([(x, 0), (x, 480)], fill=(40, 42, 46, 255))
+    for y in range(0, 480, 32):
+        bdraw.line([(0, y), (640, y)], fill=(40, 42, 46, 255))
+    # Faint amber corner marks
+    _draw_corner_brackets(bdraw, (12, 12, 628, 468), amber_dim, arm=28, thick=2)
+    back.save(back_path, format="PNG")
+
+    print(
+        f"synced wizard images -> {side_path.name}, {top_path.name}, {back_path.name}",
+        flush=True,
+    )
+    return side_path, top_path, back_path
 
 
 def find_pyinstaller() -> list[str]:
@@ -268,6 +352,59 @@ def find_iscc() -> Path:
     )
 
 
+def find_signtool() -> Path | None:
+    which = shutil.which("signtool") or shutil.which("signtool.exe")
+    if which:
+        return Path(which)
+    kits = Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")) / "Windows Kits" / "10" / "bin"
+    if kits.is_dir():
+        candidates = sorted(kits.glob("*/x64/signtool.exe"), reverse=True)
+        if candidates:
+            return candidates[0]
+    return None
+
+
+def sign_file(path: Path) -> bool:
+    """Authenticode-sign ``path`` when SIGN_PFX / SIGN_PFX_PASSWORD are set.
+
+    Without a certificate, SmartScreen will keep showing「发布者未知」.
+    See packaging/SIGNING.md.
+    """
+    pfx = os.environ.get("SIGN_PFX", "").strip()
+    password = os.environ.get("SIGN_PFX_PASSWORD", "")
+    if not pfx:
+        return False
+    pfx_path = Path(pfx)
+    if not pfx_path.is_file():
+        raise SystemExit(f"SIGN_PFX not found: {pfx_path}")
+    signtool = find_signtool()
+    if signtool is None:
+        raise SystemExit(
+            "signtool.exe not found. Install Windows SDK Signing Tools, "
+            "or put signtool on PATH."
+        )
+    cmd = [
+        str(signtool),
+        "sign",
+        "/fd",
+        "SHA256",
+        "/tr",
+        os.environ.get("SIGN_TIMESTAMP_URL", "http://timestamp.digicert.com"),
+        "/td",
+        "SHA256",
+        "/f",
+        str(pfx_path),
+    ]
+    if password:
+        cmd.extend(["/p", password])
+    cmd.append(str(path))
+    # Avoid echoing the password in logs.
+    print(f"+ signtool sign … {path.name}", flush=True)
+    subprocess.check_call(cmd, cwd=str(ROOT))
+    print(f"signed {path.name}", flush=True)
+    return True
+
+
 def build_installer() -> Path:
     plotline = ROOT / "Plotline.json"
     if not plotline.is_file():
@@ -278,6 +415,16 @@ def build_installer() -> Path:
     spec = ROOT / "packaging" / "ArkPlots.iss"
     if not spec.is_file():
         raise SystemExit(f"missing installer script: {spec}")
+
+    # Sign payload exe first so installed files show a publisher when cert is present.
+    payload_exe = payload_dir / f"{EXE_STEM}.exe"
+    if not sign_file(payload_exe):
+        print(
+            "skip code-sign (set SIGN_PFX + SIGN_PFX_PASSWORD to enable). "
+            "Unsigned builds show SmartScreen「发布者未知」.",
+            flush=True,
+        )
+
     iscc = find_iscc()
     _run(
         [
@@ -290,13 +437,8 @@ def build_installer() -> Path:
     setup = ROOT / release_setup_name()
     if not setup.is_file():
         raise SystemExit(f"Inno Setup finished but {setup.name} is missing")
+    sign_file(setup)
     print(f"installer -> {setup.name} ({setup.stat().st_size} bytes)", flush=True)
-    print(
-        "Note: unsigned installers may still trigger SmartScreen until the "
-        "build has reputation or is code-signed. Submit false positives at "
-        "https://www.microsoft.com/wdsi/filesubmission",
-        flush=True,
-    )
     return setup
 
 
