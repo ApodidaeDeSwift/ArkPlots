@@ -137,4 +137,5 @@ export const plotNamesEnUS: Record<string, string> = {
   '131': "Till the Lands Become an Orange", // 直到大地变成一颗酸橙
   '132': "Interactive Exhibition", // 奇象巡展
   '133': "Sur le lac lune vivante", // 月行水上
+  '134': "Yet Another Wave", // 昨日海
 }

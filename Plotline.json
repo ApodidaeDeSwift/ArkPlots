@@ -7492,6 +7492,53 @@
         }
       ],
       "chapter": ""
+    },
+    {
+      "id": 134,
+      "name": "昨日海",
+      "class": "sidestory",
+      "plot_stage": 4,
+      "date": "2026-10-09",
+      "country": [
+        "阿戈尔",
+        "伊比利亚"
+      ],
+      "new_operator": [
+        "克莱门莎",
+        "德·托莱多",
+        "旅骨"
+      ],
+      "related_power": [
+        "深海猎人"
+      ],
+      "related_plot": [
+        "海嗣"
+      ],
+      "description": "沉没的旧都城自浪底浮现，港都里的伊比利亚人仍在挣扎求生。\n阿戈尔执政官克莱门莎再度踏足陆地，\n深海猎人的足迹与海嗣的潮声再次交叠。\n昨日之海尚未退尽，今日之浪又一次涌来。",
+      "necessary_plot": [
+        {
+          "id": 100,
+          "reason": "海嗣线必要前置（自海渊的一瞥）",
+          "reason_en": "Required Seaborn-line prerequisite (Glimpse of the Depths)"
+        },
+        {
+          "id": 90,
+          "reason": "克莱门莎与阿戈尔航道线在「生路」中有首次出场",
+          "reason_en": "Clementia and the Aegir Waterway Program have extensive background in Path of Life"
+        }
+      ],
+      "optional_plot": [],
+      "Videos": [
+        {
+          "name": "【《明日方舟》SideStory「昨日海」活动宣传PV】",
+          "url": "https://www.bilibili.com/video/BV1Rxam6kEtU"
+        },
+        {
+          "name": "【《明日方舟》干员「克莱门莎」技能展示PV】",
+          "url": "https://www.bilibili.com/video/BV1zhHW6REAd"
+        }
+      ],
+      "chapter": "自海渊的一瞥"
     }
   ]
 }
