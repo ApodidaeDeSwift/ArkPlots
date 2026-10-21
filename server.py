@@ -79,6 +79,42 @@ READ_RECORD_PATH = os.path.join(WORKDIR, "Read_record.json")
 STATIC_DIR = get_static_dir()
 DEFAULT_PORT = 8765
 
+# Browsers refuse to sniff these. On Windows, mimetypes.guess_type() copies
+# HKEY_CLASSES_ROOT, which often maps .js / .mjs / .cjs to text/plain. A module
+# script with that type never runs, so the page stays blank. Stylesheets, SVG,
+# and Wasm fail for the same reason when the registry type is wrong.
+_STATIC_CONTENT_TYPES = {
+    ".js": "text/javascript; charset=utf-8",
+    ".mjs": "text/javascript; charset=utf-8",
+    ".cjs": "text/javascript; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".html": "text/html; charset=utf-8",
+    ".htm": "text/html; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".map": "application/json; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".wasm": "application/wasm",
+    ".txt": "text/plain; charset=utf-8",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".ico": "image/x-icon",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+}
+
+
+def static_content_type(path: str) -> str:
+    """Content-Type for a static file, ignoring the OS MIME database."""
+    ext = os.path.splitext(path)[1].lower()
+    fixed = _STATIC_CONTENT_TYPES.get(ext)
+    if fixed:
+        return fixed
+    guessed = mimetypes.guess_type(path)[0]
+    return guessed or "application/octet-stream"
+
 
 def load_json(path: str) -> Any:
     if not os.path.exists(path):
@@ -127,6 +163,10 @@ def ensure_read_record(plots: List[Dict[str, Any]]) -> Dict[str, str]:
 class ArkPlotsHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=STATIC_DIR, **kwargs)
+
+    def guess_type(self, path: str) -> str:
+        # do_HEAD still serves files through SimpleHTTPRequestHandler.send_head.
+        return static_content_type(path)
 
     def log_message(self, fmt: str, *args) -> None:
         stream = sys.stderr
@@ -236,7 +276,7 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
             self.send_error(404)
             return
 
-        ctype = mimetypes.guess_type(candidate)[0] or "application/octet-stream"
+        ctype = self.guess_type(candidate)
         try:
             with open(candidate, "rb") as f:
                 body = f.read()
