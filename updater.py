@@ -4,7 +4,9 @@
 Update source: tags named ``APP_VerYY.M.D.N`` on ApodidaeDeSwift/ArkPlots
 (e.g. ``APP_Ver26.9.26.2`` = 2026-09-26, 2nd build that day). The updater
 lists those tags, picks the highest version, and downloads that release's
-``.exe`` asset when it is newer than the installed build.
+``.exe`` asset when it is newer than the installed build. If the REST API
+is rate-limited or unreachable, the same check falls back to the public
+releases feed and asset page, which do not share that API quota.
 
 Only the running executable (and optional stable ``ArkPlots.exe`` twin) is
 replaced. User data beside the exe (Plotline.json, Read_record.json, covers,
@@ -12,6 +14,7 @@ etc.) is never deleted or overwritten by the updater.
 """
 from __future__ import annotations
 
+import html
 import json
 import os
 import re
@@ -22,8 +25,9 @@ import threading
 import time
 import urllib.error
 import urllib.request
+import xml.etree.ElementTree as ET
 from typing import Any
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 from app_info import (
     EXE_STEM,
@@ -36,8 +40,10 @@ from app_info import (
 )
 
 RELEASES_HTML_URL = f"https://github.com/{GITHUB_REPO}/releases"
+RELEASES_ATOM_URL = f"https://github.com/{GITHUB_REPO}/releases.atom"
 RELEASES_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases"
 TAGS_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/tags"
+_ATOM_NS = "{http://www.w3.org/2005/Atom}"
 RELEASE_BY_TAG_API = (
     f"https://api.github.com/repos/{GITHUB_REPO}/releases/tags/{{tag}}"
 )
@@ -111,6 +117,144 @@ def _http_json(url: str, timeout: float = 25.0) -> Any:
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         raw = resp.read()
     return json.loads(raw.decode("utf-8"))
+
+
+def _http_text(url: str, accept: str, timeout: float = 20.0) -> str:
+    """GET a public GitHub page. Unlike ``_http_json``, this does not use the API."""
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": _USER_AGENT,
+            "Accept": accept,
+        },
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read().decode("utf-8", errors="replace")
+
+
+def _html_to_notes(fragment: str) -> str:
+    """Turn a release-page HTML fragment into text the notes view can show."""
+    text = fragment.replace("\r\n", "\n").replace("\r", "\n")
+    text = re.sub(r"(?is)<br\s*/?>", "\n", text)
+    text = re.sub(r"(?is)</p\s*>", "\n\n", text)
+    text = re.sub(r"(?is)</h[1-6]\s*>", "\n\n", text)
+    text = re.sub(r"(?is)<li[^>]*>", "\n- ", text)
+    text = re.sub(r"(?is)</li\s*>", "", text)
+
+    def _link(match: re.Match[str]) -> str:
+        href = html.unescape(match.group(1)).strip()
+        label = re.sub(r"(?is)<[^>]+>", "", match.group(2))
+        label = html.unescape(label).strip()
+        if not label or label == href:
+            return href
+        return f"{label} ({href})"
+
+    text = re.sub(
+        r'(?is)<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',
+        _link,
+        text,
+    )
+    text = re.sub(r"(?is)<[^>]+>", "", text)
+    text = html.unescape(text)
+    text = re.sub(r"[ \t]+\n", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return _clip_notes(text)
+
+
+def _tag_from_release_link(title: str, link: str) -> str | None:
+    if parse_app_ver_tag(title):
+        return title.strip()
+    marker = "/releases/tag/"
+    if marker in link:
+        tag = unquote(link.split(marker, 1)[1].split("/", 1)[0].strip())
+        if parse_app_ver_tag(tag):
+            return tag
+    return None
+
+
+def _assets_from_expanded_page(tag_name: str) -> list[dict[str, Any]]:
+    """Installer links from the public expanded-assets fragment."""
+    url = (
+        f"https://github.com/{GITHUB_REPO}/releases/expanded_assets/"
+        f"{quote(tag_name, safe='')}"
+    )
+    page = _http_text(url, "text/html, */*;q=0.8")
+    assets: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for raw_href in re.findall(r'href="([^"]+\.exe)"', page, flags=re.IGNORECASE):
+        href = html.unescape(raw_href).strip()
+        if href.startswith("/"):
+            href = "https://github.com" + href
+        elif not href.startswith("http"):
+            continue
+        name = unquote(href.split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1])
+        key = href.lower()
+        if not name or key in seen:
+            continue
+        seen.add(key)
+        assets.append({"name": name, "browser_download_url": href, "size": None})
+    return assets
+
+
+def _releases_from_public_feed() -> list[tuple[str, tuple[int, ...], dict[str, Any]]]:
+    """``APP_Ver*`` entries from the public releases Atom feed (no API quota)."""
+    xml = _http_text(
+        RELEASES_ATOM_URL,
+        "application/atom+xml, application/xml;q=0.9, */*;q=0.8",
+    )
+    root = ET.fromstring(xml)
+    found: list[tuple[str, tuple[int, ...], dict[str, Any]]] = []
+    for entry in root.findall(f"{_ATOM_NS}entry"):
+        title = (entry.findtext(f"{_ATOM_NS}title") or "").strip()
+        link = ""
+        for link_el in entry.findall(f"{_ATOM_NS}link"):
+            href = link_el.get("href") or ""
+            rel = link_el.get("rel") or "alternate"
+            if href and rel == "alternate":
+                link = href
+                break
+        tag_name = _tag_from_release_link(title, link)
+        ver = parse_app_ver_tag(tag_name)
+        if tag_name is None or ver is None:
+            continue
+        content_el = entry.find(f"{_ATOM_NS}content")
+        body = ""
+        if content_el is not None:
+            body = _html_to_notes("".join(content_el.itertext()))
+        html_url = link or (
+            f"https://github.com/{GITHUB_REPO}/releases/tag/{quote(tag_name, safe='')}"
+        )
+        found.append(
+            (
+                tag_name,
+                ver,
+                {
+                    "tag_name": tag_name,
+                    "name": title or tag_name,
+                    "body": body,
+                    "html_url": html_url,
+                    "draft": False,
+                    "assets": [],
+                },
+            )
+        )
+    return found
+
+
+def _latest_from_public_feed() -> tuple[str, tuple[int, ...], dict[str, Any]] | None:
+    """Newest public ``APP_Ver*`` release, or None if the feed cannot be read."""
+    try:
+        found = _releases_from_public_feed()
+    except Exception:
+        return None
+    if not found:
+        return None
+    tag_name, remote, release = max(found, key=lambda item: item[1])
+    try:
+        release["assets"] = _assets_from_expanded_page(tag_name)
+    except Exception:
+        release["assets"] = []
+    return tag_name, remote, release
 
 
 def _list_app_ver_from_releases(
@@ -318,9 +462,16 @@ def check_for_update() -> dict[str, Any]:
                     raise
                 release = None
     except urllib.error.HTTPError as exc:
-        return _base_error("http_error", f"GitHub HTTP {exc.code}")
+        fallback = _latest_from_public_feed()
+        exc.close()
+        if fallback is None:
+            return _base_error("http_error", f"GitHub HTTP {exc.code}")
+        tag_name, remote, release = fallback
     except Exception as exc:
-        return _base_error("network_error", str(exc))
+        fallback = _latest_from_public_feed()
+        if fallback is None:
+            return _base_error("network_error", str(exc))
+        tag_name, remote, release = fallback
 
     assert remote is not None
     remote_str = version_tuple_to_str(remote)

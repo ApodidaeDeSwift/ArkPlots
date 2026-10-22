@@ -94,6 +94,90 @@ class ReleaseNotesTests(unittest.TestCase):
         self.assertEqual(result["error"], "no_release")
         self.assertTrue(result["update_available"])
 
+    def test_api_rate_limit_uses_public_release_feed(self) -> None:
+        atom = """<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Release notes from ArkPlots</title>
+  <entry>
+    <title>APP_Ver1.2.0.0</title>
+    <link rel="alternate" href="https://github.com/ApodidaeDeSwift/ArkPlots/releases/tag/APP_Ver1.2.0.0"/>
+    <content type="html">&lt;p&gt;旧版本&lt;/p&gt;</content>
+  </entry>
+  <entry>
+    <title>桌面版</title>
+    <link rel="alternate" href="https://github.com/ApodidaeDeSwift/ArkPlots/releases/tag/APP_Ver99.0.0.1"/>
+    <content type="html">&lt;ul&gt;&lt;li&gt;修复空白页&lt;/li&gt;&lt;li&gt;&lt;a href="https://example.com/notes"&gt;说明&lt;/a&gt;&lt;/li&gt;&lt;/ul&gt;</content>
+  </entry>
+</feed>
+"""
+        page = (
+            '<a href="/ApodidaeDeSwift/ArkPlots/releases/download/'
+            'APP_Ver99.0.0.1/Arkplot_setup_ver99.0.0.1.exe">'
+            "Arkplot_setup_ver99.0.0.1.exe</a>"
+        )
+
+        def http_text(url: str, accept: str, timeout: float = 20.0) -> str:
+            del accept, timeout
+            if url.endswith("/releases.atom"):
+                return atom
+            self.assertIn("/releases/expanded_assets/APP_Ver99.0.0.1", url)
+            return page
+
+        err = HTTPError(
+            "https://api.github.com/repos/ApodidaeDeSwift/ArkPlots/releases",
+            403,
+            "rate limit exceeded",
+            hdrs=None,
+            fp=None,
+        )
+        with (
+            patch("updater.VERSION", "1.0.0.0"),
+            patch("updater._list_app_ver_from_releases", side_effect=err),
+            patch("updater._http_text", side_effect=http_text),
+        ):
+            result = check_for_update()
+        self.assertTrue(result["ok"])
+        self.assertTrue(result["update_available"])
+        self.assertEqual(result["remote_tag"], "APP_Ver99.0.0.1")
+        self.assertEqual(result["remote_version"], "99.0.0.1")
+        self.assertEqual(result["asset_name"], "Arkplot_setup_ver99.0.0.1.exe")
+        self.assertEqual(
+            result["asset_url"],
+            "https://github.com/ApodidaeDeSwift/ArkPlots/releases/download/"
+            "APP_Ver99.0.0.1/Arkplot_setup_ver99.0.0.1.exe",
+        )
+        self.assertIn("修复空白页", result["release_notes"])
+        self.assertIn("https://example.com/notes", result["release_notes"])
+        self.assertNotIn("旧版本", result["release_notes"])
+
+    def test_public_feed_failure_keeps_the_api_error(self) -> None:
+        err = HTTPError(
+            "https://api.github.com/repos/ApodidaeDeSwift/ArkPlots/releases",
+            403,
+            "rate limit exceeded",
+            hdrs=None,
+            fp=None,
+        )
+        with (
+            patch("updater.VERSION", "1.0.0.0"),
+            patch("updater._list_app_ver_from_releases", side_effect=err),
+            patch("updater._http_text", side_effect=urllib.error.URLError("timed out")),
+        ):
+            result = check_for_update()
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"], "http_error")
+
+    def test_api_success_does_not_read_the_public_feed(self) -> None:
+        found = [("APP_Ver99.0.0.1", (99, 0, 0, 1), _release())]
+        with (
+            patch("updater.VERSION", "1.0.0.0"),
+            patch("updater._list_app_ver_from_releases", return_value=found),
+            patch("updater._latest_from_public_feed") as feed,
+        ):
+            result = check_for_update()
+        self.assertTrue(result["ok"])
+        feed.assert_not_called()
+
     def test_current_release_notes_when_already_up_to_date(self) -> None:
         found = [("APP_Ver1.0.0.0", (1, 0, 0, 0), _release("当前版本说明"))]
         with (
