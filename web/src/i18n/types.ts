@@ -156,6 +156,7 @@ export type Messages = {
     showReason: string
     showNecessary: string
     showOptional: string
+    checkUpdatesOnLaunch: string
   }
   version: {
     label: string
@@ -183,6 +184,18 @@ export type Messages = {
     noAsset: string
     devOnly: string
     unavailable: string
+    promptTitle: string
+    promptAsk: string
+    updateNow: string
+    later: string
+    notesTitle: string
+    notesEmpty: string
+    announcementTitle: string
+    announcementEmpty: string
+    completeTitle: string
+    completeBody: string
+    restartNow: string
+    restartFailed: string
   }
   support: {
     title: string

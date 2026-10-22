@@ -8,6 +8,7 @@ Serves:
   GET  /api/version   -> app identity / version (for UI + updates)
   GET  /api/update/check -> find newest APP_Ver* GitHub tag and compare versions
   POST /api/update/apply -> download release exe and schedule safe replace
+  POST /api/update/exit  -> restart after the UI has shown release notes
   GET  /api/health    -> liveness
   static files from web/dist (production UI)
 """
@@ -37,12 +38,15 @@ except ImportError:  # pragma: no cover - extremely old checkouts
         return {"name": "ArkPlots", "version": "0.0.0", "channel": "dev"}
 
 try:
-    from updater import apply_update, check_for_update
+    from updater import apply_update, check_for_update, request_update_exit
 except ImportError:  # pragma: no cover
     def check_for_update() -> Dict[str, Any]:
         return {"ok": False, "error": "updater_missing"}
 
-    def apply_update(*, restart: bool = True) -> Dict[str, Any]:
+    def apply_update(*, restart: bool = True, defer_exit: bool = False) -> Dict[str, Any]:
+        return {"ok": False, "error": "updater_missing"}
+
+    def request_update_exit() -> Dict[str, Any]:
         return {"ok": False, "error": "updater_missing"}
 
 
@@ -291,20 +295,32 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+        if parsed.path == "/api/update/exit":
+            try:
+                result = request_update_exit()
+                self._send_json(200 if result.get("ok") else 409, result)
+            except Exception as e:
+                self._send_json(500, {"ok": False, "error": str(e)})
+            return
         if parsed.path != "/api/update/apply":
             self.send_error(404)
             return
         restart = True
+        defer_exit = False
         try:
             raw = self._read_body()
             if raw.strip():
                 data = json.loads(raw.decode("utf-8"))
-                if isinstance(data, dict) and "restart" in data:
-                    restart = bool(data.get("restart"))
+                if isinstance(data, dict):
+                    if "restart" in data:
+                        restart = bool(data.get("restart"))
+                    if "defer_exit" in data:
+                        defer_exit = bool(data.get("defer_exit"))
         except Exception:
             restart = True
+            defer_exit = False
         try:
-            result = apply_update(restart=restart)
+            result = apply_update(restart=restart, defer_exit=defer_exit)
             code = 200 if result.get("ok") and result.get("applied") else 200
             # Still 200 for soft failures (up to date / no asset) so UI can show message.
             if result.get("error") in ("network_error", "http_error", "download_failed"):

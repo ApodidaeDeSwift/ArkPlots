@@ -6,6 +6,8 @@ export type DisplaySettings = {
   showReason: boolean
   showNecessary: boolean
   showOptional: boolean
+  /** When true, check GitHub for an update on every launch. */
+  checkUpdatesOnLaunch: boolean
 }
 
 /** Matches the previous in-panel defaults: cover, reasons, and both prerequisite lists on. */
@@ -14,6 +16,7 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
   showReason: true,
   showNecessary: true,
   showOptional: true,
+  checkUpdatesOnLaunch: true,
 }
 
 function pickBool(value: unknown, fallback: boolean): boolean {
@@ -30,6 +33,10 @@ export function loadDisplaySettings(): DisplaySettings {
       showReason: pickBool(parsed.showReason, DEFAULT_DISPLAY_SETTINGS.showReason),
       showNecessary: pickBool(parsed.showNecessary, DEFAULT_DISPLAY_SETTINGS.showNecessary),
       showOptional: pickBool(parsed.showOptional, DEFAULT_DISPLAY_SETTINGS.showOptional),
+      checkUpdatesOnLaunch: pickBool(
+        parsed.checkUpdatesOnLaunch,
+        DEFAULT_DISPLAY_SETTINGS.checkUpdatesOnLaunch,
+      ),
     }
   } catch {
     return { ...DEFAULT_DISPLAY_SETTINGS }

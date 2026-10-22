@@ -3,11 +3,13 @@ import { applyUpdate, checkUpdate, fetchVersion, type UpdateCheckResult } from '
 import { useI18n, useT } from '../i18n'
 import type { DisplaySettings } from '../settings'
 import { APP_VERSION } from '../version'
+import { ReleaseNotes } from './ReleaseNotes'
 
 type Props = {
   settings: DisplaySettings
   onChange: (next: DisplaySettings) => void
   onClose: () => void
+  onUpdateApplied?: (result: UpdateCheckResult) => void
 }
 
 type UpdatePhase =
@@ -26,7 +28,7 @@ function pickWarning(result: UpdateCheckResult | null, locale: string): string {
   return result.warning_en || result.warning || ''
 }
 
-export function SettingsModal({ settings, onChange, onClose }: Props) {
+export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: Props) {
   const t = useT()
   const { locale } = useI18n()
   const [supportOpen, setSupportOpen] = useState(false)
@@ -127,6 +129,7 @@ export function SettingsModal({ settings, onChange, onClose }: Props) {
       if (data.applied) {
         setPhase('restarting')
         setStatusText([t('version.restarting'), warn, t('version.dataSafe')].filter(Boolean).join('\n'))
+        onUpdateApplied?.(data)
         return
       }
       setPhase('error')
@@ -214,6 +217,17 @@ export function SettingsModal({ settings, onChange, onClose }: Props) {
 
           <section className="settings-section settings-section-flush">
             <h4>{t('version.label')}</h4>
+            <div className="settings-checks settings-checks-tight">
+              <label>
+                <input
+                  id="check-updates-on-launch"
+                  type="checkbox"
+                  checked={settings.checkUpdatesOnLaunch}
+                  onChange={() => toggle('checkUpdatesOnLaunch')}
+                />
+                {t('settings.checkUpdatesOnLaunch')}
+              </label>
+            </div>
             <div className="update-console" data-phase={phase}>
               <div className="update-console-head">
                 <span className="update-console-tag">{t('version.panelTag')}</span>
@@ -285,6 +299,20 @@ export function SettingsModal({ settings, onChange, onClose }: Props) {
                     ? statusText.split('\n').map((line, i) => <div key={i}>{line}</div>)
                     : t('version.idleHint')}
                 </div>
+                {phase === 'ready' && result?.update_available && (
+                  <div className="update-console-notes">
+                    <div className="update-console-notes-title">
+                      {t('version.notesTitle', {
+                        version: result.remote_version || '?',
+                      })}
+                    </div>
+                    {(result.release_notes || '').trim() ? (
+                      <ReleaseNotes source={result.release_notes || ''} />
+                    ) : (
+                      <p className="release-notes-empty">{t('version.notesEmpty')}</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </section>

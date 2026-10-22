@@ -41,6 +41,7 @@ binaries = _dynlibs("webview") + _dynlibs("pythonnet") + _dynlibs("clr_loader")
 datas = [
     (os.path.join(_ROOT, "web", "dist"), "web/dist"),
     (os.path.join(_ROOT, "icon.ico"), "."),
+    (os.path.join(_ROOT, "Update.md"), "."),
 ]
 datas += collect_data_files("webview", subdir="lib")
 datas += collect_data_files("webview", subdir="js")

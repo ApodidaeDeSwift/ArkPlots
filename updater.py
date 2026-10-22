@@ -194,6 +194,86 @@ def _asset_is_installer(name: str) -> bool:
     return "setup" in n or n.startswith("arkplot_setup")
 
 
+_NOTES_LIMIT = 100_000
+_update_exit_armed = False
+
+
+def _clip_notes(text: str) -> str:
+    cleaned = text.replace("\r\n", "\n").replace("\r", "\n").lstrip("\ufeff").strip()
+    if len(cleaned) > _NOTES_LIMIT:
+        cleaned = cleaned[:_NOTES_LIMIT].rstrip() + "\n…"
+    return cleaned
+
+
+def _release_notes_text(release: dict[str, Any] | None) -> str:
+    """GitHub release ``body`` (Markdown), or an empty string."""
+    if not isinstance(release, dict):
+        return ""
+    body = release.get("body")
+    if not isinstance(body, str):
+        return ""
+    return _clip_notes(body)
+
+
+_UPDATE_MD_NAME = "Update.md"
+
+
+def update_markdown_path() -> str | None:
+    """Local ``Update.md``: frozen bundle, then the directory next to the program."""
+    candidates: list[str] = []
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        candidates.append(os.path.join(meipass, _UPDATE_MD_NAME))
+    candidates.append(os.path.join(_app_dir(), _UPDATE_MD_NAME))
+    here = os.path.join(os.path.dirname(os.path.abspath(__file__)), _UPDATE_MD_NAME)
+    if here not in candidates:
+        candidates.append(here)
+    for path in candidates:
+        if os.path.isfile(path):
+            return path
+    return None
+
+
+def read_local_update_markdown() -> str:
+    path = update_markdown_path()
+    if not path:
+        return ""
+    try:
+        with open(path, encoding="utf-8") as handle:
+            return _clip_notes(handle.read())
+    except OSError:
+        return ""
+
+
+def fetch_tagged_update_markdown(tag_name: str | None) -> str:
+    """``Update.md`` committed on a GitHub tag, or an empty string."""
+    tag = (tag_name or "").strip()
+    if not tag:
+        return ""
+    url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/{quote(tag, safe='')}/Update.md"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": _USER_AGENT,
+            "Accept": "text/plain, text/markdown;q=0.9, */*;q=0.8",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            raw = resp.read()
+    except Exception:
+        return ""
+    return _clip_notes(raw.decode("utf-8", errors="replace"))
+
+
+def update_announcement(tag_name: str | None = None) -> str:
+    """Post-update notice: ``Update.md`` on that tag, otherwise the local file."""
+    remote = fetch_tagged_update_markdown(tag_name)
+    if remote:
+        return remote
+    return read_local_update_markdown()
+
+
 def _base_error(error: str, message: str, **extra: Any) -> dict[str, Any]:
     return {
         "ok": False,
@@ -263,6 +343,7 @@ def check_for_update() -> dict[str, Any]:
             "asset_size": None,
             "has_asset": False,
             "html_url": html_fallback,
+            "release_notes": "",
             "warning": OVERSEAS_SOURCE_WARNING_ZH,
             "warning_en": OVERSEAS_SOURCE_WARNING_EN,
             "frozen": bool(getattr(sys, "frozen", False)),
@@ -286,6 +367,7 @@ def check_for_update() -> dict[str, Any]:
         "asset_size": (asset or {}).get("size"),
         "has_asset": asset is not None,
         "html_url": release.get("html_url") or html_fallback,
+        "release_notes": _release_notes_text(release),
         "warning": OVERSEAS_SOURCE_WARNING_ZH,
         "warning_en": OVERSEAS_SOURCE_WARNING_EN,
         "frozen": bool(getattr(sys, "frozen", False)),
@@ -574,8 +656,27 @@ def _schedule_process_exit(delay: float = 1.2) -> None:
     threading.Thread(target=_exit, name="arkplots-update-exit", daemon=True).start()
 
 
-def apply_update(*, restart: bool = True) -> dict[str, Any]:
-    """Download the remote exe and schedule a safe replace of the running binary."""
+def request_update_exit() -> dict[str, Any]:
+    """Quit after the UI has shown post-update release notes.
+
+    ``apply_update(defer_exit=True)`` leaves the process running so the notes
+    stay on screen. This arms the same delayed exit the swapper already waits on.
+    """
+    global _update_exit_armed
+    if not _update_exit_armed:
+        return {"ok": False, "error": "not_ready"}
+    _update_exit_armed = False
+    _schedule_process_exit(0.35)
+    return {"ok": True, "will_restart": True}
+
+
+def apply_update(*, restart: bool = True, defer_exit: bool = False) -> dict[str, Any]:
+    """Download the remote exe and schedule a safe replace of the running binary.
+
+    When ``defer_exit`` is true, the process stays up until ``request_update_exit``
+    so the UI can show this version's release notes before restarting.
+    """
+    global _update_exit_armed
     check = check_for_update()
     if not check.get("ok"):
         return check
@@ -687,12 +788,18 @@ def apply_update(*, restart: bool = True) -> dict[str, Any]:
         )
         note = "User data files are not modified; only the executable is replaced."
 
-    _schedule_process_exit()
+    if defer_exit:
+        _update_exit_armed = True
+    else:
+        _update_exit_armed = False
+        _schedule_process_exit()
     return {
         **check,
         "applied": True,
         "will_restart": restart,
+        "exit_deferred": defer_exit,
         "message": "update_scheduled",
         "target_exe": exe_path,
         "note": note,
+        "update_notes": update_announcement(str(check.get("remote_tag") or "")),
     }

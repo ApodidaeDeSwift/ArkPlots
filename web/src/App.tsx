@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react'
-import { fetchCovers, fetchPlots, fetchRecords, saveRecords } from './api'
+import { applyUpdate, checkUpdate, exitAfterUpdate, fetchCovers, fetchPlots, fetchRecords, saveRecords, type UpdateCheckResult } from './api'
 import { collectFilterOptions, matchesFilters } from './filter'
 import { DetailPanel } from './components/DetailPanel'
 import { FilterBar } from './components/FilterBar'
@@ -9,6 +9,7 @@ import { PlotList } from './components/PlotList'
 import { RecommendPanel } from './components/RecommendPanel'
 import { SettingsModal } from './components/SettingsModal'
 import { StatusModal } from './components/StatusModal'
+import { UpdateCompleteDialog, UpdateOfferDialog } from './components/UpdateDialogs'
 import { VideoModal } from './components/VideoModal'
 import {
   useChapterLabel,
@@ -78,10 +79,89 @@ export default function App() {
     loadDisplaySettings(),
   )
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [updateOffer, setUpdateOffer] = useState<UpdateCheckResult | null>(null)
+  const [updateOfferBusy, setUpdateOfferBusy] = useState(false)
+  const [updateOfferError, setUpdateOfferError] = useState('')
+  const [updateDone, setUpdateDone] = useState<UpdateCheckResult | null>(null)
+  const [updateRestarting, setUpdateRestarting] = useState(false)
+  const [updateRestartError, setUpdateRestartError] = useState('')
 
   const [selector, setSelector] = useState<SelectorKey | null>(null)
   const [statusModal, setStatusModal] = useState<'single' | 'batch' | null>(null)
   const [videoOpen, setVideoOpen] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      if (!loadDisplaySettings().checkUpdatesOnLaunch) return
+      try {
+        const data = await checkUpdate()
+        if (cancelled || !loadDisplaySettings().checkUpdatesOnLaunch) return
+        if (!data.ok || !data.update_available) return
+        setUpdateOffer(data)
+        setUpdateOfferError('')
+      } catch {
+        /* Errors and "no update" stay quiet. */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const describeApplyFailure = (data: UpdateCheckResult): string => {
+    if (data.error === 'no_asset') return t('version.noAsset')
+    if (data.error === 'not_frozen') return t('version.devOnly')
+    if (
+      data.error === 'download_failed' ||
+      data.error === 'download_invalid' ||
+      data.error === 'network_error' ||
+      data.error === 'http_error'
+    ) {
+      return t('version.downloadFailed')
+    }
+    if (data.message === 'already_up_to_date') return t('version.upToDate')
+    return data.message || t('version.applyFailed')
+  }
+
+  const confirmStartupUpdate = async () => {
+    if (!updateOffer || updateOfferBusy) return
+    setUpdateOfferBusy(true)
+    setUpdateOfferError('')
+    try {
+      const data = await applyUpdate(true, true)
+      if (data.applied) {
+        setUpdateOffer(null)
+        setUpdateDone({
+          ...updateOffer,
+          ...data,
+          release_notes: data.release_notes ?? updateOffer.release_notes,
+        })
+        return
+      }
+      setUpdateOfferError(describeApplyFailure(data))
+    } catch (err) {
+      setUpdateOfferError(err instanceof Error ? err.message : t('version.downloadFailed'))
+    } finally {
+      setUpdateOfferBusy(false)
+    }
+  }
+
+  const restartAfterUpdate = async () => {
+    if (updateRestarting) return
+    setUpdateRestarting(true)
+    setUpdateRestartError('')
+    try {
+      const data = await exitAfterUpdate()
+      if (!data.ok) {
+        setUpdateRestartError(t('version.restartFailed'))
+        setUpdateRestarting(false)
+      }
+    } catch {
+      setUpdateRestartError(t('version.restartFailed'))
+      setUpdateRestarting(false)
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -571,6 +651,10 @@ export default function App() {
             saveDisplaySettings(next)
           }}
           onClose={() => setSettingsOpen(false)}
+          onUpdateApplied={(result) => {
+            setUpdateOffer(null)
+            setUpdateDone(result)
+          }}
         />
       )}
 
@@ -579,6 +663,29 @@ export default function App() {
           title={plotName(activeItem.id, activeItem.name) || String(activeItem.id)}
           videos={parseVideos(activeItem, t('video.defaultName'))}
           onClose={() => setVideoOpen(false)}
+        />
+      )}
+
+      {updateOffer && !updateDone && (
+        <UpdateOfferDialog
+          result={updateOffer}
+          busy={updateOfferBusy}
+          errorText={updateOfferError}
+          onLater={() => {
+            if (updateOfferBusy) return
+            setUpdateOffer(null)
+            setUpdateOfferError('')
+          }}
+          onConfirm={() => void confirmStartupUpdate()}
+        />
+      )}
+
+      {updateDone && (
+        <UpdateCompleteDialog
+          result={updateDone}
+          restarting={updateRestarting}
+          errorText={updateRestartError}
+          onRestart={() => void restartAfterUpdate()}
         />
       )}
     </div>

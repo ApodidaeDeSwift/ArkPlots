@@ -26,6 +26,10 @@ export type UpdateCheckResult = {
   asset_size?: number | null
   has_asset?: boolean
   html_url?: string
+  /** Markdown body of the release being offered (empty when GitHub has none). */
+  release_notes?: string
+  /** Post-update announcement: contents of Update.md for the installed version. */
+  update_notes?: string
   warning?: string
   warning_en?: string
   frozen?: boolean
@@ -33,6 +37,7 @@ export type UpdateCheckResult = {
   message?: string
   applied?: boolean
   will_restart?: boolean
+  exit_deferred?: boolean
   note?: string
   target_exe?: string
 }
@@ -95,13 +100,24 @@ export function checkUpdate() {
   return jsonFetchSoft<UpdateCheckResult>('/api/update/check', { cache: 'no-store' })
 }
 
-/** Download the release exe and schedule a safe in-place replace (packaged builds only). */
-export function applyUpdate(restart = true) {
+/** Download the release exe and schedule a safe in-place replace (packaged builds only).
+
+`deferExit` keeps the process alive so the UI can show release notes before restart.
+ */
+export function applyUpdate(restart = true, deferExit = true) {
   return jsonFetchSoft<UpdateCheckResult>('/api/update/apply', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ restart }),
+    body: JSON.stringify({ restart, defer_exit: deferExit }),
   })
+}
+
+/** Finish a deferred update by closing this process so the swapper can restart it. */
+export function exitAfterUpdate() {
+  return jsonFetchSoft<{ ok: boolean; error?: string; will_restart?: boolean }>(
+    '/api/update/exit',
+    { method: 'POST' },
+  )
 }
 
 /** id -> relative path under site root (e.g. covers/12.png). Missing file => {}. */
