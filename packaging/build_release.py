@@ -199,39 +199,27 @@ def _blend_radial_glow(
     img.alpha_composite(overlay)
 
 
-def _draw_corner_brackets(draw, box: tuple[int, int, int, int], color, arm: int = 18, thick: int = 2) -> None:
-    x0, y0, x1, y1 = box
-    draw.rectangle([x0, y0, x0 + arm, y0 + thick], fill=color)
-    draw.rectangle([x0, y0, x0 + thick, y0 + arm], fill=color)
-    draw.rectangle([x1 - arm, y0, x1, y0 + thick], fill=color)
-    draw.rectangle([x1 - thick, y0, x1, y0 + arm], fill=color)
-    draw.rectangle([x0, y1 - thick, x0 + arm, y1], fill=color)
-    draw.rectangle([x0, y1 - arm, x0 + thick, y1], fill=color)
-    draw.rectangle([x1 - arm, y1 - thick, x1, y1], fill=color)
-    draw.rectangle([x1 - thick, y1 - arm, x1, y1], fill=color)
-
-
 def _load_wizard_fonts():
     from PIL import ImageFont
 
-    try:
-        return (
-            ImageFont.truetype("segoeuib.ttf", 28),
-            ImageFont.truetype("consola.ttf", 12),
-            ImageFont.truetype("consola.ttf", 11),
-        )
-    except OSError:
+    def load(path: str, size: int, index: int = 0):
+        return ImageFont.truetype(path, size, index=index)
+
+    pairs = [
+        ("C:/Windows/Fonts/msyhbd.ttc", "C:/Windows/Fonts/msyh.ttc"),
+        ("msyhbd.ttc", "msyh.ttc"),
+    ]
+    for bold, regular in pairs:
         try:
-            title = ImageFont.truetype("segoeui.ttf", 28)
-            mono = ImageFont.truetype("consola.ttf", 12)
-            return title, mono, mono
+            return load(bold, 28), load(regular, 16), load(regular, 14)
         except OSError:
-            fallback = ImageFont.load_default()
-            return fallback, fallback, fallback
+            continue
+    fallback = ImageFont.load_default()
+    return fallback, fallback, fallback
 
 
 def sync_wizard_images() -> tuple[Path, Path, Path]:
-    """Generate Inno wizard art in the same teal terminal palette as the app UI."""
+    """Generate the installer's side and header art as deep-blue rounded cards."""
     from PIL import Image, ImageDraw
 
     pack = ROOT / "packaging"
@@ -240,66 +228,47 @@ def sync_wizard_images() -> tuple[Path, Path, Path]:
     back_path = pack / "wizard_back.png"
     brand = _load_brand_icon_rgba()
 
-    # Mirror web/src/styles/theme.css tokens.
     bg0 = (11, 18, 25)
     bg1 = (17, 27, 36)
     panel = (22, 34, 48, 255)
-    accent = (62, 199, 199, 255)
-    accent2 = (110, 184, 232, 255)
-    line = (120, 170, 200, 80)
+    header = (27, 43, 58, 255)
+    accent = (110, 184, 232, 255)
     text = (215, 230, 239, 255)
     text_dim = (138, 160, 178, 255)
+    font_title, font_body, font_tiny = _load_wizard_fonts()
 
-    font_title, font_sub, font_tiny = _load_wizard_fonts()
-
-    # --- Side panel (welcome / finished) ---
     side = Image.new("RGBA", (240, 480), (*bg0, 255))
     _fill_vertical_gradient(side, bg0, bg1)
-    _blend_radial_glow(side, 40, -20, 220, (62, 199, 199), 0.18)
-    _blend_radial_glow(side, 220, 80, 180, (110, 184, 232), 0.12)
+    _blend_radial_glow(side, 36, -10, 200, (110, 184, 232), 0.22)
+    _blend_radial_glow(side, 210, 120, 160, (62, 140, 196), 0.16)
     draw = ImageDraw.Draw(side)
-    # Top accent bar (same cue as .panel::before)
-    draw.rectangle([0, 0, 42, 3], fill=accent)
-    draw.rectangle([0, 3, 240, 4], fill=line)
-    # Icon frame
-    draw.rectangle([28, 52, 212, 236], fill=panel)
-    draw.rectangle([28, 52, 212, 236], outline=(140, 200, 230, 90), width=1)
-    _draw_corner_brackets(draw, (28, 52, 212, 236), accent, arm=14, thick=2)
-    icon = brand.resize((120, 120), Image.Resampling.LANCZOS)
-    side.paste(icon, (60, 84), icon)
-    # Brand block — matches .brand / .brand-sub
-    draw.rectangle([28, 256, 70, 258], fill=accent)
-    draw.text((28, 274), "ArkPlots", fill=text, font=font_title)
-    draw.text((28, 312), "PLOTLINE  ARCHIVE", fill=accent, font=font_sub)
-    draw.text((28, 338), f"BUILD  {VERSION}", fill=text_dim, font=font_tiny)
-    draw.text((28, 362), "LOCAL  INSTALL", fill=accent2, font=font_tiny)
-    draw.rectangle([0, 476, 240, 480], fill=accent)
+    draw.rounded_rectangle([18, 28, 222, 452], radius=28, fill=panel)
+    draw.rounded_rectangle([36, 52, 204, 220], radius=24, fill=header)
+    icon = brand.resize((112, 112), Image.Resampling.LANCZOS)
+    side.paste(icon, (64, 80), icon)
+    draw.rounded_rectangle([36, 244, 78, 248], radius=2, fill=accent)
+    draw.text((36, 264), "ArkPlots", fill=text, font=font_title)
+    draw.text((36, 308), "剧情情报站", fill=accent, font=font_body)
+    draw.text((36, 338), f"版本  {VERSION}", fill=text_dim, font=font_tiny)
+    draw.text((36, 392), "阅读进度会留在", fill=text, font=font_tiny)
+    draw.text((36, 414), "安装目录里", fill=text, font=font_tiny)
     side.save(side_path, format="PNG")
 
-    # --- Small header image ---
     top = Image.new("RGBA", (110, 110), (*bg0, 255))
     _fill_vertical_gradient(top, bg0, bg1)
-    _blend_radial_glow(top, 20, 10, 90, (62, 199, 199), 0.2)
+    _blend_radial_glow(top, 20, 8, 80, (110, 184, 232), 0.24)
     tdraw = ImageDraw.Draw(top)
-    tdraw.rectangle([0, 0, 36, 2], fill=accent)
-    tdraw.rectangle([10, 16, 100, 100], fill=panel)
-    tdraw.rectangle([10, 16, 100, 100], outline=(140, 200, 230, 90), width=1)
-    _draw_corner_brackets(tdraw, (10, 16, 100, 100), accent, arm=10, thick=2)
-    small = brand.resize((64, 64), Image.Resampling.LANCZOS)
-    top.paste(small, (23, 26), small)
+    tdraw.rounded_rectangle([8, 8, 102, 102], radius=22, fill=panel)
+    small = brand.resize((68, 68), Image.Resampling.LANCZOS)
+    top.paste(small, (21, 21), small)
     top.save(top_path, format="PNG")
 
-    # --- Soft page background (grid + glows like app body) ---
     back = Image.new("RGBA", (640, 480), (*bg0, 255))
     _fill_vertical_gradient(back, bg0, (14, 23, 32))
-    _blend_radial_glow(back, 80, -40, 420, (62, 199, 199), 0.14)
-    _blend_radial_glow(back, 560, 40, 360, (110, 184, 232), 0.11)
+    _blend_radial_glow(back, 80, -40, 420, (110, 184, 232), 0.16)
+    _blend_radial_glow(back, 560, 40, 360, (62, 140, 196), 0.12)
     bdraw = ImageDraw.Draw(back)
-    for x in range(0, 640, 40):
-        bdraw.line([(x, 0), (x, 480)], fill=(120, 170, 200, 28))
-    for y in range(0, 480, 40):
-        bdraw.line([(0, y), (640, y)], fill=(120, 170, 200, 22))
-    _draw_corner_brackets(bdraw, (16, 16, 624, 464), (62, 199, 199, 90), arm=26, thick=2)
+    bdraw.rounded_rectangle([16, 16, 624, 464], radius=28, outline=accent, width=2)
     back.save(back_path, format="PNG")
 
     print(

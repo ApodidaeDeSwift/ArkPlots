@@ -568,7 +568,7 @@ def _write_update_ui_ps1(
     restart: bool,
     remote_version: str,
 ) -> str:
-    """PowerShell WinForms splash — industrial dark / amber, high-contrast text."""
+    """Borderless deep-blue update window. The system progress bar is not used."""
     update_dir = os.path.dirname(installer)
     ps1_path = os.path.join(update_dir, "apply_update_ui.ps1")
 
@@ -585,98 +585,176 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+Add-Type -TypeDefinition @"
+using System;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+
+public static class ArkChrome {{
+  public static void Round(Control control, int radius) {{
+    if (control.Width < 2 || control.Height < 2) return;
+    int d = Math.Max(2, radius * 2);
+    using (var path = new GraphicsPath()) {{
+      path.AddArc(0, 0, d, d, 180, 90);
+      path.AddArc(control.Width - d - 1, 0, d, d, 270, 90);
+      path.AddArc(control.Width - d - 1, control.Height - d - 1, d, d, 0, 90);
+      path.AddArc(0, control.Height - d - 1, d, d, 90, 90);
+      path.CloseFigure();
+      control.Region = new Region(path);
+    }}
+  }}
+}}
+
+public static class ArkNative {{
+  [DllImport("user32.dll")] public static extern bool ReleaseCapture();
+  [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
+}}
+"@ -ReferencedAssemblies System.Windows.Forms, System.Drawing
+
 $pidWait = {pid}
 $setup = '{q(installer)}'
 $appDir = '{q(app_dir)}'
 $remote = '{q(remote_version)}'
 
-$ink = [System.Drawing.Color]::FromArgb(10, 12, 16)
-$panel = [System.Drawing.Color]::FromArgb(22, 24, 28)
-$amber = [System.Drawing.Color]::FromArgb(255, 159, 26)
-$text = [System.Drawing.Color]::FromArgb(245, 245, 245)
-$muted = [System.Drawing.Color]::FromArgb(200, 200, 200)
-$danger = [System.Drawing.Color]::FromArgb(230, 90, 90)
+$bg = [System.Drawing.Color]::FromArgb(11, 18, 25)
+$card = [System.Drawing.Color]::FromArgb(22, 34, 48)
+$header = [System.Drawing.Color]::FromArgb(27, 43, 58)
+$track = [System.Drawing.Color]::FromArgb(36, 56, 74)
+$accent = [System.Drawing.Color]::FromArgb(110, 184, 232)
+$text = [System.Drawing.Color]::FromArgb(215, 230, 239)
+$muted = [System.Drawing.Color]::FromArgb(138, 160, 178)
+$danger = [System.Drawing.Color]::FromArgb(214, 106, 106)
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'ArkPlots // UPDATE'
-$form.FormBorderStyle = 'FixedDialog'
-$form.MaximizeBox = $false
-$form.MinimizeBox = $false
+$form.Text = 'ArkPlots 更新'
+$form.FormBorderStyle = 'None'
 $form.StartPosition = 'CenterScreen'
-$form.ClientSize = New-Object System.Drawing.Size(440, 220)
-$form.BackColor = $ink
+$form.Size = New-Object System.Drawing.Size(520, 300)
+$form.BackColor = $bg
 $form.ForeColor = $text
 $form.TopMost = $true
 $form.ShowInTaskbar = $true
+$form.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9)
+[ArkChrome]::Round($form, 22)
 
-# Top hazard strip (amber blocks)
-$hazard = New-Object System.Windows.Forms.Panel
-$hazard.Location = New-Object System.Drawing.Point(0, 0)
-$hazard.Size = New-Object System.Drawing.Size(440, 10)
-$hazard.BackColor = $amber
-$form.Controls.Add($hazard)
-for ($i = 0; $i -lt 22; $i++) {{
-  if ($i % 2 -eq 1) {{
-    $blk = New-Object System.Windows.Forms.Panel
-    $blk.BackColor = $ink
-    $blk.Location = New-Object System.Drawing.Point(($i * 20), 0)
-    $blk.Size = New-Object System.Drawing.Size(10, 10)
-    $hazard.Controls.Add($blk)
-  }}
-}}
+$cardBox = New-Object System.Windows.Forms.Panel
+$cardBox.Location = New-Object System.Drawing.Point(16, 16)
+$cardBox.Size = New-Object System.Drawing.Size(488, 268)
+$cardBox.BackColor = $card
+$form.Controls.Add($cardBox)
+[ArkChrome]::Round($cardBox, 18)
 
-$panelBox = New-Object System.Windows.Forms.Panel
-$panelBox.Location = New-Object System.Drawing.Point(16, 24)
-$panelBox.Size = New-Object System.Drawing.Size(408, 176)
-$panelBox.BackColor = $panel
-$form.Controls.Add($panelBox)
+$accentBar = New-Object System.Windows.Forms.Panel
+$accentBar.Location = New-Object System.Drawing.Point(28, 26)
+$accentBar.Size = New-Object System.Drawing.Size(42, 4)
+$accentBar.BackColor = $accent
+$cardBox.Controls.Add($accentBar)
+[ArkChrome]::Round($accentBar, 2)
+
+$kicker = New-Object System.Windows.Forms.Label
+$kicker.Text = 'ArkPlots'
+$kicker.Font = New-Object System.Drawing.Font('Segoe UI', 10, [System.Drawing.FontStyle]::Bold)
+$kicker.ForeColor = $accent
+$kicker.BackColor = $card
+$kicker.Location = New-Object System.Drawing.Point(28, 40)
+$kicker.AutoSize = $true
+$cardBox.Controls.Add($kicker)
 
 $title = New-Object System.Windows.Forms.Label
-$title.Text = 'ArkPlots'
-$title.Font = New-Object System.Drawing.Font('Segoe UI', 16, [System.Drawing.FontStyle]::Bold)
+$title.Text = '正在更新'
+$title.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 20, [System.Drawing.FontStyle]::Bold)
 $title.ForeColor = $text
-$title.Location = New-Object System.Drawing.Point(18, 14)
+$title.BackColor = $card
+$title.Location = New-Object System.Drawing.Point(26, 64)
 $title.AutoSize = $true
-$panelBox.Controls.Add($title)
+$cardBox.Controls.Add($title)
 
-$sub = New-Object System.Windows.Forms.Label
-$sub.Text = 'SYSTEM  UPDATE'
-$sub.Font = New-Object System.Drawing.Font('Consolas', 9, [System.Drawing.FontStyle]::Bold)
-$sub.ForeColor = $amber
-$sub.Location = New-Object System.Drawing.Point(20, 46)
-$sub.AutoSize = $true
-$panelBox.Controls.Add($sub)
+$versionChip = New-Object System.Windows.Forms.Label
+$versionChip.Text = "  版本  $remote  "
+$versionChip.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9)
+$versionChip.ForeColor = $text
+$versionChip.BackColor = $header
+$versionChip.AutoSize = $true
+$versionChip.Location = New-Object System.Drawing.Point(28, 112)
+$cardBox.Controls.Add($versionChip)
+[ArkChrome]::Round($versionChip, 8)
 
 $status = New-Object System.Windows.Forms.Label
 $status.Text = '正在准备更新…'
-$status.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 10)
+$status.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 11)
 $status.ForeColor = $text
-$status.Location = New-Object System.Drawing.Point(20, 78)
-$status.Size = New-Object System.Drawing.Size(368, 24)
-$panelBox.Controls.Add($status)
+$status.BackColor = $card
+$status.Location = New-Object System.Drawing.Point(28, 148)
+$status.Size = New-Object System.Drawing.Size(432, 28)
+$cardBox.Controls.Add($status)
 
 $detail = New-Object System.Windows.Forms.Label
-$detail.Text = "TARGET  BUILD  $remote"
-$detail.Font = New-Object System.Drawing.Font('Consolas', 9)
+$detail.Text = '只会替换程序本身。阅读进度和本地数据会保留。'
+$detail.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9)
 $detail.ForeColor = $muted
-$detail.Location = New-Object System.Drawing.Point(20, 108)
-$detail.Size = New-Object System.Drawing.Size(368, 20)
-$panelBox.Controls.Add($detail)
+$detail.BackColor = $card
+$detail.Location = New-Object System.Drawing.Point(28, 178)
+$detail.Size = New-Object System.Drawing.Size(432, 22)
+$cardBox.Controls.Add($detail)
 
-$bar = New-Object System.Windows.Forms.ProgressBar
-$bar.Style = 'Marquee'
-$bar.MarqueeAnimationSpeed = 26
-$bar.Location = New-Object System.Drawing.Point(20, 140)
-$bar.Size = New-Object System.Drawing.Size(368, 16)
-$panelBox.Controls.Add($bar)
+$trackBar = New-Object System.Windows.Forms.Panel
+$trackBar.Location = New-Object System.Drawing.Point(28, 214)
+$trackBar.Size = New-Object System.Drawing.Size(432, 8)
+$trackBar.BackColor = $track
+$cardBox.Controls.Add($trackBar)
+[ArkChrome]::Round($trackBar, 4)
+
+$fill = New-Object System.Windows.Forms.Panel
+$fill.Location = New-Object System.Drawing.Point(-120, 0)
+$fill.Size = New-Object System.Drawing.Size(140, 8)
+$fill.BackColor = $accent
+$trackBar.Controls.Add($fill)
+
+$closeBtn = New-Object System.Windows.Forms.Label
+$closeBtn.Text = '关闭'
+$closeBtn.TextAlign = 'MiddleCenter'
+$closeBtn.Font = New-Object System.Drawing.Font('Microsoft YaHei UI', 9, [System.Drawing.FontStyle]::Bold)
+$closeBtn.ForeColor = $bg
+$closeBtn.BackColor = $accent
+$closeBtn.Location = New-Object System.Drawing.Point(360, 214)
+$closeBtn.Size = New-Object System.Drawing.Size(100, 32)
+$closeBtn.Visible = $false
+$closeBtn.Cursor = [System.Windows.Forms.Cursors]::Hand
+$cardBox.Controls.Add($closeBtn)
+[ArkChrome]::Round($closeBtn, 12)
+$closeBtn.Add_Click({{ $form.Close() }})
+
+$script:marquee = 0
+$timer = New-Object System.Windows.Forms.Timer
+$timer.Interval = 16
+$timer.Add_Tick({{
+  $script:marquee += 6
+  if ($script:marquee -gt ($trackBar.Width + $fill.Width)) {{ $script:marquee = 0 }}
+  $fill.Left = -$fill.Width + $script:marquee
+}})
+
+function Start-WindowDrag {{
+  [void][ArkNative]::ReleaseCapture()
+  [void][ArkNative]::SendMessage($form.Handle, 0xA1, 2, 0)
+}}
+foreach ($control in @($form, $cardBox, $kicker, $title, $status, $detail, $versionChip)) {{
+  $control.Add_MouseDown({{
+    param($sender, $e)
+    if ($e.Button -eq [System.Windows.Forms.MouseButtons]::Left) {{ Start-WindowDrag }}
+  }})
+}}
 
 $form.Add_Shown({{
+  [ArkChrome]::Round($versionChip, 10)
   $form.Activate()
+  $timer.Start()
   $worker = New-Object System.ComponentModel.BackgroundWorker
   $worker.WorkerReportsProgress = $true
   $worker.Add_DoWork({{
     param($sender, $e)
-    $sender.ReportProgress(0, '正在关闭旧版本…')
+    $sender.ReportProgress(0, '正在关闭当前窗口…')
     while ($true) {{
       try {{
         $null = Get-Process -Id $pidWait -ErrorAction Stop
@@ -684,13 +762,13 @@ $form.Add_Shown({{
       Start-Sleep -Milliseconds 400
     }}
     Start-Sleep -Milliseconds 800
-    $sender.ReportProgress(0, '正在部署更新（阅读进度不会被清空）…')
+    $sender.ReportProgress(0, '正在写入新版本…')
     $setupArgs = @('/VERYSILENT', '/NORESTART', '/CLOSEAPPLICATIONS', "/DIR=`"$appDir`"")
     $proc = Start-Process -FilePath $setup -ArgumentList $setupArgs -Wait -PassThru
     if ($proc.ExitCode -ne 0) {{
       throw "安装程序退出码 $($proc.ExitCode)"
     }}
-    $sender.ReportProgress(0, '部署完成，正在启动…')
+    $sender.ReportProgress(0, '更新完成，正在打开…')
     Start-Sleep -Milliseconds 500
 {restart_line}    try {{ Remove-Item -LiteralPath $setup -Force -ErrorAction SilentlyContinue }} catch {{ }}
   }})
@@ -700,11 +778,15 @@ $form.Add_Shown({{
   }})
   $worker.Add_RunWorkerCompleted({{
     param($sender, $e)
+    $timer.Stop()
     if ($e.Error) {{
-      $status.Text = '更新失败：' + $e.Error.Message
-      $status.ForeColor = $danger
-      $bar.Style = 'Continuous'
-      $bar.Value = 0
+      $status.Text = '更新没有完成'
+      $detail.Text = $e.Error.Message
+      $detail.ForeColor = $danger
+      $detail.Location = New-Object System.Drawing.Point(28, 184)
+      $detail.Size = New-Object System.Drawing.Size(432, 36)
+      $trackBar.Visible = $false
+      $closeBtn.Visible = $true
       $form.TopMost = $false
     }} else {{
       $form.Close()

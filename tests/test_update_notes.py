@@ -150,6 +150,27 @@ class ReleaseNotesTests(unittest.TestCase):
         self.assertIn("https://example.com/notes", result["release_notes"])
         self.assertNotIn("旧版本", result["release_notes"])
 
+    def test_update_window_script_is_a_rounded_deep_blue_card(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = updater._write_update_ui_ps1(
+                pid=1,
+                installer=os.path.join(tmp, "setup.exe"),
+                app_dir=tmp,
+                target_exe=os.path.join(tmp, "ArkPlots.exe"),
+                restart=False,
+                remote_version="26.10.22.1",
+            )
+            with open(path, encoding="utf-8-sig") as handle:
+                text = handle.read()
+        self.assertIn("FromArgb(11, 18, 25)", text)
+        self.assertIn("AddArc", text)
+        self.assertIn("正在更新", text)
+        self.assertIn("阅读进度和本地数据会保留", text)
+        self.assertNotIn("ProgressBar", text)
+        self.assertNotIn("SYSTEM  UPDATE", text)
+
     def test_public_feed_failure_keeps_the_api_error(self) -> None:
         err = HTTPError(
             "https://api.github.com/repos/ApodidaeDeSwift/ArkPlots/releases",
