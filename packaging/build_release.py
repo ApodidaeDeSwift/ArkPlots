@@ -15,6 +15,7 @@ Usage (from repo root):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import shutil
 import subprocess
@@ -388,6 +389,22 @@ def sign_file(path: Path) -> bool:
     return True
 
 
+def sha256_of(path: Path, chunk_size: int = 1024 * 1024) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(chunk_size), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def write_checksum_sidecar(path: Path) -> Path:
+    """``<file>.sha256`` next to the artifact; the in-app updater verifies it."""
+    sidecar = path.with_name(path.name + ".sha256")
+    sidecar.write_text(f"{sha256_of(path)}  {path.name}\n", encoding="ascii", newline="\n")
+    print(f"checksum -> {sidecar.name}", flush=True)
+    return sidecar
+
+
 def build_installer() -> Path:
     plotline = ROOT / "Plotline.json"
     if not plotline.is_file():
@@ -422,6 +439,8 @@ def build_installer() -> Path:
         raise SystemExit(f"Inno Setup finished but {setup.name} is missing")
     sign_file(setup)
     print(f"installer -> {setup.name} ({setup.stat().st_size} bytes)", flush=True)
+    # Checksum is computed after signing so it always matches the shipped bytes.
+    write_checksum_sidecar(setup)
     return setup
 
 
