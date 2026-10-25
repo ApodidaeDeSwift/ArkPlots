@@ -175,6 +175,10 @@ const enUS: Messages = {
     applyFailed: 'Could not apply the update.',
     noAsset: 'This release has no downloadable .exe asset.',
     devOnly: 'One-click update is only available in the packaged desktop build.',
+    checksumMismatch:
+      'Update cancelled: the downloaded installer failed its SHA-256 integrity check and was deleted. Retry later or download from the release page.',
+    checksumUnavailable:
+      'Update cancelled: the published SHA-256 checksum could not be read (fail-closed). Please retry later.',
     unavailable: 'Not available yet. Coming soon.',
     promptTitle: 'New version {version}',
     promptAsk: 'Update now?',

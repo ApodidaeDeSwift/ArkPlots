@@ -112,6 +112,8 @@ export default function App() {
   const describeApplyFailure = (data: UpdateCheckResult): string => {
     if (data.error === 'no_asset') return t('version.noAsset')
     if (data.error === 'not_frozen') return t('version.devOnly')
+    if (data.error === 'checksum_mismatch') return t('version.checksumMismatch')
+    if (data.error === 'checksum_unavailable') return t('version.checksumUnavailable')
     if (
       data.error === 'download_failed' ||
       data.error === 'download_invalid' ||
