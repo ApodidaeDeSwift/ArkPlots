@@ -170,6 +170,8 @@ const zhCN: Messages = {
     applyFailed: '应用更新失败。',
     noAsset: '该 Release 没有可下载的 exe 安装包。',
     devOnly: '仅打包后的桌面版支持一键更新。',
+    checksumMismatch: '更新包校验失败（SHA-256 不一致），已取消本次更新并删除下载文件。请稍后重试，或前往 Release 页面手动下载。',
+    checksumUnavailable: '无法读取官方发布的校验文件，为安全起见已取消本次更新。请稍后重试。',
     unavailable: '暂未开放，即将推出。',
     promptTitle: '发现新版本 {version}',
     promptAsk: '是否立即更新？',

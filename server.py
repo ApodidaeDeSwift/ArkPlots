@@ -120,6 +120,34 @@ def static_content_type(path: str) -> str:
     return guessed or "application/octet-stream"
 
 
+# Reading records are small; anything bigger is abuse, not a sync payload.
+_MAX_BODY_BYTES = 5 * 1024 * 1024
+
+
+class BodyTooLarge(ValueError):
+    """Raised when Content-Length exceeds _MAX_BODY_BYTES."""
+
+_LOOPBACK_NAMES = {"localhost", "127.0.0.1", "::1", "0.0.0.0"}
+
+
+def _host_is_loopback(host_header: str | None) -> bool:
+    """True when the Host header names this machine (DNS-rebinding guard)."""
+    host = (host_header or "").strip().lower()
+    if not host:
+        return False
+    if host.startswith("["):  # IPv6 literal like [::1]:8765
+        host = host[1:].split("]", 1)[0]
+    else:
+        host = host.split(":", 1)[0]
+    return host in _LOOPBACK_NAMES
+
+
+def _origin_is_local(origin: str) -> bool:
+    """True when an Origin header points back at localhost (any port)."""
+    host = (urlparse(origin).hostname or "").lower()
+    return host in _LOOPBACK_NAMES
+
+
 def load_json(path: str) -> Any:
     if not os.path.exists(path):
         return None
@@ -203,9 +231,30 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
         length = int(self.headers.get("Content-Length") or 0)
         if length <= 0:
             return b""
+        if length > _MAX_BODY_BYTES:
+            raise BodyTooLarge(f"request body too large: {length} bytes")
         return self.rfile.read(length)
 
+    def _reject_foreign(self) -> bool:
+        """Refuse requests that did not originate on this machine.
+
+        The server binds to 127.0.0.1 only, but browsers treat http://localhost
+        as a trustworthy origin, so a random web page can still try to read or
+        overwrite Read_record.json cross-site (and DNS rebinding forges Host).
+        Requests without an Origin header (pywebview, urllib, same-origin GET)
+        are allowed as long as Host names localhost.
+        """
+        origin = self.headers.get("Origin")
+        if origin and origin != "null" and not _origin_is_local(origin):
+            return True
+        if not _host_is_loopback(self.headers.get("Host")):
+            return True
+        return False
+
     def do_OPTIONS(self) -> None:
+        if self._reject_foreign():
+            self._send_json(403, {"error": "local_only"})
+            return
         self.send_response(204)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, PUT, POST, OPTIONS")
@@ -213,6 +262,9 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:
+        if self._reject_foreign():
+            self._send_json(403, {"error": "local_only"})
+            return
         try:
             self._do_GET()
         except Exception as exc:
@@ -294,6 +346,9 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
         self._write(body)
 
     def do_POST(self) -> None:
+        if self._reject_foreign():
+            self._send_json(403, {"error": "local_only"})
+            return
         parsed = urlparse(self.path)
         if parsed.path == "/api/update/exit":
             try:
@@ -330,6 +385,9 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
             self._send_json(500, {"ok": False, "error": str(e)})
 
     def do_PUT(self) -> None:
+        if self._reject_foreign():
+            self._send_json(403, {"error": "local_only"})
+            return
         parsed = urlparse(self.path)
         if parsed.path != "/api/records":
             self.send_error(404)
@@ -343,6 +401,8 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
             clean = {str(k): str(v) for k, v in data.items()}
             save_json(READ_RECORD_PATH, clean)
             self._send_json(200, clean)
+        except BodyTooLarge as e:
+            self._send_json(413, {"error": str(e)})
         except json.JSONDecodeError:
             self._send_json(400, {"error": "invalid JSON"})
         except Exception as e:

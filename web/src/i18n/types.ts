@@ -183,6 +183,10 @@ export type Messages = {
     applyFailed: string
     noAsset: string
     devOnly: string
+    /** Desktop updater: downloaded installer failed its SHA-256 check. */
+    checksumMismatch: string
+    /** Desktop updater: published checksum exists but could not be read (fail-closed). */
+    checksumUnavailable: string
     unavailable: string
     promptTitle: string
     promptAsk: string

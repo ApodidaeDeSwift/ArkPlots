@@ -14,6 +14,7 @@ etc.) is never deleted or overwritten by the updater.
 """
 from __future__ import annotations
 
+import hashlib
 import html
 import json
 import os
@@ -181,7 +182,7 @@ def _assets_from_expanded_page(tag_name: str) -> list[dict[str, Any]]:
     page = _http_text(url, "text/html, */*;q=0.8")
     assets: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for raw_href in re.findall(r'href="([^"]+\.exe)"', page, flags=re.IGNORECASE):
+    for raw_href in re.findall(r'href="([^"]+\.(?:exe|sha256))"', page, flags=re.IGNORECASE):
         href = html.unescape(raw_href).strip()
         if href.startswith("/"):
             href = "https://github.com" + href
@@ -338,6 +339,82 @@ def _asset_is_installer(name: str) -> bool:
     return "setup" in n or n.startswith("arkplot_setup")
 
 
+_CHECKSUM_ASSET_NAMES = ("checksums.txt", "checksums.sha256", "sha256sums.txt")
+
+
+def _find_checksum(
+    assets: list[dict[str, Any]], asset_name: str
+) -> dict[str, Any] | None:
+    """The ``<exe>.sha256`` asset published beside the installer, or a checksums.txt.
+
+    Releases without any checksum asset keep working (verification is skipped),
+    so old releases stay updatable.
+    """
+    if not asset_name:
+        return None
+    wanted = f"{asset_name.lower()}.sha256"
+    checksums: dict[str, Any] | None = None
+    for asset in assets:
+        name = str(asset.get("name", "")).lower()
+        url = asset.get("browser_download_url")
+        if not url:
+            continue
+        if name == wanted:
+            return asset
+        if name in _CHECKSUM_ASSET_NAMES and checksums is None:
+            checksums = asset
+    return checksums
+
+
+def _extract_sha256(text: str, asset_name: str) -> str | None:
+    """First 64-hex digest in a checksum file, preferring the asset's own line."""
+    wanted = asset_name.lower()
+    fallback: str | None = None
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        m = re.search(r"\b([0-9a-fA-F]{64})\b", line)
+        if not m:
+            continue
+        digest = m.group(1).lower()
+        if wanted in line.lower():
+            return digest
+        if fallback is None:
+            fallback = digest
+    return fallback
+
+
+def _fetch_checksum_hex(url: str, asset_name: str, timeout: float = 20.0) -> str | None:
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": _USER_AGENT, "Accept": "text/plain, */*;q=0.8"},
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        text = resp.read(64 * 1024).decode("utf-8", errors="replace")
+    return _extract_sha256(text, asset_name)
+
+
+def _sha256_file(path: str, chunk_size: int = 1024 * 1024) -> str:
+    digest = hashlib.sha256()
+    with open(path, "rb") as handle:
+        while True:
+            chunk = handle.read(chunk_size)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _discard_download(path: str) -> None:
+    for victim in (path, path + ".partial"):
+        try:
+            if os.path.isfile(victim):
+                os.remove(victim)
+        except OSError:
+            pass
+
+
 _NOTES_LIMIT = 100_000
 _update_exit_armed = False
 
@@ -492,6 +569,7 @@ def check_for_update() -> dict[str, Any]:
             "asset_name": None,
             "asset_url": None,
             "asset_size": None,
+            "asset_sha256_url": None,
             "has_asset": False,
             "html_url": html_fallback,
             "release_notes": "",
@@ -504,6 +582,7 @@ def check_for_update() -> dict[str, Any]:
 
     assets = release.get("assets") or []
     asset = _pick_exe_asset(list(assets), remote_str)
+    checksum_asset = _find_checksum(list(assets), str((asset or {}).get("name") or ""))
 
     return {
         "ok": True,
@@ -516,6 +595,7 @@ def check_for_update() -> dict[str, Any]:
         "asset_name": (asset or {}).get("name"),
         "asset_url": (asset or {}).get("browser_download_url"),
         "asset_size": (asset or {}).get("size"),
+        "asset_sha256_url": (checksum_asset or {}).get("browser_download_url"),
         "has_asset": asset is not None,
         "html_url": release.get("html_url") or html_fallback,
         "release_notes": _release_notes_text(release),
@@ -537,7 +617,14 @@ def _running_exe_path() -> str | None:
     return None
 
 
-def _download_file(url: str, dest: str, timeout: float = 120.0) -> None:
+# A generous ceiling for the installer download; guards against a corrupt or
+# hostile mirror streaming an endless body onto the disk.
+_MAX_DOWNLOAD_BYTES = 1024 * 1024 * 1024
+
+
+def _download_file(
+    url: str, dest: str, timeout: float = 120.0, max_bytes: int = _MAX_DOWNLOAD_BYTES
+) -> None:
     req = urllib.request.Request(
         url,
         headers={
@@ -549,7 +636,17 @@ def _download_file(url: str, dest: str, timeout: float = 120.0) -> None:
     partial = dest + ".partial"
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp, open(partial, "wb") as out:
-            shutil.copyfileobj(resp, out, length=1024 * 256)
+            total = 0
+            while True:
+                chunk = resp.read(1024 * 256)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > max_bytes:
+                    raise ValueError(
+                        f"download exceeded {max_bytes} bytes (bad mirror or corrupt asset?)"
+                    )
+                out.write(chunk)
         os.replace(partial, dest)
     finally:
         if os.path.isfile(partial):
@@ -962,6 +1059,40 @@ def apply_update(*, restart: bool = True, defer_exit: bool = False) -> dict[str,
             "error": "download_invalid",
             "message": "Downloaded file is missing or too small",
         }
+
+    # Verify SHA-256 when the release publishes a checksum. Fail closed: a
+    # published-but-unreadable checksum aborts the update rather than running
+    # an unverified binary. Releases without checksum assets keep working.
+    checksum_url = check.get("asset_sha256_url")
+    if checksum_url:
+        checksum_error = ""
+        try:
+            expected = _fetch_checksum_hex(str(checksum_url), asset_name)
+        except Exception as exc:
+            expected = None
+            checksum_error = str(exc)
+        if expected is None:
+            _discard_download(download_path)
+            return {
+                **check,
+                "applied": False,
+                "error": "checksum_unavailable",
+                "message": checksum_error
+                or "Could not read the published SHA-256 checksum",
+                "warning": OVERSEAS_SOURCE_WARNING_ZH,
+                "warning_en": OVERSEAS_SOURCE_WARNING_EN,
+            }
+        actual = _sha256_file(download_path)
+        if actual != expected:
+            _discard_download(download_path)
+            return {
+                **check,
+                "applied": False,
+                "error": "checksum_mismatch",
+                "message": f"SHA-256 mismatch: expected {expected}, got {actual}",
+                "warning": OVERSEAS_SOURCE_WARNING_ZH,
+                "warning_en": OVERSEAS_SOURCE_WARNING_EN,
+            }
 
     creationflags = 0
     if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
