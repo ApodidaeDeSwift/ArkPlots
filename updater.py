@@ -35,6 +35,7 @@ from app_info import (
     GITHUB_REPO,
     UPDATE_TAG_PREFIX,
     VERSION,
+    is_packaged,
     release_exe_name,
     release_setup_name,
     version_payload,
@@ -596,7 +597,7 @@ def _no_release_in_channel(include_prerelease: bool) -> dict[str, Any]:
         "channel": channel,
         "warning": OVERSEAS_SOURCE_WARNING_ZH,
         "warning_en": OVERSEAS_SOURCE_WARNING_EN,
-        "frozen": bool(getattr(sys, "frozen", False)),
+        "frozen": is_packaged(),
     }
 
 
@@ -683,7 +684,7 @@ def check_for_update(*, include_prerelease: bool = False) -> dict[str, Any]:
             "warning": OVERSEAS_SOURCE_WARNING_ZH,
             "warning_en": OVERSEAS_SOURCE_WARNING_EN,
             "channel": channel,
-            "frozen": bool(getattr(sys, "frozen", False)),
+            "frozen": is_packaged(),
             "error": "no_release",
             "message": f"Tag {tag_name} has no GitHub Release yet",
         }
@@ -710,18 +711,18 @@ def check_for_update(*, include_prerelease: bool = False) -> dict[str, Any]:
         "channel": channel,
         "warning": OVERSEAS_SOURCE_WARNING_ZH,
         "warning_en": OVERSEAS_SOURCE_WARNING_EN,
-        "frozen": bool(getattr(sys, "frozen", False)),
+        "frozen": is_packaged(),
     }
 
 
 def _app_dir() -> str:
-    if getattr(sys, "frozen", False):
+    if is_packaged():
         return os.path.dirname(os.path.abspath(sys.executable))
     return os.path.dirname(os.path.abspath(__file__))
 
 
 def _running_exe_path() -> str | None:
-    if getattr(sys, "frozen", False):
+    if is_packaged():
         return os.path.abspath(sys.executable)
     return None
 
@@ -1077,19 +1078,37 @@ def _write_windows_swapper(
     return bat_path
 
 
+_before_process_exit: list[Any] = []
+
+
+def register_before_process_exit(callback: Any) -> None:
+    """Run while the process is still alive, before an update calls ``os._exit``."""
+    if callback not in _before_process_exit:
+        _before_process_exit.append(callback)
+
+
+def _close_webview_windows() -> None:
+    try:
+        import webview
+
+        for win in list(getattr(webview, "windows", []) or []):
+            try:
+                win.destroy()
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
 def _schedule_process_exit(delay: float = 1.2) -> None:
     def _exit() -> None:
         time.sleep(delay)
-        try:
-            import webview
-
-            for win in list(getattr(webview, "windows", []) or []):
-                try:
-                    win.destroy()
-                except Exception:
-                    pass
-        except Exception:
-            pass
+        for callback in list(_before_process_exit):
+            try:
+                callback()
+            except Exception:
+                pass
+        _close_webview_windows()
         os._exit(0)
 
     threading.Thread(target=_exit, name="arkplots-update-exit", daemon=True).start()

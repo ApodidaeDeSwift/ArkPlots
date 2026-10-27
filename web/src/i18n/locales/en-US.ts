@@ -170,7 +170,7 @@ const enUS: Messages = {
     available: 'A newer version is available: {version}.',
     availableNoAsset: 'Version {version} is listed, but no installer asset was uploaded yet.',
     availableDevOnly:
-      'Version {version} is available. In development, replace the packaged exe manually.',
+      'Version {version} is available. This reply did not come from the installed app, usually because another python server.py is bound to the same port. Quit every ArkPlots window, stop that server.py, then open the installed program.',
     openRelease: 'Open release page',
     openReleaseHint: 'You can open the GitHub release page for details.',
     dataSafe: 'Updates replace only the program binary; your progress and local data stay intact.',
@@ -181,7 +181,8 @@ const enUS: Messages = {
     checkFailed: 'Update check failed.',
     applyFailed: 'Could not apply the update.',
     noAsset: 'This release has no downloadable .exe asset.',
-    devOnly: 'One-click update is only available in the packaged desktop build.',
+    devOnly:
+      'This reply is not from the installed app, so the exe cannot be replaced automatically. Stop any running python server.py, then open ArkPlots.exe from the install folder.',
     checksumMismatch:
       'Update cancelled: the downloaded installer failed its SHA-256 integrity check and was deleted. Retry later or download from the release page.',
     checksumUnavailable:

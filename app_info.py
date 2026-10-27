@@ -7,6 +7,7 @@ Bump ``VERSION`` when shipping. In-app updates scan GitHub tags matching
 """
 from __future__ import annotations
 
+import sys
 from typing import Any
 
 # Display / product name (window title, about text).
@@ -16,7 +17,7 @@ APP_NAME = "ArkPlots"
 EXE_STEM = "ArkPlots"
 
 # Semver-like calendar build: YY.M.D.build  (e.g. 26.10.5.1 = 2026-10-05 #1)
-VERSION = "26.10.27.1"
+VERSION = "26.10.27.2"
 
 # 发布通道。改这里，并在 GitHub Release 上对应勾选或不勾选 Pre-release。
 #
@@ -53,6 +54,19 @@ def release_setup_name(version: str | None = None) -> str:
 def app_ver_tag(version: str | None = None) -> str:
     """GitHub release tag for an APP build, e.g. ``APP_Ver26.9.26.2``."""
     return f"{UPDATE_TAG_PREFIX}{version or VERSION}"
+
+
+def is_packaged() -> bool:
+    """True when this process is the PyInstaller executable.
+
+    The bootloader always sets ``sys._MEIPASS``. ``sys.frozen`` is set later,
+    and only when it is not already present, so a falsy ``sys.frozen`` must
+    not be treated as a source checkout. That false negative made one-click
+    update tell packaged users they were in development mode.
+    """
+    if getattr(sys, "frozen", False):
+        return True
+    return hasattr(sys, "_MEIPASS")
 
 
 def version_payload() -> dict[str, Any]:

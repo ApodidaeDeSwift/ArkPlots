@@ -30,12 +30,16 @@ import webbrowser
 
 def get_app_dir():
     """获取程序实际运行目录（兼容源码/EXE两种运行方式）"""
-    if getattr(sys, 'frozen', False):
+    try:
+        from app_info import is_packaged
+    except ImportError:
+        def is_packaged() -> bool:
+            return bool(getattr(sys, "frozen", False)) or hasattr(sys, "_MEIPASS")
+    if is_packaged():
         # 打包成EXE运行时，获取EXE所在目录
         return os.path.dirname(os.path.abspath(sys.executable))
-    else:
-        # 源码运行时，获取脚本所在目录
-        return os.path.dirname(os.path.abspath(__file__))
+    # 源码运行时，获取脚本所在目录
+    return os.path.dirname(os.path.abspath(__file__))
 
 WORKDIR = get_app_dir()
 PLOTLINE_PATH = os.path.join(WORKDIR, "Plotline.json")
@@ -1661,7 +1665,7 @@ def _wait_until_ready(url: str, timeout: float = 5.0) -> None:
     )
 
 
-def _open_webview(url: str) -> None:
+def _open_webview(url: str, on_closed: Any = None) -> None:
     """Show the existing UI in a native window. Must run on the main thread."""
     try:
         import webview
@@ -1671,7 +1675,7 @@ def _open_webview(url: str) -> None:
             "请执行: pip install -r requirements.txt"
         ) from exc
 
-    webview.create_window(
+    window = webview.create_window(
         "ArkPlots",
         url,
         width=1400,
@@ -1680,6 +1684,11 @@ def _open_webview(url: str) -> None:
         min_size=(960, 640),
         text_select=True,
     )
+    if on_closed is not None:
+        try:
+            window.events.closed += on_closed
+        except Exception:
+            pass
     # private_mode=False keeps the language choice in localStorage.
     start_kwargs: Dict[str, Any] = {"private_mode": True}
     storage = _webview_storage_dir()
@@ -1697,8 +1706,14 @@ def _open_webview(url: str) -> None:
 
 def launch_window(port: int = 8765) -> None:
     """Default entry: local HTTP server inside a pywebview window (no system browser)."""
-    from server import prepare_server, serve_in_background, stop_server
+    from server import (
+        _install_exit_hooks,
+        prepare_server,
+        serve_in_background,
+        stop_server,
+    )
 
+    _install_exit_hooks()
     try:
         server, url = prepare_server(port)
     except OSError as exc:
@@ -1710,7 +1725,7 @@ def launch_window(port: int = 8765) -> None:
     serve_in_background(server)
     try:
         _wait_until_ready(url)
-        _open_webview(url)
+        _open_webview(url, on_closed=lambda: stop_server(server))
     except SystemExit:
         raise
     except Exception as exc:

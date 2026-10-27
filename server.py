@@ -9,15 +9,20 @@ Serves:
   GET  /api/update/check -> find newest APP_Ver* GitHub tag and compare versions
   POST /api/update/apply -> download release exe and schedule safe replace
   POST /api/update/exit  -> restart after the UI has shown release notes
+  POST /api/shutdown  -> local-only, token required; exit and release the port
   GET  /api/health    -> liveness
   static files from web/dist (production UI)
 """
 from __future__ import annotations
 
+import atexit
 import argparse
 import json
 import mimetypes
 import os
+import signal
+import socket
+import struct
 import sys
 import threading
 import webbrowser
@@ -32,14 +37,25 @@ if sys.stderr is None:
     sys.stderr = open(os.devnull, "w", encoding="utf-8", errors="replace")
 
 try:
-    from app_info import version_payload
+    from app_info import is_packaged, version_payload
 except ImportError:  # pragma: no cover - extremely old checkouts
     def version_payload() -> Dict[str, Any]:
         return {"name": "ArkPlots", "version": "0.0.0", "channel": "dev"}
 
+    def is_packaged() -> bool:
+        return bool(getattr(sys, "frozen", False)) or hasattr(sys, "_MEIPASS")
+
 try:
-    from updater import apply_update, check_for_update, request_update_exit
+    from updater import (
+        apply_update,
+        check_for_update,
+        register_before_process_exit,
+        request_update_exit,
+    )
 except ImportError:  # pragma: no cover
+    def register_before_process_exit(callback) -> None:
+        return None
+
     def check_for_update() -> Dict[str, Any]:
         return {"ok": False, "error": "updater_missing"}
 
@@ -56,7 +72,7 @@ def get_app_dir() -> str:
     When frozen, this is the folder containing the .exe so data stays editable
     next to the binary.
     """
-    if getattr(sys, "frozen", False):
+    if is_packaged():
         return os.path.dirname(os.path.abspath(sys.executable))
     return os.path.dirname(os.path.abspath(__file__))
 
@@ -67,7 +83,7 @@ def get_static_dir() -> str:
     When frozen, prefer the bundle extracted under ``sys._MEIPASS``; fall back
     to ``<exe_dir>/web/dist`` for side-by-side installs.
     """
-    if getattr(sys, "frozen", False):
+    if is_packaged():
         meipass = getattr(sys, "_MEIPASS", None)
         if meipass:
             bundled = os.path.join(meipass, "web", "dist")
@@ -296,7 +312,7 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
             return
 
         if path == "/api/health":
-            self._send_json(200, {"ok": True})
+            self._send_json(200, {"ok": True, "name": "ArkPlots", "pid": os.getpid()})
             return
 
         if path == "/api/version":
@@ -352,6 +368,18 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
             self._send_json(403, {"error": "local_only"})
             return
         parsed = urlparse(self.path)
+        if parsed.path == "/api/shutdown":
+            # A web page on localhost can POST here; the token is only in the
+            # instance file, which that page cannot read.
+            token = self.headers.get("X-ArkPlots-Token") or ""
+            from listener import current_token
+
+            if not token or token != current_token():
+                self._send_json(403, {"ok": False, "error": "forbidden"})
+                return
+            self._send_json(200, {"ok": True})
+            request_listener_shutdown()
+            return
         if parsed.path == "/api/update/exit":
             try:
                 result = request_update_exit()
@@ -426,19 +454,139 @@ def listening_url(server: ThreadingHTTPServer) -> str:
     return f"http://{host}:{port}/"
 
 
+_active_server: ThreadingHTTPServer | None = None
+_exit_hooks_installed = False
+_EXIT_ON_SHUTDOWN_ENV = "ARKPLOTS_EXIT_ON_SHUTDOWN"
+
+
+def _close_listening_socket() -> None:
+    """Unblock ``serve_forever`` without waiting for it.
+
+    ``HTTPServer.shutdown()`` waits until the serve loop finishes. Calling it
+    from that same thread (Ctrl+C during ``run_server``) deadlocks, so signal
+    handlers only close the socket.
+    """
+    server = _active_server
+    if server is not None:
+        try:
+            server.socket.close()
+        except Exception:
+            pass
+    from listener import clear_instance
+
+    clear_instance()
+
+
+def _release_listener() -> None:
+    """Close the listening socket and drop our instance record."""
+    server = _active_server
+    if server is not None:
+        stop_server(server)
+    from listener import clear_instance
+
+    clear_instance()
+
+
+def _close_windows() -> None:
+    try:
+        import webview
+
+        for win in list(getattr(webview, "windows", []) or []):
+            try:
+                win.destroy()
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
+def _exit_on_shutdown() -> bool:
+    return os.environ.get(_EXIT_ON_SHUTDOWN_ENV, "1") != "0"
+
+
+def request_listener_shutdown() -> None:
+    """Leave the port after the shutdown response has been written.
+
+    A later start can then bind the same port. When this is the real app,
+    the process exits so a window cannot stay up without its server.
+    """
+
+    def _run() -> None:
+        import time
+
+        time.sleep(0.2)
+        _release_listener()
+        _close_windows()
+        if _exit_on_shutdown():
+            os._exit(0)
+
+    threading.Thread(target=_run, name="arkplots-shutdown", daemon=True).start()
+
+
+def _install_exit_hooks() -> None:
+    """Release the port on Ctrl+C, console close, and normal interpreter exit."""
+    global _exit_hooks_installed
+    if _exit_hooks_installed:
+        return
+    _exit_hooks_installed = True
+    atexit.register(_release_listener)
+
+    def _on_signal(signum: int, frame: Any) -> None:
+        _close_listening_socket()
+        if signum == signal.SIGINT:
+            raise KeyboardInterrupt
+        raise SystemExit(0)
+
+    for sig in (signal.SIGINT, signal.SIGTERM, getattr(signal, "SIGBREAK", None)):
+        if sig is None:
+            continue
+        try:
+            signal.signal(sig, _on_signal)
+        except (OSError, ValueError):
+            pass
+
+    if sys.platform == "win32":
+        _install_console_close_handler()
+
+
+def _install_console_close_handler() -> None:
+    import ctypes
+    from ctypes import wintypes
+
+    handler_type = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.DWORD)
+
+    def _handler(ctrl_type: int) -> bool:
+        # CTRL_C, CTRL_BREAK, CLOSE, LOGOFF, SHUTDOWN.
+        if ctrl_type in (0, 1, 2, 5, 6):
+            _close_listening_socket()
+        return False
+
+    global _console_ctrl_handler
+    _console_ctrl_handler = handler_type(_handler)
+    ctypes.windll.kernel32.SetConsoleCtrlHandler(_console_ctrl_handler, True)
+
+
 def prepare_server(port: int = DEFAULT_PORT) -> tuple[ThreadingHTTPServer, str]:
     """Bind the HTTP server (falling forward if the port is busy) and return (server, url).
 
     Does not serve yet. The URL always uses the port stored on the socket.
+    A previous ArkPlots process still listening on ``port`` is closed first.
     """
+    global _active_server
+    from listener import publish_instance, reclaim_arkplots_port
+
     plotdata = load_json(PLOTLINE_PATH) or {}
     plots = plotdata.get("data") or []
     if isinstance(plots, list):
         ensure_read_record(plots)
 
+    reclaim_arkplots_port("127.0.0.1", port)
     server, bound_port = _bind_server(port)
+    publish_instance(bound_port)
+    _active_server = server
+    register_before_process_exit(_release_listener)
     url = listening_url(server)
-    if bound_port != port:
+    if port != 0 and bound_port != port:
         print(
             f"Port {port} is unavailable; using {bound_port} instead.\n"
             f"端口 {port} 不可用，已自动改用 {bound_port}。"
@@ -454,6 +602,7 @@ def prepare_server(port: int = DEFAULT_PORT) -> tuple[ThreadingHTTPServer, str]:
 
 def serve_in_background(server: ThreadingHTTPServer) -> threading.Thread:
     """Run serve_forever on a daemon thread so the GUI can own the main thread."""
+    atexit.register(stop_server, server)
     thread = threading.Thread(
         target=server.serve_forever,
         name="arkplots-http",
@@ -492,9 +641,13 @@ def stop_server(server: ThreadingHTTPServer) -> None:
         server.server_close()
     except Exception:
         pass
+    from listener import clear_instance
+
+    clear_instance()
 
 
 def run_server(port: int = DEFAULT_PORT, open_browser: bool = True) -> ThreadingHTTPServer:
+    _install_exit_hooks()
     server, url = prepare_server(port)
     if open_browser:
         threading.Timer(0.4, lambda: webbrowser.open(url)).start()
@@ -534,6 +687,34 @@ def _tcp_accepts(host: str, port: int, timeout: float = 0.25) -> bool:
         return False
 
 
+class ArkPlotsServer(ThreadingHTTPServer):
+    """Local server that refuses to share its port with another process.
+
+    ``http.server.HTTPServer`` sets ``allow_reuse_address = True``. On Windows
+    that is ``SO_REUSEADDR``, and a second process can then also listen on
+    127.0.0.1:8765. The kernel delivers each connection to only one of them,
+    so a leftover ``python server.py`` can answer every request while the
+    installed exe sits on the same port and never sees them. The window then
+    shows the source process's version and refuses one-click update.
+    """
+
+    allow_reuse_address = False
+    allow_reuse_port = False
+
+    def server_bind(self) -> None:
+        if sys.platform == "win32":
+            exclusive = getattr(socket, "SO_EXCLUSIVEADDRUSE", None)
+            if exclusive is not None:
+                self.socket.setsockopt(socket.SOL_SOCKET, exclusive, 1)
+        # Drop the port as soon as the process closes the socket, instead of
+        # leaving it in TIME_WAIT for the next launch.
+        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack("ii", 1, 0))
+        super().server_bind()
+
+    def serve_forever(self, poll_interval: float = 0.1) -> None:  # type: ignore[override]
+        super().serve_forever(poll_interval=poll_interval)
+
+
 def _bind_server(
     preferred_port: int,
     host: str = "127.0.0.1",
@@ -552,16 +733,24 @@ def _bind_server(
         port = preferred_port + offset
         if port > 65535:
             break
-        # Skip zombie listeners that accept then close with no HTTP body.
-        if _tcp_accepts(host, port) and not _probe_health(host, port):
-            print(
-                f"Port {port} accepts connections but is not a healthy ArkPlots server; skipping.\n"
-                f"端口 {port} 可连接但无有效响应（可能是残留进程），已跳过。"
-            )
-            last_error = OSError(f"port {port} has a dead/foreign listener")
+        # Never attach to a port that already accepts connections. Binding
+        # again used to succeed on Windows and split requests with the
+        # process that was already there.
+        if port != 0 and _tcp_accepts(host, port):
+            if _probe_health(host, port):
+                print(
+                    f"Port {port} is already serving ArkPlots; choosing another port.\n"
+                    f"端口 {port} 上已有 ArkPlots 在应答，已改用下一个端口，避免两个进程抢同一端口。"
+                )
+            else:
+                print(
+                    f"Port {port} accepts connections but is not a healthy ArkPlots server; skipping.\n"
+                    f"端口 {port} 可连接但无有效响应（可能是残留进程），已跳过。"
+                )
+            last_error = OSError(f"port {port} is already in use")
             continue
         try:
-            server = ThreadingHTTPServer((host, port), ArkPlotsHandler)
+            server = ArkPlotsServer((host, port), ArkPlotsHandler)
             server.daemon_threads = True
             actual = int(server.server_address[1])
             return server, actual

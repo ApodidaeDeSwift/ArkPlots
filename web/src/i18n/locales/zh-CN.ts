@@ -167,7 +167,8 @@ const zhCN: Messages = {
     upToDate: '已是最新版本。',
     available: '发现新版本 {version}。',
     availableNoAsset: '发现新版本 {version}，但该 Release 尚未上传安装包。',
-    availableDevOnly: '发现新版本 {version}。开发模式下请手动替换打包后的 exe。',
+    availableDevOnly:
+      '发现新版本 {version}。这次应答的不是安装包，通常是另一个 python server.py 占用了同一端口。请先完全退出 ArkPlots，并结束正在运行的 server.py，再打开安装好的程序。',
     openRelease: '打开 Release 页面',
     openReleaseHint: '可前往 GitHub Release 页面查看。',
     dataSafe: '更新只会替换程序本身，不会清空你的剧情进度与本地数据。',
@@ -176,7 +177,8 @@ const zhCN: Messages = {
     checkFailed: '检查更新失败。',
     applyFailed: '应用更新失败。',
     noAsset: '该 Release 没有可下载的 exe 安装包。',
-    devOnly: '仅打包后的桌面版支持一键更新。',
+    devOnly:
+      '当前应答的不是安装包进程，无法自动替换 exe。请先结束正在运行的 python server.py，再打开安装目录中的 ArkPlots.exe。',
     checksumMismatch: '更新包校验失败（SHA-256 不一致），已取消本次更新并删除下载文件。请稍后重试，或前往 Release 页面手动下载。',
     checksumUnavailable: '无法读取官方发布的校验文件，为安全起见已取消本次更新。请稍后重试。',
     unavailable: '暂未开放，即将推出。',
