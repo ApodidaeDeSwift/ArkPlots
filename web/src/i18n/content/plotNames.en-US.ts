@@ -127,15 +127,16 @@ export const plotNamesEnUS: Record<string, string> = {
   '121': "Medjehtiqedti Bound", // 雅赛努斯复仇记
   '122': "First of a Thousand Autumns", // 辞岁行
   '123': "Crossing", // 十字路口
-  '124': "People, a People", // 人们，我们
-  '125': "EP17. Critical Phase Transition", // EP17. 相变临界
-  '126': "Reclamation Algorithm: Relaunch Anchor", // 生息演算：重启锚点
-  '127': "Thunder in the Azure Dream", // 泡影苍霆
-  '128': "The Great General Strikes!", // 大将军出击！
-  '129': "Jungle Complex", // 丛林症结
-  '130': "The Black Flow of the Drowning Seekers", // 沉沦者的黑流树海
-  '131': "Till the Lands Become an Orange", // 直到大地变成一颗酸橙
-  '132': "Interactive Exhibition", // 奇象巡展
-  '133': "Sur le lac lune vivante", // 月行水上
-  '134': "Yet Another Wave", // 昨日海
+  '124': "循途漫录：王权金币", // 循途漫录：王权金币
+  '125': "People, a People", // 人们，我们
+  '126': "EP17. Critical Phase Transition", // EP17. 相变临界
+  '127': "Reclamation Algorithm: Relaunch Anchor", // 生息演算：重启锚点
+  '128': "Thunder in the Azure Dream", // 泡影苍霆
+  '129': "The Great General Strikes!", // 大将军出击！
+  '130': "Jungle Complex", // 丛林症结
+  '131': "The Black Flow of the Drowning Seekers", // 沉沦者的黑流树海
+  '132': "Till the Lands Become an Orange", // 直到大地变成一颗酸橙
+  '133': "Interactive Exhibition", // 奇象巡展
+  '134': "Sur le lac lune vivante", // 月行水上
+  '135': "Yet Another Wave", // 昨日海
 }

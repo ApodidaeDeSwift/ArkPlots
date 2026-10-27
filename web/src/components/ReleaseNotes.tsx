@@ -33,10 +33,11 @@ function isBlockStart(line: string): boolean {
   return (
     line.startsWith('```') ||
     line.startsWith('>') ||
-    /^#{1,6}\s+/.test(line) ||
+    /^#{1,6}(?:\s+|\S)/.test(line) ||
     /^(-{3,}|\*{3,}|_{3,})$/.test(line.trim()) ||
-    /^\s*[-*+]\s+/.test(line) ||
-    /^\s*\d+[.)]\s+/.test(line)
+    /^\s*-\s*\S/.test(line) ||
+    /^\s*[*+]\s+\S/.test(line) ||
+    /^\s*\d+[.)]\s*\S/.test(line)
   )
 }
 
@@ -61,7 +62,7 @@ function parseBlocks(source: string): Block[] {
       blocks.push({ type: 'code', text: buf.join('\n') })
       continue
     }
-    const heading = /^(#{1,6})\s+(.+)$/.exec(line)
+    const heading = /^(#{1,6})\s*(.+)$/.exec(line)
     if (heading) {
       blocks.push({ type: 'h', level: heading[1].length, text: heading[2].trim() })
       i += 1
@@ -81,19 +82,20 @@ function parseBlocks(source: string): Block[] {
       blocks.push({ type: 'quote', text: buf.join('\n') })
       continue
     }
-    if (/^\s*[-*+]\s+/.test(line)) {
+    if (/^\s*-\s*\S/.test(line) || /^\s*[*+]\s+\S/.test(line)) {
       const items: string[] = []
-      while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i])) {
-        items.push(lines[i].replace(/^\s*[-*+]\s+/, ''))
+      const item = /^\s*(?:-\s*|[*+]\s+)(.*)$/
+      while (i < lines.length && (/^\s*-\s*\S/.test(lines[i]) || /^\s*[*+]\s+\S/.test(lines[i]))) {
+        items.push(lines[i].replace(item, '$1'))
         i += 1
       }
       blocks.push({ type: 'ul', items })
       continue
     }
-    if (/^\s*\d+[.)]\s+/.test(line)) {
+    if (/^\s*\d+[.)]\s*\S/.test(line)) {
       const items: string[] = []
-      while (i < lines.length && /^\s*\d+[.)]\s+/.test(lines[i])) {
-        items.push(lines[i].replace(/^\s*\d+[.)]\s+/, ''))
+      while (i < lines.length && /^\s*\d+[.)]\s*\S/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*\d+[.)]\s*/, ''))
         i += 1
       }
       blocks.push({ type: 'ol', items })

@@ -879,8 +879,12 @@ button {
   border: 1px solid var(--line);
   background: rgba(8, 14, 20, 0.55);
   color: var(--text);
+  font-family: var(--font-ui);
   font-size: 0.86rem;
-  line-height: 1.55;
+  line-height: 1.65;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .release-notes-empty {
@@ -907,6 +911,11 @@ button {
 .release-notes ul,
 .release-notes ol {
   padding-left: 1.25em;
+}
+
+.release-notes li {
+  margin: 0.2em 0;
+  padding-left: 0.15em;
 }
 
 .release-notes a {
@@ -951,9 +960,10 @@ button {
 
 .release-notes-h {
   margin: 0.7em 0 0.3em;
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-weight: 700;
   color: var(--text);
-  line-height: 1.3;
+  line-height: 1.45;
 }
 
 .release-notes-h1 { font-size: 1.15rem; }

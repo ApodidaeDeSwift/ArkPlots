@@ -7718,6 +7718,36 @@
     },
     {
       "id": 124,
+      "name": "循途漫录：王权金币",
+      "class": "manga",
+      "plot_stage": 4,
+      "date": "2026-03-20",
+      "country": [],
+      "description": "循途漫录系列漫画",
+      "new_operator": [],
+      "related_plot": [],
+      "related_power": [
+        "罗德岛"
+      ],
+      "necessary_plot": [
+        {
+          "id": 29,
+          "reason": "异客的首次出现",
+          "reason_en": "The first appearance of Passenger"
+        }
+      ],
+      "optional_plot": [
+        {
+          "id": 85,
+          "reason": "异客的部分剧情",
+          "reason_en": "Other plot of Passenger"
+        }
+      ],
+      "Videos": [],
+      "chapter": ""
+    },
+    {
+      "id": 125,
       "name": "人们，我们",
       "class": "sidestory",
       "plot_stage": 4,
@@ -7793,7 +7823,7 @@
       "chapter": "燎原"
     },
     {
-      "id": 125,
+      "id": 126,
       "name": "EP17. 相变临界",
       "class": "main",
       "plot_stage": 4,
@@ -7850,7 +7880,7 @@
           "reason_en": "Required main-theme prerequisite"
         },
         {
-          "id": 124,
+          "id": 125,
           "reason": "该故事部分背景与乌萨斯学生线相关",
           "reason_en": "Some background in this story relates to the Ursus student arc"
         }
@@ -7899,7 +7929,7 @@
       "chapter": "为了明日·裂变"
     },
     {
-      "id": 126,
+      "id": 127,
       "name": "生息演算：重启锚点",
       "class": "RA",
       "plot_stage": 4,
@@ -7917,7 +7947,7 @@
       ],
       "necessary_plot": [
         {
-          "id": 125,
+          "id": 126,
           "reason": "该玩法剧情承接凯尔希回归后的罗德岛重建",
           "reason_en": "This mode's story continues Rhodes Island's rebuilding after Kal'tsit's return"
         }
@@ -7932,7 +7962,7 @@
       "chapter": ""
     },
     {
-      "id": 127,
+      "id": 128,
       "name": "泡影苍霆",
       "class": "sidestory",
       "plot_stage": 4,
@@ -7991,7 +8021,7 @@
       "chapter": ""
     },
     {
-      "id": 128,
+      "id": 129,
       "name": "循途漫录：大将军，出击！",
       "class": "manga",
       "plot_stage": 4,
@@ -8017,7 +8047,7 @@
       "chapter": ""
     },
     {
-      "id": 129,
+      "id": 130,
       "name": "丛林症结",
       "class": "ministory",
       "plot_stage": 4,
@@ -8076,7 +8106,7 @@
       "chapter": "泰拉奇谈"
     },
     {
-      "id": 130,
+      "id": 131,
       "name": "沉沦者的黑流树海",
       "class": "rougelike",
       "plot_stage": 4,
@@ -8100,7 +8130,7 @@
       ],
       "necessary_plot": [
         {
-          "id": 128,
+          "id": 129,
           "reason": "必要的肉鸽预热",
           "reason_en": "Required Integrated Strategies warm-up"
         }
@@ -8127,7 +8157,7 @@
       "chapter": ""
     },
     {
-      "id": 131,
+      "id": 132,
       "name": "直到大地变成一颗酸橙",
       "class": "sidestory",
       "plot_stage": 4,
@@ -8167,7 +8197,7 @@
           "reason_en": "This story's region is mentioned in So Long, Adele: Home Away From Home"
         },
         {
-          "id": 125,
+          "id": 126,
           "reason": "该剧情的部分重要线索在相变临界中有提及",
           "reason_en": "Some important clues for this story are mentioned in Critical Phase Transition"
         },
@@ -8213,7 +8243,7 @@
       "chapter": "夏日律动"
     },
     {
-      "id": 132,
+      "id": 133,
       "name": "奇象巡展",
       "class": "other",
       "plot_stage": 4,
@@ -8242,7 +8272,7 @@
       "chapter": ""
     },
     {
-      "id": 133,
+      "id": 134,
       "name": "月行水上",
       "class": "sidestory",
       "plot_stage": 4,
@@ -8310,7 +8340,7 @@
       "chapter": ""
     },
     {
-      "id": 134,
+      "id": 135,
       "name": "昨日海",
       "class": "sidestory",
       "plot_stage": 4,

@@ -110,7 +110,11 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "�
 
 [Files]
 Source: "..\dist\ArkPlots\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\Plotline.json"; DestDir: "{app}"; Flags: ignoreversion
+; New catalog, extracted before the copy so the still-installed Plotline.json can be read.
+Source: "..\Plotline.json"; DestDir: "{tmp}"; DestName: "Plotline.new.json"; Flags: dontcopy
+Source: "migrate_read_record.ps1"; DestDir: "{tmp}"; Flags: dontcopy
+; Runs on silent in-app updates as well. Fresh installs have no record and skip it.
+Source: "..\Plotline.json"; DestDir: "{app}"; Flags: ignoreversion; BeforeInstall: MigrateReadRecord
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -553,4 +557,32 @@ begin
   UnChipCancel := TPanel.Create(UninstallProgressForm);
   UnChipCancel.OnClick := @UnChipCancelClick;
   PlaceChip(UnChipCancel, UninstallProgressForm.CancelButton, CHeader, CTextDim, False);
+end;
+
+{ Plot ids follow array order. Read_record.json is keyed by those ids, so an
+  inserted story would slide every later status onto the wrong plot. Remap by
+  plot name while {app}\Plotline.json is still the previous catalog. }
+procedure MigrateReadRecord;
+var
+  ResultCode: Integer;
+  OldPlot, NewPlot, RecordPath, Script, Params: String;
+begin
+  OldPlot := ExpandConstant('{app}\Plotline.json');
+  RecordPath := ExpandConstant('{app}\Read_record.json');
+  if (not FileExists(OldPlot)) or (not FileExists(RecordPath)) then
+    Exit;
+  ExtractTemporaryFile('migrate_read_record.ps1');
+  ExtractTemporaryFile('Plotline.new.json');
+  Script := ExpandConstant('{tmp}\migrate_read_record.ps1');
+  NewPlot := ExpandConstant('{tmp}\Plotline.new.json');
+  Params :=
+    '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' + Script + '"' +
+    ' -OldPlotline "' + OldPlot + '"' +
+    ' -NewPlotline "' + NewPlot + '"' +
+    ' -Record "' + RecordPath + '"';
+  if not Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
+              Params, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+    RaiseException('无法启动阅读记录迁移。安装已中止，阅读进度未被修改。');
+  if ResultCode <> 0 then
+    RaiseException('阅读记录迁移失败。安装已中止，阅读进度未被修改。');
 end;
