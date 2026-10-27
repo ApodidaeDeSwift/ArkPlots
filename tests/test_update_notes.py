@@ -135,7 +135,7 @@ class ReleaseNotesTests(unittest.TestCase):
             patch("updater._list_app_ver_from_releases", side_effect=err),
             patch("updater._http_text", side_effect=http_text),
         ):
-            result = check_for_update()
+            result = check_for_update(include_prerelease=True)
         self.assertTrue(result["ok"])
         self.assertTrue(result["update_available"])
         self.assertEqual(result["remote_tag"], "APP_Ver99.0.0.1")
@@ -282,6 +282,46 @@ class ReleaseNotesTests(unittest.TestCase):
             self.assertFalse(blocked["ok"])
             self.assertEqual(blocked["error"], "not_ready")
             schedule.assert_called_once()
+
+    def test_stable_channel_skips_a_newer_prerelease(self) -> None:
+        preview = _release()
+        preview["prerelease"] = True
+        stable = _release("正式版说明")
+        stable["tag_name"] = "APP_Ver2.0.0.0"
+        stable["prerelease"] = False
+        stable["assets"] = [
+            {
+                "name": "Arkplot_setup_ver2.0.0.0.exe",
+                "browser_download_url": "https://example.invalid/stable.exe",
+                "size": 4096,
+            }
+        ]
+        found = [
+            ("APP_Ver99.0.0.1", (99, 0, 0, 1), preview),
+            ("APP_Ver2.0.0.0", (2, 0, 0, 0), stable),
+        ]
+        with (
+            patch("updater.VERSION", "1.0.0.0"),
+            patch("updater._list_app_ver_from_releases", return_value=found),
+        ):
+            stable_result = check_for_update(include_prerelease=False)
+            preview_result = check_for_update(include_prerelease=True)
+        self.assertEqual(stable_result["remote_version"], "2.0.0.0")
+        self.assertEqual(stable_result["channel"], "release")
+        self.assertEqual(preview_result["remote_version"], "99.0.0.1")
+        self.assertEqual(preview_result["channel"], "preview")
+
+    def test_stable_channel_is_quiet_when_only_prereleases_exist(self) -> None:
+        preview = _release()
+        preview["prerelease"] = True
+        found = [("APP_Ver99.0.0.1", (99, 0, 0, 1), preview)]
+        with (
+            patch("updater.VERSION", "1.0.0.0"),
+            patch("updater._list_app_ver_from_releases", return_value=found),
+        ):
+            result = check_for_update(include_prerelease=False)
+        self.assertTrue(result["ok"])
+        self.assertFalse(result["update_available"])
 
     def test_exit_route_is_not_ready_before_an_update(self) -> None:
         updater._update_exit_armed = False

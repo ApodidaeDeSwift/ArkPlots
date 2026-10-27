@@ -148,6 +148,9 @@ const enUS: Messages = {
     showNecessary: 'Show required prerequisites',
     showOptional: 'Show optional prerequisites',
     checkUpdatesOnLaunch: 'Check for updates each time the app opens',
+    updateChannel: 'Update channel',
+    updateChannelRelease: 'Stable',
+    updateChannelPreview: 'Preview',
   },
   version: {
     label: 'Version',
@@ -155,6 +158,8 @@ const enUS: Messages = {
     currentKey: 'LOCAL',
     remoteKey: 'REMOTE',
     current: 'Current version {version}',
+    channelRelease: 'Stable',
+    channelPreview: 'Preview',
     idleHint: 'Tap “Check for updates” to sync version info from GitHub Releases.',
     check: 'Check for updates',
     checking: 'Checking for updates…',

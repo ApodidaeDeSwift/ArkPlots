@@ -97,7 +97,7 @@ export default function App() {
     ;(async () => {
       if (!loadDisplaySettings().checkUpdatesOnLaunch) return
       try {
-        const data = await checkUpdate()
+        const data = await checkUpdate(loadDisplaySettings().updateChannel)
         if (cancelled || !loadDisplaySettings().checkUpdatesOnLaunch) return
         if (!data.ok || !data.update_available) return
         setUpdateOffer(data)
@@ -133,7 +133,7 @@ export default function App() {
     setUpdateOfferBusy(true)
     setUpdateOfferError('')
     try {
-      const data = await applyUpdate(true, true)
+      const data = await applyUpdate(true, true, displaySettings.updateChannel)
       if (data.applied) {
         setUpdateOffer(null)
         setUpdateDone({

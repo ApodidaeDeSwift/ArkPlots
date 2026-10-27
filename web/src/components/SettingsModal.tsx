@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { applyUpdate, checkUpdate, fetchVersion, type UpdateCheckResult } from '../api'
 import { useI18n, useT } from '../i18n'
 import type { DisplaySettings } from '../settings'
-import { APP_VERSION } from '../version'
+import { APP_CHANNEL, APP_VERSION } from '../version'
 import { ReleaseNotes } from './ReleaseNotes'
 
 type Props = {
@@ -42,12 +42,16 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
     ;(async () => {
       const info = await fetchVersion()
       if (cancelled) return
-      if (info?.version) setVersionLabel(String(info.version))
+      const version = info?.version || APP_VERSION
+      const channel = info?.channel || APP_CHANNEL
+      const kind =
+        channel === 'preview' ? t('version.channelPreview') : t('version.channelRelease')
+      setVersionLabel(`${version} ${kind}`)
     })()
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [locale, t])
 
   const toggle = (key: keyof DisplaySettings) => {
     onChange({ ...settings, [key]: !settings[key] })
@@ -58,7 +62,7 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
     setStatusText(t('version.checking'))
     setResult(null)
     try {
-      const data = await checkUpdate()
+      const data = await checkUpdate(settings.updateChannel)
       setResult(data)
       const warn = pickWarning(data, locale)
 
@@ -123,7 +127,7 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
     setPhase('applying')
     setStatusText(t('version.applying'))
     try {
-      const data = await applyUpdate(true)
+      const data = await applyUpdate(true, true, settings.updateChannel)
       setResult(data)
       const warn = pickWarning(data, locale)
       if (data.applied) {
@@ -230,6 +234,25 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
                   onChange={() => toggle('checkUpdatesOnLaunch')}
                 />
                 {t('settings.checkUpdatesOnLaunch')}
+              </label>
+              <span className="settings-channel-label">{t('settings.updateChannel')}</span>
+              <label>
+                <input
+                  type="radio"
+                  name="update-channel"
+                  checked={settings.updateChannel === 'release'}
+                  onChange={() => onChange({ ...settings, updateChannel: 'release' })}
+                />
+                {t('settings.updateChannelRelease')}
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="update-channel"
+                  checked={settings.updateChannel === 'preview'}
+                  onChange={() => onChange({ ...settings, updateChannel: 'preview' })}
+                />
+                {t('settings.updateChannelPreview')}
               </label>
             </div>
             <div className="update-console" data-phase={phase}>

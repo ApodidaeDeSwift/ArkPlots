@@ -23,7 +23,7 @@ import threading
 import webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Dict, List
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 # Windowed builds (PyInstaller console=False) have no stdio. Keep writes safe.
 if sys.stdout is None:
@@ -304,7 +304,9 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
             return
 
         if path == "/api/update/check":
-            self._send_json(200, check_for_update())
+            channel = parse_qs(parsed.query).get("channel", ["release"])[0]
+            include_prerelease = str(channel).strip().lower() == "preview"
+            self._send_json(200, check_for_update(include_prerelease=include_prerelease))
             return
 
         # SPA fallback: serve index.html for non-file routes when dist exists
@@ -362,6 +364,7 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
             return
         restart = True
         defer_exit = False
+        include_prerelease = False
         try:
             raw = self._read_body()
             if raw.strip():
@@ -371,11 +374,17 @@ class ArkPlotsHandler(SimpleHTTPRequestHandler):
                         restart = bool(data.get("restart"))
                     if "defer_exit" in data:
                         defer_exit = bool(data.get("defer_exit"))
+                    include_prerelease = str(data.get("channel") or "").strip().lower() == "preview"
         except Exception:
             restart = True
             defer_exit = False
+            include_prerelease = False
         try:
-            result = apply_update(restart=restart, defer_exit=defer_exit)
+            result = apply_update(
+                restart=restart,
+                defer_exit=defer_exit,
+                include_prerelease=include_prerelease,
+            )
             code = 200 if result.get("ok") and result.get("applied") else 200
             # Still 200 for soft failures (up to date / no asset) so UI can show message.
             if result.get("error") in ("network_error", "http_error", "download_failed"):

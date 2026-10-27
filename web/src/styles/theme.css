@@ -834,6 +834,12 @@ button {
   margin-bottom: 12px;
 }
 
+.settings-channel-label {
+  margin-top: 6px;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
 .update-dialog {
   width: min(680px, 100%);
 }

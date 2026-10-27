@@ -146,6 +146,9 @@ const zhCN: Messages = {
     showNecessary: '显示必要前置',
     showOptional: '显示可选前置',
     checkUpdatesOnLaunch: '每次打开时自动检查更新',
+    updateChannel: '更新通道',
+    updateChannelRelease: '正式版',
+    updateChannelPreview: '测试版',
   },
   version: {
     label: '版本',
@@ -153,6 +156,8 @@ const zhCN: Messages = {
     currentKey: 'LOCAL',
     remoteKey: 'REMOTE',
     current: '当前版本 {version}',
+    channelRelease: '正式版',
+    channelPreview: '测试版',
     idleHint: '点击「检查更新」从 GitHub Release 同步版本信息。',
     check: '检查更新',
     checking: '正在检查更新…',

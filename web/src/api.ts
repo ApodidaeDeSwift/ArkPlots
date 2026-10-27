@@ -1,5 +1,7 @@
 import type { PlotlineFile } from './types'
 
+import type { UpdateChannel } from './settings'
+
 export type AppVersionInfo = {
   name?: string
   version: string
@@ -95,20 +97,21 @@ export async function fetchVersion(): Promise<AppVersionInfo | null> {
   }
 }
 
-/** Compare local build with the floating GitHub ``APP版本`` release. */
-export function checkUpdate() {
-  return jsonFetchSoft<UpdateCheckResult>('/api/update/check', { cache: 'no-store' })
+/** Compare local build with GitHub ``APP_Ver*`` releases on the chosen channel. */
+export function checkUpdate(channel: UpdateChannel) {
+  const query = channel === 'preview' ? '?channel=preview' : '?channel=release'
+  return jsonFetchSoft<UpdateCheckResult>(`/api/update/check${query}`, { cache: 'no-store' })
 }
 
 /** Download the release exe and schedule a safe in-place replace (packaged builds only).
 
 `deferExit` keeps the process alive so the UI can show release notes before restart.
  */
-export function applyUpdate(restart = true, deferExit = true) {
+export function applyUpdate(restart = true, deferExit = true, channel: UpdateChannel = 'release') {
   return jsonFetchSoft<UpdateCheckResult>('/api/update/apply', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ restart, defer_exit: deferExit }),
+    body: JSON.stringify({ restart, defer_exit: deferExit, channel }),
   })
 }
 

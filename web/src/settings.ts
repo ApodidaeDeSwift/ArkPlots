@@ -1,5 +1,10 @@
 /** Persisted UI preferences. Filter state is not stored here. */
+import { APP_CHANNEL } from './version'
+
 export const SETTINGS_STORAGE_KEY = 'arkplots.settings'
+
+/** 正式版 = GitHub 普通 Release；测试版 = 另外包含 Pre-release。缺省跟当前安装包通道走。 */
+export type UpdateChannel = 'release' | 'preview'
 
 export type DisplaySettings = {
   showCover: boolean
@@ -8,6 +13,8 @@ export type DisplaySettings = {
   showOptional: boolean
   /** When true, check GitHub for an update on every launch. */
   checkUpdatesOnLaunch: boolean
+  /** Which GitHub releases the updater may offer. */
+  updateChannel: UpdateChannel
 }
 
 /** Matches the previous in-panel defaults: cover, reasons, and both prerequisite lists on. */
@@ -17,10 +24,15 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
   showNecessary: true,
   showOptional: true,
   checkUpdatesOnLaunch: true,
+  updateChannel: APP_CHANNEL === 'preview' ? 'preview' : 'release',
 }
 
 function pickBool(value: unknown, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback
+}
+
+function pickChannel(value: unknown, fallback: UpdateChannel): UpdateChannel {
+  return value === 'release' || value === 'preview' ? value : fallback
 }
 
 export function loadDisplaySettings(): DisplaySettings {
@@ -37,6 +49,7 @@ export function loadDisplaySettings(): DisplaySettings {
         parsed.checkUpdatesOnLaunch,
         DEFAULT_DISPLAY_SETTINGS.checkUpdatesOnLaunch,
       ),
+      updateChannel: pickChannel(parsed.updateChannel, DEFAULT_DISPLAY_SETTINGS.updateChannel),
     }
   } catch {
     return { ...DEFAULT_DISPLAY_SETTINGS }

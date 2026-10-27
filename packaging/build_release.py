@@ -35,6 +35,7 @@ if str(ROOT) not in sys.path:
 
 from app_info import (  # noqa: E402
     APP_NAME,
+    CHANNEL,
     EXE_STEM,
     GITHUB_REPO,
     VERSION,
@@ -49,12 +50,17 @@ def _run(cmd: list[str], cwd: Path) -> None:
 
 def sync_frontend_version() -> None:
     path = ROOT / "web" / "src" / "version.ts"
+    # CHANNEL 与 app_info.py 一致：release = 正式版，preview = 测试版。
     content = (
-        "/** App release version — generated/synced from app_info.py by build_release.py. */\n"
+        "/** Synced from app_info.py by packaging/build_release.py.\n"
+        " * CHANNEL: \"release\" = 正式版（GitHub 不勾选 Pre-release），\n"
+        " * \"preview\" = 测试版（GitHub 勾选 Set as a pre-release）。\n"
+        " */\n"
         f"export const APP_VERSION = '{VERSION}'\n"
+        f"export const APP_CHANNEL = '{CHANNEL}' as const\n"
     )
     path.write_text(content, encoding="utf-8", newline="\n")
-    print(f"synced {path.relative_to(ROOT)} -> {VERSION}", flush=True)
+    print(f"synced {path.relative_to(ROOT)} -> {VERSION} {CHANNEL}", flush=True)
 
 
 def build_web() -> None:

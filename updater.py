@@ -242,15 +242,72 @@ def _releases_from_public_feed() -> list[tuple[str, tuple[int, ...], dict[str, A
     return found
 
 
-def _latest_from_public_feed() -> tuple[str, tuple[int, ...], dict[str, Any]] | None:
-    """Newest public ``APP_Ver*`` release, or None if the feed cannot be read."""
+def _stable_release_tag() -> str | None:
+    """Tag of GitHub's latest non-prerelease, from the ``/releases/latest`` redirect."""
+    url = f"https://github.com/{GITHUB_REPO}/releases/latest"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": _USER_AGENT, "Accept": "text/html, */*;q=0.8"},
+    )
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        final = resp.geturl()
+    marker = "/releases/tag/"
+    if marker not in final:
+        return None
+    tag = unquote(final.split(marker, 1)[1].split("/", 1)[0].split("?", 1)[0].strip())
+    if parse_app_ver_tag(tag) is None:
+        return None
+    return tag
+
+
+def _latest_from_public_feed(
+    include_prerelease: bool = False,
+) -> tuple[str, tuple[int, ...], dict[str, Any]] | None:
+    """Newest public ``APP_Ver*`` release, or None if the feed cannot be read.
+
+    ``include_prerelease`` False follows GitHub's latest stable release.
+    True uses the highest ``APP_Ver*`` entry in the public feed, pre-releases
+    included.
+    """
     try:
         found = _releases_from_public_feed()
     except Exception:
         return None
     if not found:
         return None
-    tag_name, remote, release = max(found, key=lambda item: item[1])
+    if include_prerelease:
+        chosen = max(found, key=lambda item: item[1])
+    else:
+        try:
+            stable_tag = _stable_release_tag()
+        except Exception:
+            return None
+        if not stable_tag:
+            return None
+        matched = [item for item in found if item[0] == stable_tag]
+        if matched:
+            chosen = matched[0]
+        else:
+            ver = parse_app_ver_tag(stable_tag)
+            if ver is None:
+                return None
+            chosen = (
+                stable_tag,
+                ver,
+                {
+                    "tag_name": stable_tag,
+                    "name": stable_tag,
+                    "body": "",
+                    "html_url": (
+                        f"https://github.com/{GITHUB_REPO}/releases/tag/"
+                        f"{quote(stable_tag, safe='')}"
+                    ),
+                    "draft": False,
+                    "prerelease": False,
+                    "assets": [],
+                },
+            )
+    tag_name, remote, release = chosen
     try:
         release["assets"] = _assets_from_expanded_page(tag_name)
     except Exception:
@@ -273,6 +330,8 @@ def _list_app_ver_from_releases(
                 continue
             if item.get("draft"):
                 continue
+            # Pre-release filtering happens in check_for_update so a caller
+            # can ask for 测试版 (include) or 正式版 (skip) from the same list.
             tag = str(item.get("tag_name") or "")
             ver = parse_app_ver_tag(tag)
             if ver is not None:
@@ -508,8 +567,46 @@ def _base_error(error: str, message: str, **extra: Any) -> dict[str, Any]:
     }
 
 
-def check_for_update() -> dict[str, Any]:
-    """Find the newest ``APP_Ver*`` tag/release and compare with local VERSION."""
+def _accept_release(release: dict[str, Any], include_prerelease: bool) -> bool:
+    """正式版 skips GitHub Pre-release. 测试版 keeps both."""
+    if release.get("draft"):
+        return False
+    if release.get("prerelease") and not include_prerelease:
+        return False
+    return True
+
+
+def _no_release_in_channel(include_prerelease: bool) -> dict[str, Any]:
+    channel = "preview" if include_prerelease else "release"
+    return {
+        "ok": True,
+        "update_available": False,
+        "up_to_date": True,
+        "current_version": VERSION,
+        "remote_version": VERSION,
+        "remote_tag": "",
+        "remote_name": "",
+        "asset_name": None,
+        "asset_url": None,
+        "asset_size": None,
+        "asset_sha256_url": None,
+        "has_asset": False,
+        "html_url": RELEASES_HTML_URL,
+        "release_notes": "",
+        "channel": channel,
+        "warning": OVERSEAS_SOURCE_WARNING_ZH,
+        "warning_en": OVERSEAS_SOURCE_WARNING_EN,
+        "frozen": bool(getattr(sys, "frozen", False)),
+    }
+
+
+def check_for_update(*, include_prerelease: bool = False) -> dict[str, Any]:
+    """Find the newest ``APP_Ver*`` release and compare with local VERSION.
+
+    ``include_prerelease`` False is 正式版: ignore GitHub releases marked
+    Pre-release. True is 测试版: a pre-release can win when its version is
+    higher. A newer stable release is still offered on the test channel.
+    """
     local = parse_version(VERSION)
     if local is None:
         return _base_error("invalid_local_version", f"Local version is invalid: {VERSION}")
@@ -517,11 +614,19 @@ def check_for_update() -> dict[str, Any]:
     release: dict[str, Any] | None = None
     tag_name = ""
     remote: tuple[int, ...] | None = None
+    channel = "preview" if include_prerelease else "release"
 
     try:
         from_releases = _list_app_ver_from_releases()
-        if from_releases:
-            tag_name, remote, release = max(from_releases, key=lambda item: item[1])
+        usable = [
+            item
+            for item in from_releases
+            if _accept_release(item[2], include_prerelease)
+        ]
+        if usable:
+            tag_name, remote, release = max(usable, key=lambda item: item[1])
+        elif from_releases:
+            return _no_release_in_channel(include_prerelease)
         else:
             # Fallback: tags may exist before a Release is published.
             tags = _list_app_ver_tags()
@@ -538,14 +643,16 @@ def check_for_update() -> dict[str, Any]:
                 if exc.code != 404:
                     raise
                 release = None
+            if release is not None and not _accept_release(release, include_prerelease):
+                return _no_release_in_channel(include_prerelease)
     except urllib.error.HTTPError as exc:
-        fallback = _latest_from_public_feed()
+        fallback = _latest_from_public_feed(include_prerelease)
         exc.close()
         if fallback is None:
             return _base_error("http_error", f"GitHub HTTP {exc.code}")
         tag_name, remote, release = fallback
     except Exception as exc:
-        fallback = _latest_from_public_feed()
+        fallback = _latest_from_public_feed(include_prerelease)
         if fallback is None:
             return _base_error("network_error", str(exc))
         tag_name, remote, release = fallback
@@ -575,6 +682,7 @@ def check_for_update() -> dict[str, Any]:
             "release_notes": "",
             "warning": OVERSEAS_SOURCE_WARNING_ZH,
             "warning_en": OVERSEAS_SOURCE_WARNING_EN,
+            "channel": channel,
             "frozen": bool(getattr(sys, "frozen", False)),
             "error": "no_release",
             "message": f"Tag {tag_name} has no GitHub Release yet",
@@ -599,6 +707,7 @@ def check_for_update() -> dict[str, Any]:
         "has_asset": asset is not None,
         "html_url": release.get("html_url") or html_fallback,
         "release_notes": _release_notes_text(release),
+        "channel": channel,
         "warning": OVERSEAS_SOURCE_WARNING_ZH,
         "warning_en": OVERSEAS_SOURCE_WARNING_EN,
         "frozen": bool(getattr(sys, "frozen", False)),
@@ -1000,14 +1109,19 @@ def request_update_exit() -> dict[str, Any]:
     return {"ok": True, "will_restart": True}
 
 
-def apply_update(*, restart: bool = True, defer_exit: bool = False) -> dict[str, Any]:
+def apply_update(
+    *,
+    restart: bool = True,
+    defer_exit: bool = False,
+    include_prerelease: bool = False,
+) -> dict[str, Any]:
     """Download the remote exe and schedule a safe replace of the running binary.
 
     When ``defer_exit`` is true, the process stays up until ``request_update_exit``
     so the UI can show this version's release notes before restarting.
     """
     global _update_exit_armed
-    check = check_for_update()
+    check = check_for_update(include_prerelease=include_prerelease)
     if not check.get("ok"):
         return check
     if not check.get("update_available"):
