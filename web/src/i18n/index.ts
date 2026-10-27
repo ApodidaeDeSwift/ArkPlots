@@ -3,6 +3,7 @@ import type { MessageKey } from './types'
 import { useI18n, useT } from './I18nProvider'
 import {
   resolveChapter,
+  resolveCharacter,
   resolveCountry,
   resolveOperator,
   resolvePlotName,
@@ -15,6 +16,7 @@ export { DEFAULT_LOCALE, listLocales, localeRegistry, resolveLocale } from './lo
 export type { LocaleCode, MessageKey, Messages, TranslateParams, Translator } from './types'
 export {
   resolveChapter,
+  resolveCharacter,
   resolveCountry,
   resolveOperator,
   resolvePlotName,
@@ -81,6 +83,11 @@ export function useOperatorLabel() {
   return (raw: string | null | undefined) => resolveOperator(locale, raw)
 }
 
+export function useCharacterLabel() {
+  const { locale } = useI18n()
+  return (raw: string | null | undefined) => resolveCharacter(locale, raw)
+}
+
 export function useRelatedPlotTagLabel() {
   const { locale } = useI18n()
   return (raw: string | null | undefined) => resolveRelatedPlotTag(locale, raw)
@@ -96,12 +103,14 @@ export function useLocalizedList() {
   const country = useCountryLabel()
   const power = usePowerLabel()
   const operator = useOperatorLabel()
+  const character = useCharacterLabel()
   const related = useRelatedPlotTagLabel()
   const chapter = useChapterLabel()
   return {
     countries: (vals: string[], sep = ', ') => vals.map(country).join(sep),
     powers: (vals: string[], sep = ', ') => vals.map(power).join(sep),
     operators: (vals: string[], sep = ', ') => vals.map(operator).join(sep),
+    characters: (vals: string[], sep = ', ') => vals.map(character).join(sep),
     relatedPlots: (vals: string[], sep = ', ') => vals.map(related).join(sep),
     chapter: (raw: string | null | undefined) => chapter(raw),
   }

@@ -13,6 +13,7 @@ import {
   useStatusLabel,
   useT,
 } from '../i18n'
+import { viewLinkFor } from '../viewLink'
 
 type Props = {
   item: PlotItem | null
@@ -92,6 +93,7 @@ export function DetailPanel({
   const titleName = plotName(id, item.name)
   const coverSrc = resolveCoverSrc(item, covers)
   const showCoverImg = showCover && !!coverSrc && !coverBroken
+  const viewUrl = viewLinkFor(item)
 
   const renderPreplots = (list: PlotItem['necessary_plot'], title: string) => {
     const entries = list || []
@@ -130,6 +132,15 @@ export function DetailPanel({
           ↪
         </button>
         <span className="filter-label">{t('detail.history')}</span>
+        {viewUrl && (
+          <button
+            type="button"
+            className="btn btn-accent detail-jump"
+            onClick={() => window.open(viewUrl, '_blank', 'noopener,noreferrer')}
+          >
+            {t('detail.quickView')}
+          </button>
+        )}
       </div>
       <h2 className="detail-title">{titleName}</h2>
       {showCoverImg && (
@@ -190,6 +201,16 @@ export function DetailPanel({
           <span>
             {lists.operators(normalizeList(item.new_operator), sep) || dash}
           </span>
+        </div>
+        <div>
+          <span>{t('detail.firstAppearance')}</span>
+          {normalizeList(item.first_appearance).length ? (
+            <span className="detail-spoiler" tabIndex={0}>
+              {lists.characters(normalizeList(item.first_appearance), sep)}
+            </span>
+          ) : (
+            <span>{dash}</span>
+          )}
         </div>
         <div>
           <span>{t('detail.description')}</span>

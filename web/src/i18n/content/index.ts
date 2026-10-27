@@ -1,5 +1,6 @@
 import type { LocaleCode } from '../types'
 import { chaptersEnUS } from './chapters.en-US'
+import { charactersEnUS } from './characters.en-US'
 import { countriesEnUS } from './countries.en-US'
 import { operatorsEnUS } from './operators.en-US'
 import { plotNamesEnUS } from './plotNames.en-US'
@@ -24,6 +25,10 @@ const powerPacks: Record<string, Record<string, string>> = {
 
 const operatorPacks: Record<string, Record<string, string>> = {
   'en-US': operatorsEnUS,
+}
+
+const characterPacks: Record<string, Record<string, string>> = {
+  'en-US': charactersEnUS,
 }
 
 const relatedPlotPacks: Record<string, Record<string, string>> = {
@@ -67,6 +72,15 @@ export function resolvePower(locale: LocaleCode, raw: string | null | undefined)
 
 export function resolveOperator(locale: LocaleCode, raw: string | null | undefined): string {
   return resolveFromPack(operatorPacks, locale, raw)
+}
+
+/** Story-character name. Character pack wins; operator codenames are the fallback. */
+export function resolveCharacter(locale: LocaleCode, raw: string | null | undefined): string {
+  const key = (raw ?? '').trim()
+  if (!key) return ''
+  const pack = characterPacks[locale]
+  if (pack && pack[key]) return pack[key]
+  return resolveOperator(locale, raw)
 }
 
 export function resolveRelatedPlotTag(

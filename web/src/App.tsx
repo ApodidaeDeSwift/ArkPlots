@@ -13,6 +13,7 @@ import { UpdateCompleteDialog, UpdateOfferDialog } from './components/UpdateDial
 import { VideoModal } from './components/VideoModal'
 import {
   useChapterLabel,
+  useCharacterLabel,
   useClassLabel,
   useCountryLabel,
   useOperatorLabel,
@@ -50,6 +51,7 @@ export default function App() {
   const relatedPlotTagLabel = useRelatedPlotTagLabel()
   const chapterLabel = useChapterLabel()
   const operatorLabel = useOperatorLabel()
+  const characterLabel = useCharacterLabel()
   const statusLabel = useStatusLabel()
   const plotName = usePlotName()
   const [plots, setPlots] = useState<PlotItem[]>([])
@@ -219,10 +221,11 @@ export default function App() {
       plots.filter((p) =>
         matchesFilters(p, appliedFilters, {
           operatorLabel,
+          characterLabel,
           recordStatus: (id) => records[id] || '未读',
         }),
       ),
-    [plots, appliedFilters, operatorLabel, records],
+    [plots, appliedFilters, operatorLabel, characterLabel, records],
   )
 
   const activeItem = activeId ? plotsMap.get(activeId) || null : null

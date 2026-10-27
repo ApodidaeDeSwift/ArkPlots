@@ -30,6 +30,8 @@ export type PlotItem = {
   class?: string
   country?: string | string[]
   new_operator?: string | string[]
+  /** 在本剧情中首次出场的剧情角色。中文名；英文走 characters / operators 词典。 */
+  first_appearance?: string | string[]
   plot_stage?: number | string
   related_power?: string | string[]
   related_plot?: string | string[]

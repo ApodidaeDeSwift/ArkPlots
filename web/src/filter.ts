@@ -17,6 +17,8 @@ function parseFilterDate(s?: string | null): Date | null {
 export type FilterMatchers = {
   /** Optional: localize operator CN name for substring search (e.g. EN UI). */
   operatorLabel?: (cnName: string) => string
+  /** Optional: localize a first-appearance character name for substring search. */
+  characterLabel?: (cnName: string) => string
   /** Current read status for a plot id (defaults to 未读 when omitted). */
   recordStatus?: (id: string) => string
 }
@@ -57,12 +59,14 @@ export function matchesFilters(
   const opSearch = filters.new_operator?.trim()
   if (opSearch) {
     const q = opSearch.toLowerCase()
-    const ops = normalizeList(item.new_operator)
-    const found = ops.some((o) => {
-      if (o.toLowerCase().includes(q)) return true
-      const labeled = matchers.operatorLabel?.(o)
+    const hit = (name: string, label?: (cnName: string) => string) => {
+      if (name.toLowerCase().includes(q)) return true
+      const labeled = label?.(name)
       return !!labeled && labeled.toLowerCase().includes(q)
-    })
+    }
+    const found =
+      normalizeList(item.new_operator).some((name) => hit(name, matchers.operatorLabel)) ||
+      normalizeList(item.first_appearance).some((name) => hit(name, matchers.characterLabel))
     if (!found) return false
   }
 

@@ -103,6 +103,8 @@ export type Messages = {
     power: string
     relatedPlot: string
     operator: string
+    firstAppearance: string
+    quickView: string
     description: string
     emDash: string
   }
