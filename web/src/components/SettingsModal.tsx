@@ -139,6 +139,10 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
         setStatusText([t('version.devOnly'), warn].filter(Boolean).join('\n'))
       } else if (data.error === 'download_failed' || data.error === 'network_error') {
         setStatusText([t('version.downloadFailed'), warn].filter(Boolean).join('\n'))
+      } else if (data.error === 'checksum_mismatch') {
+        setStatusText([t('version.checksumMismatch'), warn].filter(Boolean).join('\n'))
+      } else if (data.error === 'checksum_unavailable') {
+        setStatusText([t('version.checksumUnavailable'), warn].filter(Boolean).join('\n'))
       } else if (data.message === 'already_up_to_date') {
         setPhase('ready')
         setStatusText([t('version.upToDate'), warn].filter(Boolean).join('\n'))

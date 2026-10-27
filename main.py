@@ -87,7 +87,7 @@ def normalize_list_field(v):
 
 def matches_filters(item: Dict[str, Any], filters: Dict[str, Any]) -> bool:
     # date range
-    date_s = item.get("date", "").strip()
+    date_s = (item.get("date") or "").strip()
     item_date = None
     if date_s:
         try:
@@ -224,15 +224,20 @@ def format_item_for_list(item: Dict[str, Any], fields: Dict[str, bool], read_sta
 
 def ensure_read_record(plots: List[Dict[str, Any]]) -> Dict[str, str]:
     data = load_json(READ_RECORD_PATH)
-    if not data:
+    if not isinstance(data, dict):
         data = {}
-    # ensure keys for existing plots
+    # Normalize keys/values to str (matches server.ensure_read_record) so an
+    # int key written by an older build never hides an existing status.
+    normalized: Dict[str, str] = {str(k): str(v) for k, v in data.items()}
     for p in plots:
-        pid = str(p.get("id"))
-        if pid not in data:
-            data[pid] = "未读"
-    save_json(READ_RECORD_PATH, data)
-    return data
+        pid = p.get("id")
+        if pid is None or pid == "":
+            continue
+        key = str(pid)
+        if key not in normalized:
+            normalized[key] = "未读"
+    save_json(READ_RECORD_PATH, normalized)
+    return normalized
 
 
 def set_read_status(records: Dict[str, str], plots_map: Dict[str, Dict[str, Any]]) -> None:
