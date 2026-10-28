@@ -182,7 +182,7 @@ npm run dev
 
 ### 打包安装包（无命令行窗口）
 
-版本号写在仓库根目录的 `app_info.py`（`VERSION`）。需要 [Inno Setup 6](https://jrsoftware.org/isinfo.php)（`ISCC.exe`）。一键打包：
+版本号和发布通道写在仓库根目录的 `app_info.py`（`VERSION`、`CHANNEL`）。前端版本文件会在构建时自动生成。需要 [Inno Setup 6](https://jrsoftware.org/isinfo.php)（`ISCC.exe`）。一键打包：
 
 ```bash
 pip install -r requirements.txt pyinstaller pillow
@@ -212,7 +212,7 @@ ArkPlots/
 ├── requirements.txt       # pywebview 等
 ├── server.py              # 本地 HTTP API + 静态资源
 ├── updater.py             # 应用内更新（扫描 APP_Ver*）
-├── app_info.py            # 版本号 / 更新元数据
+├── app_info.py            # 版本号、正式版/测试版、更新元数据
 ├── packaging/ArkPlots.spec # PyInstaller（onedir，console=False）
 ├── packaging/ArkPlots.iss  # Inno Setup 安装包
 ├── packaging/build_release.py

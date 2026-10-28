@@ -515,13 +515,22 @@ def update_markdown_path() -> str | None:
     return None
 
 
+_VERSION_MARK = "{{VERSION}}"
+
+
+def render_update_markdown(text: str, version: str | None = None) -> str:
+    """Fill ``{{VERSION}}`` so Update.md does not store the version number."""
+    ver = (version or VERSION).strip()
+    return text.replace(_VERSION_MARK, ver)
+
+
 def read_local_update_markdown() -> str:
     path = update_markdown_path()
     if not path:
         return ""
     try:
         with open(path, encoding="utf-8") as handle:
-            return _clip_notes(handle.read())
+            return _clip_notes(render_update_markdown(handle.read()))
     except OSError:
         return ""
 
@@ -544,7 +553,10 @@ def fetch_tagged_update_markdown(tag_name: str | None) -> str:
             raw = resp.read()
     except Exception:
         return ""
-    return _clip_notes(raw.decode("utf-8", errors="replace"))
+    text = raw.decode("utf-8", errors="replace")
+    parsed = parse_version(tag)
+    version = ".".join(str(part) for part in parsed) if parsed else None
+    return _clip_notes(render_update_markdown(text, version))
 
 
 def update_announcement(tag_name: str | None = None) -> str:
@@ -953,53 +965,61 @@ foreach ($control in @($form, $cardBox, $kicker, $title, $status, $detail, $vers
   }})
 }}
 
+function Invoke-ArkUpdate {{
+  # Stay on the UI thread. A BackgroundWorker script block runs on a pool
+  # thread with no PowerShell runspace and fails before the installer starts
+  # ("There is no Runspace available to run scripts in this thread.").
+  $status.Text = '正在关闭当前窗口…'
+  [System.Windows.Forms.Application]::DoEvents()
+  while ($true) {{
+    try {{
+      $null = Get-Process -Id $pidWait -ErrorAction Stop
+    }} catch {{
+      break
+    }}
+    Start-Sleep -Milliseconds 200
+    [System.Windows.Forms.Application]::DoEvents()
+  }}
+  Start-Sleep -Milliseconds 800
+  $status.Text = '正在写入新版本…'
+  [System.Windows.Forms.Application]::DoEvents()
+  $setupArgs = @('/VERYSILENT', '/NORESTART', '/CLOSEAPPLICATIONS', "/DIR=`"$appDir`"")
+  $proc = Start-Process -FilePath $setup -ArgumentList $setupArgs -PassThru
+  while (-not $proc.HasExited) {{
+    Start-Sleep -Milliseconds 200
+    [System.Windows.Forms.Application]::DoEvents()
+  }}
+  $proc.Refresh()
+  if ($proc.ExitCode -ne 0) {{
+    throw "安装程序退出码 $($proc.ExitCode)"
+  }}
+  $status.Text = '更新完成，正在打开…'
+  [System.Windows.Forms.Application]::DoEvents()
+  Start-Sleep -Milliseconds 500
+{restart_line}  try {{ Remove-Item -LiteralPath $setup -Force -ErrorAction SilentlyContinue }} catch {{ }}
+}}
+
 $form.Add_Shown({{
+  if ($script:updateStarted) {{ return }}
+  $script:updateStarted = $true
   [ArkChrome]::Round($versionChip, 10)
   $form.Activate()
   $timer.Start()
-  $worker = New-Object System.ComponentModel.BackgroundWorker
-  $worker.WorkerReportsProgress = $true
-  $worker.Add_DoWork({{
-    param($sender, $e)
-    $sender.ReportProgress(0, '正在关闭当前窗口…')
-    while ($true) {{
-      try {{
-        $null = Get-Process -Id $pidWait -ErrorAction Stop
-      }} catch {{ break }}
-      Start-Sleep -Milliseconds 400
-    }}
-    Start-Sleep -Milliseconds 800
-    $sender.ReportProgress(0, '正在写入新版本…')
-    $setupArgs = @('/VERYSILENT', '/NORESTART', '/CLOSEAPPLICATIONS', "/DIR=`"$appDir`"")
-    $proc = Start-Process -FilePath $setup -ArgumentList $setupArgs -Wait -PassThru
-    if ($proc.ExitCode -ne 0) {{
-      throw "安装程序退出码 $($proc.ExitCode)"
-    }}
-    $sender.ReportProgress(0, '更新完成，正在打开…')
-    Start-Sleep -Milliseconds 500
-{restart_line}    try {{ Remove-Item -LiteralPath $setup -Force -ErrorAction SilentlyContinue }} catch {{ }}
-  }})
-  $worker.Add_ProgressChanged({{
-    param($sender, $e)
-    $status.Text = [string]$e.UserState
-  }})
-  $worker.Add_RunWorkerCompleted({{
-    param($sender, $e)
+  try {{
+    Invoke-ArkUpdate
     $timer.Stop()
-    if ($e.Error) {{
-      $status.Text = '更新没有完成'
-      $detail.Text = $e.Error.Message
-      $detail.ForeColor = $danger
-      $detail.Location = New-Object System.Drawing.Point(28, 184)
-      $detail.Size = New-Object System.Drawing.Size(432, 36)
-      $trackBar.Visible = $false
-      $closeBtn.Visible = $true
-      $form.TopMost = $false
-    }} else {{
-      $form.Close()
-    }}
-  }})
-  $worker.RunWorkerAsync()
+    $form.Close()
+  }} catch {{
+    $timer.Stop()
+    $status.Text = '更新没有完成'
+    $detail.Text = $_.Exception.Message
+    $detail.ForeColor = $danger
+    $detail.Location = New-Object System.Drawing.Point(28, 184)
+    $detail.Size = New-Object System.Drawing.Size(432, 36)
+    $trackBar.Visible = $false
+    $closeBtn.Visible = $true
+    $form.TopMost = $false
+  }}
 }})
 
 [System.Windows.Forms.Application]::EnableVisualStyles()

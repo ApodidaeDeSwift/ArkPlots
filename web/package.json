@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "python ../packaging/sync_frontend_version.py",
     "dev": "vite",
+    "prebuild": "python ../packaging/sync_frontend_version.py",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"

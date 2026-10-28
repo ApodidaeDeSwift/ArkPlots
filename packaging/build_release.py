@@ -49,17 +49,9 @@ def _run(cmd: list[str], cwd: Path) -> None:
 
 
 def sync_frontend_version() -> None:
-    path = ROOT / "web" / "src" / "version.ts"
-    # CHANNEL 与 app_info.py 一致：release = 正式版，preview = 测试版。
-    content = (
-        "/** Synced from app_info.py by packaging/build_release.py.\n"
-        " * CHANNEL: \"release\" = 正式版（GitHub 不勾选 Pre-release），\n"
-        " * \"preview\" = 测试版（GitHub 勾选 Set as a pre-release）。\n"
-        " */\n"
-        f"export const APP_VERSION = '{VERSION}'\n"
-        f"export const APP_CHANNEL = '{CHANNEL}' as const\n"
-    )
-    path.write_text(content, encoding="utf-8", newline="\n")
+    from sync_frontend_version import sync_frontend_version as write_version_ts
+
+    path = write_version_ts()
     print(f"synced {path.relative_to(ROOT)} -> {VERSION} {CHANNEL}", flush=True)
 
 

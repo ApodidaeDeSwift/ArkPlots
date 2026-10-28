@@ -2,7 +2,7 @@
 # GitHub does not package binaries from source by itself; this workflow does.
 #
 # Typical flow:
-#   1. Bump VERSION in app_info.py (must match the tag)
+#   1. Bump VERSION and CHANNEL in app_info.py (tag must match VERSION)
 #   2. Commit and push
 #   3. Create tag APP_Ver… on APP_Release (or publish a Release with that tag)
 #   4. This job uploads Arkplot_setup_ver{VERSION}.exe onto that Release
@@ -76,7 +76,7 @@ jobs:
           import os
           import sys
           sys.path.insert(0, os.getcwd())
-          from app_info import VERSION, app_ver_tag
+          from app_info import CHANNEL, VERSION, app_ver_tag
           tag = os.environ.get("RELEASE_TAG", "")
           expected = app_ver_tag()
           if tag != expected:
@@ -84,7 +84,15 @@ jobs:
                   f"Tag {tag!r} does not match app_info.py ({expected!r}). "
                   f"Bump VERSION to match the tag before releasing."
               )
-          print(f"tag {tag} matches VERSION {VERSION}")
+          if CHANNEL not in ("release", "preview"):
+              raise SystemExit(
+                  f"app_info.CHANNEL must be 'release' or 'preview', got {CHANNEL!r}."
+              )
+          env_path = os.environ.get("GITHUB_ENV")
+          if env_path:
+              with open(env_path, "a", encoding="utf-8") as handle:
+                  handle.write(f"APP_CHANNEL={CHANNEL}\n")
+          print(f"tag {tag} matches VERSION {VERSION}; channel {CHANNEL}")
 
       - name: Install Inno Setup
         run: choco install innosetup -y --no-progress
@@ -121,6 +129,8 @@ jobs:
           files: Arkplot_setup_ver*.exe
           fail_on_unmatched_files: true
           generate_release_notes: false
+          prerelease: ${{ env.APP_CHANNEL == 'preview' }}
+          make_latest: ${{ env.APP_CHANNEL == 'preview' && 'false' || 'true' }}
 
       - name: Upload installer artifact
         if: github.event_name == 'workflow_dispatch'

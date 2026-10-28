@@ -17,20 +17,22 @@ APP_NAME = "ArkPlots"
 EXE_STEM = "ArkPlots"
 
 # Semver-like calendar build: YY.M.D.build  (e.g. 26.10.5.1 = 2026-10-05 #1)
-VERSION = "26.10.28.8"
+# 改版本只改这一处。web/src/version.ts 在前端构建和打包时自动生成。
+# Update.md 里写 {{VERSION}}，显示更新公告时会换成这个版本号。
+VERSION = "26.10.28.9"
 
-# 发布通道。改这里，并在 GitHub Release 上对应勾选或不勾选 Pre-release。
+# 发布通道。只改这里。前端默认更新通道会跟着生成。
+# 打上 APP_Ver 标签后，GitHub Actions 会按这里设置 Pre-release：
+# release 为正式版（不勾选），preview 为测试版（勾选，且不标成 Latest）。
 #
 # 正式版：
 #   CHANNEL = "release"
-#   发布时不要勾选 “Set as a pre-release”。
 #   设置里选「正式版」的用户只会收到这种 Release。
 #
 # 测试版：
 #   CHANNEL = "preview"
-#   发布时勾选 “Set as a pre-release”。
 #   只有在设置里选「测试版」的用户才会收到。比它新的正式版仍会提示更新。
-CHANNEL = "release"
+CHANNEL = "preview"
 
 # GitHub repo + APP desktop tag prefix used by the in-app updater.
 # Stable AppId for Inno Setup (detect existing installs / upgrades).
