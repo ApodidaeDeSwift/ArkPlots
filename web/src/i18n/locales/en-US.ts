@@ -204,8 +204,8 @@ const enUS: Messages = {
   support: {
     title: 'Support us',
     open: 'Support us',
-    body: 'If ArkPlots helps you, feel free to buy the author a Mixue drink (蜜雪冰城).',
-    thanks: 'Thank you for your support.',
+    body: 'If ArkPlots helps you, feel free to buy the author a cup of coffee.',
+    thanks: 'Thank you for your support. Also, Problem feedback or other suggestions are welcomed in QQ group: 1020585333',
     imageAlt: 'Support us',
   },
 }

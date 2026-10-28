@@ -199,7 +199,7 @@ const zhCN: Messages = {
     title: '支持我们',
     open: '支持我们',
     body: '如果本工具对你有帮助，请作者喝一杯蜜雪冰城。',
-    thanks: '感谢支持。',
+    thanks: '感谢支持。也可以在 QQ 群: 1020585333 反馈问题或提出建议。',
     imageAlt: '支持我们',
   },
 }
