@@ -137,27 +137,30 @@ class ReadRecordMigrationTests(unittest.TestCase):
         by_name = {row["name"]: row for row in rows}
         self.assertEqual(len(by_name), len(rows))
         comic = by_name[COMIC]
-        self.assertEqual(comic["id"], 124)
+        self.assertEqual(comic["id"], 125)
         self.assertEqual(comic["date"], "2026-03-20")
-        self.assertEqual([row["id"] for row in rows], list(range(1, 136)))
+        self.assertEqual(by_name["暮岁闲谈：正是团圆时分"]["id"], 123)
+        self.assertEqual(by_name["序言组曲：孤行之人"]["id"], 127)
+        self.assertEqual([row["id"] for row in rows], list(range(1, 138)))
+        inserted = {COMIC, "暮岁闲谈：正是团圆时分", "序言组曲：孤行之人"}
         pointed = []
         for row in rows:
             for key in ("necessary_plot", "optional_plot"):
                 for ref in row.get(key) or []:
-                    if isinstance(ref, dict) and ref.get("id") == 124:
+                    if isinstance(ref, dict) and ref.get("id") in {123, 125, 127}:
                         pointed.append(row["name"])
         self.assertEqual(pointed, [])
 
+        kept = [row for row in rows if row["name"] not in inserted]
+        new_to_old = {row["id"]: index for index, row in enumerate(kept, 1)}
         old_rows = []
-        for row in rows:
-            if row["name"] == COMIC:
-                continue
+        for index, row in enumerate(kept, 1):
             copied = json.loads(json.dumps(row))
-            copied["id"] = copied["id"] if copied["id"] < 124 else copied["id"] - 1
+            copied["id"] = index
             for key in ("necessary_plot", "optional_plot"):
                 for ref in copied.get(key) or []:
-                    if isinstance(ref, dict) and isinstance(ref.get("id"), int) and ref["id"] > 124:
-                        ref["id"] -= 1
+                    if isinstance(ref, dict) and isinstance(ref.get("id"), int):
+                        ref["id"] = new_to_old[ref["id"]]
             old_rows.append(copied)
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -174,9 +177,11 @@ class ReadRecordMigrationTests(unittest.TestCase):
             for row in old_rows:
                 new_id = str(by_name[row["name"]]["id"])
                 self.assertEqual(mapped[new_id], f"状态:{row['name']}", row["name"])
-            self.assertEqual(mapped["123"], "状态:十字路口")
-            self.assertEqual(mapped["125"], "状态:人们，我们")
-            self.assertEqual(mapped["135"], "状态:昨日海")
+            self.assertNotIn("123", mapped)
+            self.assertNotIn("127", mapped)
+            self.assertEqual(mapped["124"], "状态:十字路口")
+            self.assertEqual(mapped["126"], "状态:人们，我们")
+            self.assertEqual(mapped["137"], "状态:昨日海")
 
 
 class PlotInsertTests(unittest.TestCase):
@@ -188,15 +193,17 @@ class PlotInsertTests(unittest.TestCase):
         doc = json.loads(raw.decode("utf-8"))
         rows = doc["data"]
         by_name = {row["name"]: row for row in rows}
-        self.assertEqual(by_name["十字路口"]["id"], 123)
+        self.assertEqual(by_name["十字路口"]["id"], 124)
+        self.assertEqual(by_name["暮岁闲谈：正是团圆时分"]["date"], "2026-02-16")
+        self.assertEqual(by_name["序言组曲：孤行之人"]["date"], "2026-04-25")
         self.assertEqual(by_name[COMIC]["class"], "manga")
         self.assertNotIn("first_appearance", by_name[COMIC])
-        self.assertEqual(by_name[COMIC]["necessary_plot"], [])
+        self.assertEqual(by_name[COMIC]["necessary_plot"][0]["id"], 29)
         self.assertEqual(by_name["生息演算：沙洲遗闻"]["id"], 85)
         self.assertEqual(by_name["塞茜莉亚的安魂寻旅"]["id"], 92)
         self.assertEqual(by_name["理想城：长夏狂欢季"]["id"], 54)
         general = by_name["循途漫录：大将军，出击！"]
-        self.assertEqual(general["id"], 129)
+        self.assertEqual(general["id"], 131)
         self.assertEqual(general["necessary_plot"][0]["id"], 54)
         critical = by_name["EP17. 相变临界"]
         student = next(
@@ -211,35 +218,50 @@ class PlotInsertTests(unittest.TestCase):
 
         covers = _read(os.path.join(ROOT, "web", "public", "covers", "covers.json"))
         sources = _read(os.path.join(ROOT, "web", "public", "covers", "sources.json"))
-        self.assertNotIn("124", covers)
+        self.assertEqual(covers["123"], "covers/123.jpg")
+        self.assertEqual(covers["124"], "covers/124.png")
         self.assertEqual(covers["125"], "covers/125.png")
-        self.assertEqual(covers["135"], "covers/135.jpg")
-        self.assertEqual(sources["125"], "活动名称_人们，我们.png")
-        self.assertEqual(sources["135"], "bilibili/昨日海活动宣传PV封面.jpg")
+        self.assertEqual(covers["126"], "covers/126.png")
+        self.assertEqual(covers["127"], "covers/127.jpg")
+        self.assertEqual(covers["137"], "covers/137.jpg")
+        self.assertTrue(sources["123"].startswith("https://web.hycdn.cn/comic/pic/"))
+        self.assertTrue(sources["125"].startswith("https://web.hycdn.cn/comic/pic/"))
+        self.assertTrue(sources["127"].startswith("https://web.hycdn.cn/comic/pic/"))
+        self.assertEqual(sources["126"], "活动名称_人们，我们.png")
+        self.assertEqual(sources["137"], "bilibili/昨日海活动宣传PV封面.jpg")
         cover_dir = os.path.join(ROOT, "web", "public", "covers")
+        self.assertTrue(os.path.isfile(os.path.join(cover_dir, "123.jpg")))
         self.assertTrue(os.path.isfile(os.path.join(cover_dir, "125.png")))
-        self.assertTrue(os.path.isfile(os.path.join(cover_dir, "135.jpg")))
-        self.assertFalse(os.path.exists(os.path.join(cover_dir, "124.png")))
+        self.assertTrue(os.path.isfile(os.path.join(cover_dir, "126.png")))
+        self.assertTrue(os.path.isfile(os.path.join(cover_dir, "127.jpg")))
+        self.assertTrue(os.path.isfile(os.path.join(cover_dir, "137.jpg")))
 
         with open(
             os.path.join(ROOT, "web", "src", "i18n", "content", "plotNames.en-US.ts"),
             encoding="utf-8",
         ) as handle:
             names = handle.read()
-        self.assertIn("'125': \"People, a People\", // 人们，我们", names)
-        self.assertIn("'135': \"Yet Another Wave\", // 昨日海", names)
+        self.assertIn("'123': \"暮岁闲谈：正是团圆时分\", // 暮岁闲谈：正是团圆时分", names)
+        self.assertIn("'126': \"People, a People\", // 人们，我们", names)
+        self.assertIn("'127': \"序言组曲：孤行之人\", // 序言组曲：孤行之人", names)
+        self.assertIn("'137': \"Yet Another Wave\", // 昨日海", names)
         with open(os.path.join(ROOT, "web", "src", "viewLink.ts"), encoding="utf-8") as handle:
             link = handle.read()
         self.assertIn(f"'{COMIC}': '4578'", link)
+        self.assertIn("'暮岁闲谈：正是团圆时分': '8907'", link)
+        self.assertIn("'序言组曲：孤行之人': '0694'", link)
         with open(os.path.join(ROOT, "packaging", "ArkPlots.iss"), encoding="utf-8") as handle:
             iss = handle.read()
         self.assertIn("BeforeInstall: MigrateReadRecord", iss)
         self.assertIn("ExtractTemporaryFile('Plotline.new.json')", iss)
 
         record = _read(os.path.join(ROOT, "Read_record.json"))
-        self.assertNotIn("124", record)
-        self.assertIn("125", record)
-        self.assertIn("135", record)
+        self.assertNotIn("123", record)
+        self.assertNotIn("125", record)
+        self.assertNotIn("127", record)
+        self.assertIn("124", record)
+        self.assertIn("126", record)
+        self.assertIn("137", record)
         self.assertEqual(set(record.values()), {"未读"})
 
 

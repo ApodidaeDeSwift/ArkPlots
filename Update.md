@@ -1,6 +1,6 @@
 # **更新公告**
 
-## **Ver{{VERSION}}**
+## **Ver26.10.28.10**
 
 - 增加了首次登场角色的查看和搜索。
 - 增加了快速跳转到 PRTS 进行剧情阅读的功能。
@@ -20,7 +20,7 @@
 - 各类i18n（英文、日语等。如果有愿意提供任何帮助的外国友人，感激不尽！）
 - 现阶段部分剧情线的订正（开发者本人也并非看过所有剧情，这些前置线索是基于我个人的理解编排的，如有错漏，还请指出，谢谢！）
 
-## **Ver{{VERSION}}**
+## **Ver26.10.28.10**
 
 - Added the ability to view and search for characters' first appearances.
 - Added a feature for quickly jumping to PRTS for story reading.
