@@ -19,7 +19,7 @@ EXE_STEM = "ArkPlots"
 # Semver-like calendar build: YY.M.D.build  (e.g. 26.10.5.1 = 2026-10-05 #1)
 # 改版本只改这一处。web/src/version.ts 在前端构建和打包时自动生成。
 # Update.md 里写 {{VERSION}}，显示更新公告时会换成这个版本号。
-VERSION = "26.10.28.9"
+VERSION = "26.10.28.11"
 
 # 发布通道。只改这里。前端默认更新通道会跟着生成。
 # 打上 APP_Ver 标签后，GitHub Actions 会按这里设置 Pre-release：

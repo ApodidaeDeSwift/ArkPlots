@@ -1,6 +1,6 @@
 """Release notes travel with update checks, and exit waits for the UI."""
 from __future__ import annotations
-
+ 
 import json
 import os
 import subprocess
