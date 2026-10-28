@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { applyUpdate, checkUpdate, fetchVersion, type UpdateCheckResult } from '../api'
+import { applyUpdate, checkUpdate, fetchVersion, IS_NATIVE_APP, type UpdateCheckResult } from '../api'
 import { useI18n, useT } from '../i18n'
 import type { DisplaySettings } from '../settings'
 import { APP_CHANNEL, APP_VERSION } from '../version'
@@ -80,7 +80,11 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
 
       if (data.up_to_date || !data.update_available) {
         setPhase('ready')
-        setStatusText([t('version.upToDate'), warn].filter(Boolean).join('\n'))
+        setStatusText(
+          [IS_NATIVE_APP ? t('version.mobileUpToDate') : t('version.upToDate'), warn]
+            .filter(Boolean)
+            .join('\n'),
+        )
         return
       }
 
@@ -131,6 +135,13 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
       setResult(data)
       const warn = pickWarning(data, locale)
       if (data.applied) {
+        if (IS_NATIVE_APP) {
+          // Mobile: the data-updated event already refreshed the list in place.
+          setPhase('ready')
+          setResult(data)
+          setStatusText(t('version.mobileDataUpdated'))
+          return
+        }
         setPhase('restarting')
         setStatusText([t('version.restarting'), warn, t('version.dataSafe')].filter(Boolean).join('\n'))
         onUpdateApplied?.(data)
@@ -290,7 +301,7 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
                       disabled={busy}
                       onClick={() => void onApplyUpdate()}
                     >
-                      {t('version.apply')}
+                      {IS_NATIVE_APP ? t('version.mobileApply') : t('version.apply')}
                     </button>
                   )}
                   {result?.html_url && result.update_available && !result.has_asset && (
@@ -324,7 +335,7 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
                 >
                   {statusText
                     ? statusText.split('\n').map((line, i) => <div key={i}>{line}</div>)
-                    : t('version.idleHint')}
+                    : t(IS_NATIVE_APP ? 'version.mobileIdleHint' : 'version.idleHint')}
                 </div>
                 {phase === 'ready' && result?.update_available && (
                   <div className="update-console-notes">
