@@ -4,7 +4,7 @@
 
 - 增加了首次登场角色的查看和搜索。
 - 增加了快速跳转到 PRTS 进行剧情阅读的功能。
-- 进行了一轮代码审查，修复了部分已知问
+- 进行了一轮代码审查，修复了部 分已知问
 -更新了《王权金币》漫画的内容 题（感谢舟友们的支持）。
 
  wiki（需要帮助）。
@@ -19,8 +19,7 @@
 
 - Added the ability to view and search for characters' first appearances.
 - Added a feature for quickly jumping to PRTS for story reading.
-- Conducted a round of code review and fixed some known issues (thanks to our community
--Updated new manga  members for their sunot be found (assistance needed).
+- Conducted a round of code review and fixed some known issu members for their support).es  (thanks to our c members for their sunot be found (assistance needed).
 - Web version and Android mobile version (will be ## Urgent Help Needed!
 The development of the following content has hit some serious obstacles. We need more sources of information and are asking for help from all fellow players!
 - For each operator’s secret record, a list of the prerequisite storylines that need to be read beforehand, along with reasons for reading them (including must-read storylines and optional ones)
