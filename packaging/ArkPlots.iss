@@ -559,9 +559,9 @@ begin
   PlaceChip(UnChipCancel, UninstallProgressForm.CancelButton, CHeader, CTextDim, False);
 end;
 
-; Plot ids follow array order. Read_record.json is keyed by those ids, so an
-; inserted story would slide every later status onto the wrong plot. Remap by
-; plot name while {app}\Plotline.json is still the previous catalog.
+// Plot ids follow array order. Read_record.json is keyed by those ids, so an
+// inserted story would slide every later status onto the wrong plot. Remap by
+// plot name while the installed Plotline.json is still the previous catalog.
 procedure MigrateReadRecord;
 var
   ResultCode: Integer;
