@@ -1,0 +1,12 @@
+{
+  "appId": "com.arkplots.mobile",
+  "appName": "ArkPlots",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}
