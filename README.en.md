@@ -61,6 +61,11 @@ If ArkPlots helps you, feel free to buy the author a cup of coffee—the same pa
 
 ![Support](coffee.png)
 
+### Urgent Help Needed!
+The development of the following content has hit some serious obstacles. We need more sources of information and are asking for help from all fellow players!
+- For each operator’s secret record, a list of the prerequisite storylines that need to be read beforehand, along with reasons for reading them (including must-read storylines and optional ones)
+- Various i18n translations (English, Japanese, etc. If any foreign friends are willing to help, we’d be really grateful!)
+- Corrections for some current storyline arcs (even the developer hasn’t seen all the storylines; these prerequisite clues are arranged based on my own understanding, so if there are any mistakes or omissions, please point them out, thanks!)
 ### License & disclaimer
 
 This is a personal learning and organizing tool. *Arknights* and related text/settings belong to Hypergryph and other rights holders. Data and UI in this repo are for study and non-commercial sharing only. Issues and PRs on GitHub are welcome.
