@@ -17,7 +17,7 @@ APP_NAME = "ArkPlots"
 EXE_STEM = "ArkPlots"
 
 # Semver-like calendar build: YY.M.D.build  (e.g. 26.10.5.1 = 2026-10-05 #1)
-VERSION = "26.10.28.7"
+VERSION = "26.10.28.8"
 
 # 发布通道。改这里，并在 GitHub Release 上对应勾选或不勾选 Pre-release。
 #
