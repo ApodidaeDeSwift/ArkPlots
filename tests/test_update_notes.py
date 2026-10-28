@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 import time
 import unittest
@@ -260,6 +261,7 @@ class ReleaseNotesTests(unittest.TestCase):
             patch("updater.os.path.isfile", return_value=True),
             patch("updater.os.path.getsize", return_value=200_000),
             patch("updater._write_installer_runner", return_value=r"C:\ArkPlots\_update\ui.ps1"),
+            patch("updater._open_helper_log", return_value=subprocess.DEVNULL),
             patch("updater.subprocess.Popen") as popen,
             patch("updater._schedule_process_exit") as schedule,
             patch("updater.update_announcement", return_value="# 更新公告\n\n来自 Update.md"),
@@ -271,6 +273,10 @@ class ReleaseNotesTests(unittest.TestCase):
             self.assertEqual(deferred["update_notes"], "# 更新公告\n\n来自 Update.md")
             schedule.assert_not_called()
             popen.assert_called_once()
+            flags = popen.call_args.kwargs["creationflags"]
+            self.assertEqual(flags, updater._helper_creationflags())
+            detached = getattr(subprocess, "DETACHED_PROCESS", 0)
+            self.assertFalse(flags & detached)
             self.assertTrue(updater._update_exit_armed)
 
             early = request_update_exit()

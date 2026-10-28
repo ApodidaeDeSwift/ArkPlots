@@ -1128,6 +1128,38 @@ def request_update_exit() -> dict[str, Any]:
     return {"ok": True, "will_restart": True}
 
 
+def _helper_creationflags() -> int:
+    """Process flags for the program that applies an update after we exit.
+
+    ``DETACHED_PROCESS`` is intentionally absent. With that flag, Windows
+    PowerShell returns exit code 0 without executing ``-File``, so the
+    installer never runs.
+    """
+    flags = 0
+    if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
+        flags |= subprocess.CREATE_NEW_PROCESS_GROUP  # type: ignore[attr-defined]
+    # 0x01000000 — present as a constant on Windows CPython.
+    flags |= getattr(subprocess, "CREATE_BREAKAWAY_FROM_JOB", 0x01000000)
+    # 0x08000000 — hide the console. A WinForms window is unaffected.
+    flags |= getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000)
+    detached = getattr(subprocess, "DETACHED_PROCESS", 0)
+    if detached:
+        flags &= ~detached
+    return flags
+
+
+def _open_helper_log(update_dir: str):
+    """Overwrite the helper log. Callers close the handle after ``Popen``."""
+    path = os.path.join(update_dir, "apply_update.log")
+    try:
+        handle = open(path, "w", encoding="utf-8")
+    except OSError:
+        return subprocess.DEVNULL
+    handle.write("launch helper\n")
+    handle.flush()
+    return handle
+
+
 def apply_update(
     *,
     restart: bool = True,
@@ -1227,11 +1259,11 @@ def apply_update(
                 "warning_en": OVERSEAS_SOURCE_WARNING_EN,
             }
 
-    creationflags = 0
-    if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
-        creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP  # type: ignore[attr-defined]
-    if hasattr(subprocess, "DETACHED_PROCESS"):
-        creationflags |= subprocess.DETACHED_PROCESS  # type: ignore[attr-defined]
+    # DETACHED_PROCESS makes Windows PowerShell exit 0 without running -File,
+    # so the installer never starts and the app only closes. CREATE_NO_WINDOW
+    # hides the console host; the WinForms progress window still appears.
+    # Breakaway keeps the helper alive after this process calls os._exit.
+    creationflags = _helper_creationflags()
 
     if _asset_is_installer(asset_name):
         ui_script = _write_installer_runner(
@@ -1242,26 +1274,30 @@ def apply_update(
             restart=restart,
             remote_version=str(check.get("remote_version") or ""),
         )
-        # Hidden PowerShell host; WinForms UI is shown by the script itself.
-        # Do NOT use CREATE_NO_WINDOW — it can suppress the GUI on some hosts.
-        subprocess.Popen(
-            [
-                "powershell.exe",
-                "-NoProfile",
-                "-ExecutionPolicy",
-                "Bypass",
-                "-WindowStyle",
-                "Hidden",
-                "-File",
-                ui_script,
-            ],
-            cwd=update_dir,
-            close_fds=True,
-            creationflags=creationflags,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            stdin=subprocess.DEVNULL,
-        )
+        # Hidden console host; WinForms UI is shown by the script itself.
+        log_handle = _open_helper_log(update_dir)
+        try:
+            subprocess.Popen(
+                [
+                    "powershell.exe",
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-WindowStyle",
+                    "Hidden",
+                    "-File",
+                    ui_script,
+                ],
+                cwd=update_dir,
+                close_fds=True,
+                creationflags=creationflags,
+                stdout=log_handle,
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+            )
+        finally:
+            if log_handle is not subprocess.DEVNULL:
+                log_handle.close()
         note = "Installer upgrades the program only; Read_record.json is not modified."
     else:
         stable_twin = os.path.join(app_dir, f"{EXE_STEM}.exe")
@@ -1273,16 +1309,20 @@ def apply_update(
             optional_stable=optional_stable,
             restart=restart,
         )
-        no_window = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-        subprocess.Popen(
-            ["cmd.exe", "/c", bat],
-            cwd=update_dir,
-            close_fds=True,
-            creationflags=creationflags | no_window,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            stdin=subprocess.DEVNULL,
-        )
+        log_handle = _open_helper_log(update_dir)
+        try:
+            subprocess.Popen(
+                ["cmd.exe", "/c", bat],
+                cwd=update_dir,
+                close_fds=True,
+                creationflags=creationflags,
+                stdout=log_handle,
+                stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+            )
+        finally:
+            if log_handle is not subprocess.DEVNULL:
+                log_handle.close()
         note = "User data files are not modified; only the executable is replaced."
 
     if defer_exit:
