@@ -17,6 +17,11 @@ export type DisplaySettings = {
   updateChannel: UpdateChannel
 }
 
+/** The synced channel is a single literal, so compare it as text. */
+function defaultUpdateChannel(channel: string): UpdateChannel {
+  return channel === 'preview' ? 'preview' : 'release'
+}
+
 /** Matches the previous in-panel defaults: cover, reasons, and both prerequisite lists on. */
 export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
   showCover: true,
@@ -24,7 +29,7 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
   showNecessary: true,
   showOptional: true,
   checkUpdatesOnLaunch: true,
-  updateChannel: APP_CHANNEL === 'preview' ? 'preview' : 'release',
+  updateChannel: defaultUpdateChannel(APP_CHANNEL),
 }
 
 function pickBool(value: unknown, fallback: boolean): boolean {
