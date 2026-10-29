@@ -148,6 +148,7 @@ const enUS: Messages = {
     showNecessary: 'Show required prerequisites',
     showOptional: 'Show optional prerequisites',
     checkUpdatesOnLaunch: 'Check for updates each time the app opens',
+    mobileCheckUpdatesOnLaunch: 'Check for plot data updates on launch',
     updateChannel: 'Update channel',
     updateChannelRelease: 'Stable',
     updateChannelPreview: 'Preview',

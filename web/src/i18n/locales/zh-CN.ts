@@ -146,6 +146,7 @@ const zhCN: Messages = {
     showNecessary: '显示必要前置',
     showOptional: '显示可选前置',
     checkUpdatesOnLaunch: '每次打开时自动检查更新',
+    mobileCheckUpdatesOnLaunch: '启动时检查剧情数据更新',
     updateChannel: '更新通道',
     updateChannelRelease: '正式版',
     updateChannelPreview: '测试版',

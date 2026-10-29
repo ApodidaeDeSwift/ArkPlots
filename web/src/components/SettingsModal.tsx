@@ -244,7 +244,11 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
                   checked={settings.checkUpdatesOnLaunch}
                   onChange={() => toggle('checkUpdatesOnLaunch')}
                 />
-                {t('settings.checkUpdatesOnLaunch')}
+                {t(
+                  IS_NATIVE_APP
+                    ? 'settings.mobileCheckUpdatesOnLaunch'
+                    : 'settings.checkUpdatesOnLaunch',
+                )}
               </label>
               <span className="settings-channel-label">{t('settings.updateChannel')}</span>
               <label>

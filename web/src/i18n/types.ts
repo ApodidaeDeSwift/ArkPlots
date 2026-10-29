@@ -159,6 +159,7 @@ export type Messages = {
     showNecessary: string
     showOptional: string
     checkUpdatesOnLaunch: string
+    mobileCheckUpdatesOnLaunch: string
     updateChannel: string
     updateChannelRelease: string
     updateChannelPreview: string

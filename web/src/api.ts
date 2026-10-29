@@ -53,18 +53,35 @@ export type UpdateCheckResult = {
 // "check for newer Plotline.json upstream" (desktop keeps the exe flow).
 // ---------------------------------------------------------------------------
 
-const w = typeof window !== 'undefined'
-  ? (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
-  : undefined
-/** True inside the Capacitor Android shell (no local server available). */
-export const IS_NATIVE_APP = !!w?.Capacitor?.isNativePlatform?.()
+/** True inside the Capacitor Android shell (no local server available).
+ *  Defined in platform.ts so the settings layer can use it without importing
+ *  this module; re-exported here to keep existing call sites unchanged. */
+import { IS_NATIVE_APP } from './platform'
+export { IS_NATIVE_APP }
 
 const PLOTS_STORAGE_KEY = 'arkplots.plots.v1'
 const RECORDS_STORAGE_KEY = 'arkplots.records.v1'
-/** Fired on window after a mobile data update stored fresh Plotline.json. */
+
+// ===========================================================================
+// [MOBILE DATA UPDATER] — 可整体移除/重写的一段，从这里开始
+//
+// 移动端没有本地 Python 服务，"检查更新"就变成了"从上游拉最新的
+// Plotline.json 存进 localStorage"。它依赖两个公网源（jsDelivr 优先，
+// raw.githubusercontent 兜底），国内访问都不算稳定，这块的最终形态
+// 由维护者决定。
+//
+// 如果想换掉这段实现：
+//   1. 删掉本节内标了 [UPDATER] 的函数与常量（不连续的几处，见标记）
+//   2. checkUpdate / applyUpdate / exitAfterUpdate 里的 IS_NATIVE_APP 分支
+//      改成返回 { ok: false, error: 'unsupported' }
+//   3. 可一并去掉 App.tsx 对 DATA_UPDATED_EVENT 的监听
+// 其余能力（打包数据离线读取、阅读记录存本地、窄屏 UI）都不依赖它。
+// ===========================================================================
+
+/** Fired on window after a mobile data update stored fresh Plotline.json. [UPDATER] */
 export const DATA_UPDATED_EVENT = 'arkplots:data-updated'
 
-/** Upstream Plotline.json sources for the mobile data updater, tried in order. */
+/** Upstream Plotline.json sources for the mobile data updater, tried in order. [UPDATER] */
 const PLOTLINE_REMOTE_SOURCES = [
   'https://cdn.jsdelivr.net/gh/ApodidaeDeSwift/ArkPlots@APP_Release/Plotline.json',
   'https://raw.githubusercontent.com/ApodidaeDeSwift/ArkPlots/APP_Release/Plotline.json',
@@ -83,6 +100,7 @@ function writeJsonStorage(key: string, value: unknown): void {
   localStorage.setItem(key, JSON.stringify(value))
 }
 
+/** Latest entry date in a plot file, used as the version label. [UPDATER] */
 function latestPlotDate(file: PlotlineFile): string {
   let latest = ''
   for (const p of file.data || []) {
@@ -92,6 +110,7 @@ function latestPlotDate(file: PlotlineFile): string {
   return latest
 }
 
+/** Locale sniff for the update release-notes wording. [UPDATER] */
 function isZhLocale(): boolean {
   try {
     const loc = localStorage.getItem('arkplots.locale') || ''
@@ -117,7 +136,7 @@ async function loadNativePlots(): Promise<{ file: PlotlineFile; text: string }> 
   return { file: JSON.parse(text) as PlotlineFile, text }
 }
 
-/** Fetch the newest upstream Plotline.json; returns raw text or null when all sources fail. */
+/** Fetch the newest upstream Plotline.json; null when every source fails. [UPDATER] */
 async function fetchRemotePlotline(): Promise<string | null> {
   for (const url of PLOTLINE_REMOTE_SOURCES) {
     try {
@@ -157,7 +176,7 @@ async function nativeFetchVersion(): Promise<AppVersionInfo> {
   }
 }
 
-/** Mobile update check: compare upstream Plotline.json with the copy in use. */
+/** Mobile update check: compare upstream Plotline.json with the copy in use. [UPDATER] */
 async function nativeCheckUpdate(): Promise<UpdateCheckResult> {
   const remoteText = await fetchRemotePlotline()
   if (remoteText == null) {
@@ -189,7 +208,7 @@ async function nativeCheckUpdate(): Promise<UpdateCheckResult> {
   }
 }
 
-/** Mobile apply: store upstream Plotline.json locally, then notify listeners. */
+/** Mobile apply: store upstream Plotline.json locally, then notify. [UPDATER] */
 async function nativeApplyUpdate(): Promise<UpdateCheckResult> {
   const remoteText = await fetchRemotePlotline()
   if (remoteText == null) {
@@ -211,6 +230,7 @@ async function nativeApplyUpdate(): Promise<UpdateCheckResult> {
   }
 }
 
+/** Mobile has nothing to restart after a data swap. [UPDATER] */
 async function nativeExitAfterUpdate(): Promise<{ ok: boolean; will_restart?: boolean }> {
   return { ok: true, will_restart: false }
 }

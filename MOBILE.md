@@ -4,8 +4,8 @@
 
 ## 产物
 
-- APK：`ArkPlots-v26.10.22.3-android.apk`（约 9MB，自签名，直接安装）
-- 包名：`com.arkplots.mobile`，版本名：`26.10.22.3`（与上游 `app_info.py` 对齐）
+- APK：`ArkPlots-v26.10.28.11-android.apk`（约 9MB，自签名，直接安装）
+- 包名：`com.arkplots.mobile`，版本名：`26.10.28.11`（与上游 `app_info.py` 对齐）
 
 > 封面图为手机端重新压缩过（原图 45MB → 800px/质量78 的 JPEG 共 5.5MB，`covers.json` 映射同步更新），
 > 原图备份在 `E:\zcode\arkplots-mobile\covers-original-backup`。桌面版不受影响（桌面 `web/public` 仅在
@@ -17,10 +17,26 @@
 |---|---|---|
 | 剧情数据 | `Plotline.json`（本地文件） | 打包进 APK（`web/public/Plotline.json`） |
 | 阅读记录 | `Read_record.json` | 手机 localStorage（跟随 App，卸载即清除） |
-| 检查更新 | 下载新版 exe 并替换 | **检查剧情数据更新**：从 GitHub（jsDelivr/CDN 优先）拉最新 `Plotline.json`，应用内即时生效 |
+| 检查更新 | 下载新版 exe 并替换 | **手动**触发剧情数据更新：从 GitHub（jsDelivr 优先，raw 兜底）拉最新 `Plotline.json`，应用内即时生效。**启动时不自动检查**（理由见下） |
 | 界面 | 三栏桌面布局 | 窄屏单列自适应布局 |
 
-代码改动集中在 `web/src/api.ts`（`IS_NATIVE_APP` 分流：Capacitor 环境走本地实现，桌面模式行为不变），以及 App.tsx / SettingsModal / UpdateDialogs 的移动端文案分支、i18n 新增 `version.mobile*` 文案、theme.css 追加移动端媒体查询。
+代码改动分三层：
+
+- **平台判断** —— `web/src/platform.ts` 只导出 `IS_NATIVE_APP`。单独成文件是因为 `settings.ts` 也要用它定默认值；直接放 `api.ts` 会让设置层反向依赖 API 层。
+- **数据层分流** —— `web/src/api.ts`：Capacitor 环境读打包的 `Plotline.json`、记录存 localStorage；桌面模式仍走原来的本地服务，行为不变。
+- **界面适配** —— App.tsx / SettingsModal / UpdateDialogs 的移动端文案分支、i18n 新增 `version.mobile*` 与 `settings.mobileCheckUpdatesOnLaunch`、theme.css 追加窄屏媒体查询。
+
+### 为什么启动时不自动检查更新
+
+桌面版 `checkUpdatesOnLaunch` 默认开启合理——它查的是真实发版，点一下就能换新版本。
+
+移动端不同：数据已经打进 APK，启动时联网多半只检出一个"没有新数据"，代价却是一次冷启动往返。两个源（jsDelivr / raw.githubusercontent）在国内都不稳定，卡住就是黑屏几秒才进主界面。
+
+所以 `settings.ts` 里这个默认值改成了 `!IS_NATIVE_APP`：**移动端默认关，桌面保持不变**。想同步剧情数据时，到「设置 → 版本」勾选，或直接点「检查更新」。
+
+### 数据更新这块可以整体替换
+
+`api.ts` 里所有"从上游拉数据"的代码都标了 `[UPDATER]`，并有分节注释说明范围。要换实现（或干脆去掉联网同步），按那段注释的三步删干净即可——离线读数据、阅读记录、窄屏 UI 都不依赖它。
 
 ## 手机安装
 
@@ -46,7 +62,7 @@ cd android
 ./gradlew.bat assembleRelease
 ```
 
-不想重装 APK 时，也可以在 App 内「设置 → 检查更新」直接在线同步最新剧情数据（效果相同）。
+不想重装 APK 时，也可以在 App 内「设置 → 检查更新」手动同步最新剧情数据（效果相同）。这个同步默认不会在启动时自动进行，需要时点一下就行。
 
 ## 签名
 
