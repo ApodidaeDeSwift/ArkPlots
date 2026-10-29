@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",
+    "@capacitor/browser": "^8.0.5",
     "@capacitor/core": "^8.5.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"

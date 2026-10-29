@@ -4,6 +4,7 @@ import { useI18n, useT } from '../i18n'
 import type { DisplaySettings } from '../settings'
 import { APP_CHANNEL, APP_VERSION } from '../version'
 import { ReleaseNotes } from './ReleaseNotes'
+import { ExternalLink } from './ExternalLink'
 
 type Props = {
   settings: DisplaySettings
@@ -309,14 +310,9 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
                     </button>
                   )}
                   {result?.html_url && result.update_available && !result.has_asset && (
-                    <a
-                      className="btn btn-ghost"
-                      href={result.html_url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
+                    <ExternalLink className="btn btn-ghost" href={result.html_url}>
                       {t('version.openRelease')}
-                    </a>
+                    </ExternalLink>
                   )}
                 </div>
 

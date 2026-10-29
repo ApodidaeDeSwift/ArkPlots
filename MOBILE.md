@@ -64,6 +64,20 @@ cd android
 
 不想重装 APK 时，也可以在 App 内「设置 → 检查更新」手动同步最新剧情数据（效果相同）。这个同步默认不会在启动时自动进行，需要时点一下就行。
 
+## WebView 里会坏、已经处理的地方
+
+桌面浏览器正常的 API 在 Android WebView 里不一定能用，这几处已经改掉：
+
+- **外链** —— WebView 没有"新窗口"，`window.open` 和 `<a target="_blank">` 点下去是静默无响应。视频链接、更新公告里的链接、设置里的仓库链接现在统一走 `openExternal()`：移动端用 `@capacitor/browser` 打开 Chrome Custom Tab，桌面仍是普通新标签页（`ExternalLink` 内部按平台判断，桌面行为没有任何变化）。
+- **启动自动检查** —— 见上一节，移动端默认关闭。
+
+插件是按需加载的，`@capacitor/browser` 会被单独打成一个 8 KB 的 chunk，桌面 bundle 不会加载它。
+
+## 还没验证的
+
+- **剪贴板**（`navigator.clipboard.writeText`，视频弹窗的「复制链接」）—— Capacitor 的 WebView 运行在 secure context 里，按规范应该可用，但没有真机验证过。如果发现失效，需要接 `@capacitor/clipboard`。
+- **真机安装与签名** —— 目前的构建链路只在命令行验证到 `vite build` + `cap sync`，APK 的实际打包和安装需要 Android SDK 与 keystore，见下一节。
+
 ## 签名
 
 - Release 构建使用 `web/android/keystore.properties`（已 gitignore）里指向的 keystore 签名；没有该文件时自动回退 debug 签名（仅供本机调试）。

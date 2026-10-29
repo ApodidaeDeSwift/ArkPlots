@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from 'react'
+import { ExternalLink } from './ExternalLink'
 
 type Block =
   | { type: 'h'; level: number; text: string }
@@ -129,9 +130,9 @@ function renderInline(text: string, key: string): ReactNode[] {
       nodes.push(<img key={id} src={match[2]} alt={match[1] || ''} />)
     } else if (match[4]) {
       nodes.push(
-        <a key={id} href={match[4]} target="_blank" rel="noreferrer">
+        <ExternalLink key={id} href={match[4]}>
           {match[3]}
-        </a>,
+        </ExternalLink>,
       )
     } else if (match[5] != null) {
       nodes.push(<code key={id}>{match[5]}</code>)
@@ -144,9 +145,9 @@ function renderInline(text: string, key: string): ReactNode[] {
     } else if (match[9]) {
       const href = match[9].replace(/[),.;]+$/, '')
       nodes.push(
-        <a key={id} href={href} target="_blank" rel="noreferrer">
+        <ExternalLink key={id} href={href}>
           {href}
-        </a>,
+        </ExternalLink>,
       )
     }
     last = match.index + match[0].length
