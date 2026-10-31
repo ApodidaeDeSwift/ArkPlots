@@ -1,5 +1,6 @@
 /** Persisted UI preferences. Filter state is not stored here. */
 import { APP_CHANNEL } from './version'
+import { IS_NATIVE_APP } from './platform'
 
 export const SETTINGS_STORAGE_KEY = 'arkplots.settings'
 
@@ -28,7 +29,13 @@ export const DEFAULT_DISPLAY_SETTINGS: DisplaySettings = {
   showReason: true,
   showNecessary: true,
   showOptional: true,
-  checkUpdatesOnLaunch: true,
+  // Android build ships the plot data inside the APK, so a launch-time fetch
+  // buys nothing on the happy path: it costs a cold-start round trip through
+  // jsDelivr / raw.githubusercontent (both flaky from mainland China) just to
+  // learn "no new data". Desktop keeps it on — there it checks for a real
+  // release. Mobile users can still tick it in settings when they want the
+  // in-app data sync.
+  checkUpdatesOnLaunch: !IS_NATIVE_APP,
   updateChannel: defaultUpdateChannel(APP_CHANNEL),
 }
 

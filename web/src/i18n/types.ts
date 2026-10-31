@@ -159,6 +159,7 @@ export type Messages = {
     showNecessary: string
     showOptional: string
     checkUpdatesOnLaunch: string
+    mobileCheckUpdatesOnLaunch: string
     updateChannel: string
     updateChannelRelease: string
     updateChannelPreview: string
@@ -199,6 +200,13 @@ export type Messages = {
     promptAsk: string
     updateNow: string
     later: string
+    /** Mobile (Capacitor) builds: update = plot-data sync instead of exe replace. */
+    mobileIdleHint: string
+    mobileUpToDate: string
+    mobileDataUpdated: string
+    mobilePromptTitle: string
+    mobileApply: string
+    mobileNotesTitle: string
     notesTitle: string
     notesEmpty: string
     announcementTitle: string

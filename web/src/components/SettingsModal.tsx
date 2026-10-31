@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { applyUpdate, checkUpdate, fetchVersion, type UpdateCheckResult } from '../api'
+import { applyUpdate, checkUpdate, fetchVersion, IS_NATIVE_APP, type UpdateCheckResult } from '../api'
 import { useI18n, useT } from '../i18n'
 import type { DisplaySettings } from '../settings'
 import { APP_CHANNEL, APP_VERSION } from '../version'
 import { ReleaseNotes } from './ReleaseNotes'
+import { ExternalLink } from './ExternalLink'
 
 type Props = {
   settings: DisplaySettings
@@ -80,7 +81,11 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
 
       if (data.up_to_date || !data.update_available) {
         setPhase('ready')
-        setStatusText([t('version.upToDate'), warn].filter(Boolean).join('\n'))
+        setStatusText(
+          [IS_NATIVE_APP ? t('version.mobileUpToDate') : t('version.upToDate'), warn]
+            .filter(Boolean)
+            .join('\n'),
+        )
         return
       }
 
@@ -131,6 +136,13 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
       setResult(data)
       const warn = pickWarning(data, locale)
       if (data.applied) {
+        if (IS_NATIVE_APP) {
+          // Mobile: the data-updated event already refreshed the list in place.
+          setPhase('ready')
+          setResult(data)
+          setStatusText(t('version.mobileDataUpdated'))
+          return
+        }
         setPhase('restarting')
         setStatusText([t('version.restarting'), warn, t('version.dataSafe')].filter(Boolean).join('\n'))
         onUpdateApplied?.(data)
@@ -233,27 +245,37 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
                   checked={settings.checkUpdatesOnLaunch}
                   onChange={() => toggle('checkUpdatesOnLaunch')}
                 />
-                {t('settings.checkUpdatesOnLaunch')}
+                {t(
+                  IS_NATIVE_APP
+                    ? 'settings.mobileCheckUpdatesOnLaunch'
+                    : 'settings.checkUpdatesOnLaunch',
+                )}
               </label>
-              <span className="settings-channel-label">{t('settings.updateChannel')}</span>
-              <label>
-                <input
-                  type="radio"
-                  name="update-channel"
-                  checked={settings.updateChannel === 'release'}
-                  onChange={() => onChange({ ...settings, updateChannel: 'release' })}
-                />
-                {t('settings.updateChannelRelease')}
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="update-channel"
-                  checked={settings.updateChannel === 'preview'}
-                  onChange={() => onChange({ ...settings, updateChannel: 'preview' })}
-                />
-                {t('settings.updateChannelPreview')}
-              </label>
+              {/* App 渠道（release/preview）只作用于桌面端更新；移动端的数据
+                  同步没有渠道概念，显示选择器只会误导（nativeCheckUpdate 忽略它） */}
+              {!IS_NATIVE_APP && (
+                <>
+                  <span className="settings-channel-label">{t('settings.updateChannel')}</span>
+                  <label>
+                    <input
+                      type="radio"
+                      name="update-channel"
+                      checked={settings.updateChannel === 'release'}
+                      onChange={() => onChange({ ...settings, updateChannel: 'release' })}
+                    />
+                    {t('settings.updateChannelRelease')}
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="update-channel"
+                      checked={settings.updateChannel === 'preview'}
+                      onChange={() => onChange({ ...settings, updateChannel: 'preview' })}
+                    />
+                    {t('settings.updateChannelPreview')}
+                  </label>
+                </>
+              )}
             </div>
             <div className="update-console" data-phase={phase}>
               <div className="update-console-head">
@@ -290,18 +312,13 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
                       disabled={busy}
                       onClick={() => void onApplyUpdate()}
                     >
-                      {t('version.apply')}
+                      {IS_NATIVE_APP ? t('version.mobileApply') : t('version.apply')}
                     </button>
                   )}
                   {result?.html_url && result.update_available && !result.has_asset && (
-                    <a
-                      className="btn btn-ghost"
-                      href={result.html_url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
+                    <ExternalLink className="btn btn-ghost" href={result.html_url}>
                       {t('version.openRelease')}
-                    </a>
+                    </ExternalLink>
                   )}
                 </div>
 
@@ -324,7 +341,7 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
                 >
                   {statusText
                     ? statusText.split('\n').map((line, i) => <div key={i}>{line}</div>)
-                    : t('version.idleHint')}
+                    : t(IS_NATIVE_APP ? 'version.mobileIdleHint' : 'version.idleHint')}
                 </div>
                 {phase === 'ready' && result?.update_available && (
                   <div className="update-console-notes">
