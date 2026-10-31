@@ -176,8 +176,16 @@ async function nativeFetchVersion(): Promise<AppVersionInfo> {
   }
 }
 
-/** Mobile update check: compare upstream Plotline.json with the copy in use. [UPDATER] */
-async function nativeCheckUpdate(): Promise<UpdateCheckResult> {
+/**
+ * Mobile update check: compare upstream Plotline.json with the copy in use.
+ * [UPDATER]
+ *
+ * `_channel` is accepted for signature parity with the desktop check; mobile
+ * data sync has no release-channel concept, so it is intentionally ignored.
+ */
+async function nativeCheckUpdate(
+  _channel: UpdateChannel = 'release',
+): Promise<UpdateCheckResult> {
   const remoteText = await fetchRemotePlotline()
   if (remoteText == null) {
     return { ok: false, error: 'network_error' }
@@ -208,8 +216,15 @@ async function nativeCheckUpdate(): Promise<UpdateCheckResult> {
   }
 }
 
-/** Mobile apply: store upstream Plotline.json locally, then notify. [UPDATER] */
-async function nativeApplyUpdate(): Promise<UpdateCheckResult> {
+/**
+ * Mobile apply: store upstream Plotline.json locally, then notify. [UPDATER]
+ *
+ * `_channel` is accepted for signature parity and ignored (see
+ * nativeCheckUpdate).
+ */
+async function nativeApplyUpdate(
+  _channel: UpdateChannel = 'release',
+): Promise<UpdateCheckResult> {
   const remoteText = await fetchRemotePlotline()
   if (remoteText == null) {
     return { ok: false, error: 'network_error' }
@@ -315,7 +330,7 @@ export async function fetchVersion(): Promise<AppVersionInfo | null> {
 
 /** Desktop: compare with GitHub ``APP_Ver*`` releases on the chosen channel. Mobile: compare plot data. */
 export function checkUpdate(channel: UpdateChannel = 'release'): Promise<UpdateCheckResult> {
-  if (IS_NATIVE_APP) return nativeCheckUpdate()
+  if (IS_NATIVE_APP) return nativeCheckUpdate(channel)
   const query = channel === 'preview' ? '?channel=preview' : '?channel=release'
   return jsonFetchSoft<UpdateCheckResult>(`/api/update/check${query}`, { cache: 'no-store' })
 }
@@ -330,7 +345,7 @@ export function applyUpdate(
   deferExit = true,
   channel: UpdateChannel = 'release',
 ): Promise<UpdateCheckResult> {
-  if (IS_NATIVE_APP) return nativeApplyUpdate()
+  if (IS_NATIVE_APP) return nativeApplyUpdate(channel)
   return jsonFetchSoft<UpdateCheckResult>('/api/update/apply', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

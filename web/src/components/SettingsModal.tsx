@@ -251,25 +251,31 @@ export function SettingsModal({ settings, onChange, onClose, onUpdateApplied }: 
                     : 'settings.checkUpdatesOnLaunch',
                 )}
               </label>
-              <span className="settings-channel-label">{t('settings.updateChannel')}</span>
-              <label>
-                <input
-                  type="radio"
-                  name="update-channel"
-                  checked={settings.updateChannel === 'release'}
-                  onChange={() => onChange({ ...settings, updateChannel: 'release' })}
-                />
-                {t('settings.updateChannelRelease')}
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="update-channel"
-                  checked={settings.updateChannel === 'preview'}
-                  onChange={() => onChange({ ...settings, updateChannel: 'preview' })}
-                />
-                {t('settings.updateChannelPreview')}
-              </label>
+              {/* App 渠道（release/preview）只作用于桌面端更新；移动端的数据
+                  同步没有渠道概念，显示选择器只会误导（nativeCheckUpdate 忽略它） */}
+              {!IS_NATIVE_APP && (
+                <>
+                  <span className="settings-channel-label">{t('settings.updateChannel')}</span>
+                  <label>
+                    <input
+                      type="radio"
+                      name="update-channel"
+                      checked={settings.updateChannel === 'release'}
+                      onChange={() => onChange({ ...settings, updateChannel: 'release' })}
+                    />
+                    {t('settings.updateChannelRelease')}
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="update-channel"
+                      checked={settings.updateChannel === 'preview'}
+                      onChange={() => onChange({ ...settings, updateChannel: 'preview' })}
+                    />
+                    {t('settings.updateChannelPreview')}
+                  </label>
+                </>
+              )}
             </div>
             <div className="update-console" data-phase={phase}>
               <div className="update-console-head">
