@@ -1,16 +1,18 @@
 import type { LocaleCode, Messages } from '../types'
 import enUS from './en-US'
+import jaJP from './ja-JP'
 import zhCN from './zh-CN'
 
 /**
  * Register new locales here after adding `./<code>.ts`.
  * Example:
- *   import jaJP from './ja-JP'
- *   export const localeRegistry = { 'zh-CN': zhCN, 'en-US': enUS, 'ja-JP': jaJP }
+ *   import koKR from './ko-KR'
+ *   export const localeRegistry = { 'zh-CN': zhCN, 'en-US': enUS, 'ja-JP': jaJP, 'ko-KR': koKR }
  */
 export const localeRegistry: Record<LocaleCode, Messages> = {
   'zh-CN': zhCN,
   'en-US': enUS,
+  'ja-JP': jaJP,
 }
 
 export const DEFAULT_LOCALE: LocaleCode = 'zh-CN'
