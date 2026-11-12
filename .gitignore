@@ -267,3 +267,6 @@ desktop.ini
 *.bak
 tests/__pycache__/
 web/dist/.vite/
+
+# Mimosa 本地扫描状态（插件已停用，防误入库）
+.mimosa/

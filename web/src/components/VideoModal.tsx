@@ -1,4 +1,6 @@
 import { useT } from '../i18n'
+import { openExternal } from '../openExternal'
+import { ExternalLink } from './ExternalLink'
 
 type Video = { name: string; url: string }
 
@@ -27,10 +29,10 @@ export function VideoModal({ title, videos, onClose }: Props) {
         {!videos.length && <div className="empty">{t('video.empty')}</div>}
         {videos.map((v) => (
           <div className="video-row" key={v.url + v.name}>
-            <a href={v.url} target="_blank" rel="noreferrer">
+            <ExternalLink href={v.url}>
               {v.name || v.url}
-            </a>
-            <button type="button" className="btn btn-ghost" onClick={() => window.open(v.url, '_blank')}>
+            </ExternalLink>
+            <button type="button" className="btn btn-ghost" onClick={() => void openExternal(v.url)}>
               {t('actions.open')}
             </button>
             <button type="button" className="btn btn-ghost" onClick={() => copy(v.url)}>

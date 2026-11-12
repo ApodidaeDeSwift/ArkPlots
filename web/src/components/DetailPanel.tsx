@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { openExternal } from '../openExternal'
 import type { PlotItem } from '../types'
 import {
   extractPreplotId,
@@ -136,7 +137,7 @@ export function DetailPanel({
           <button
             type="button"
             className="btn btn-accent detail-jump"
-            onClick={() => window.open(viewUrl, '_blank', 'noopener,noreferrer')}
+            onClick={() => void openExternal(viewUrl)}
           >
             {t('detail.quickView')}
           </button>

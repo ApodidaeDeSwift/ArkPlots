@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap');
+/* Web fonts are loaded via <link> in index.html (kept out of this sheet so
+   Android builds can drop them; Google Fonts is unreachable in CN and would
+   block first render inside the offline WebView). */
 
 :root {
   --bg-0: #0b1219;
@@ -972,3 +974,80 @@ button {
 .release-notes-h4,
 .release-notes-h5,
 .release-notes-h6 { font-size: 0.95rem; }
+
+/* ============================================================= */
+/* Mobile / touch (Capacitor Android builds, narrow viewports)    */
+/* ============================================================= */
+@media (max-width: 760px) {
+  html,
+  body,
+  #root {
+    height: auto;
+    min-height: 100%;
+  }
+
+  .app-shell {
+    min-height: 100dvh;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .brand-name {
+    font-size: 1.22rem;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .btn {
+    padding: 9px 12px;
+    font-size: 0.88rem;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+    height: auto;
+    gap: 10px;
+    padding: 10px 10px calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .panel {
+    min-height: 0;
+  }
+
+  /* List panel keeps an internal scroll; detail & recommendation grow naturally. */
+  .workspace > .panel:first-child .panel-body {
+    max-height: 62vh;
+  }
+
+  .modal-backdrop {
+    padding: 12px;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  }
+
+  .modal {
+    width: 100%;
+    max-height: calc(100dvh - 40px);
+  }
+
+  .check-grid {
+    max-height: 46vh;
+  }
+
+  .release-notes,
+  .release-notes-empty {
+    max-height: 200px;
+  }
+}

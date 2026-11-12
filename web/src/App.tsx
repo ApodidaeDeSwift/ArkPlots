@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react'
-import { applyUpdate, checkUpdate, exitAfterUpdate, fetchCovers, fetchPlots, fetchRecords, saveRecords, type UpdateCheckResult } from './api'
+import {
+  applyUpdate,
+  checkUpdate,
+  DATA_UPDATED_EVENT,
+  exitAfterUpdate,
+  fetchCovers,
+  fetchPlots,
+  fetchRecords,
+  IS_NATIVE_APP,
+  saveRecords,
+  type UpdateCheckResult,
+} from './api'
 import { collectFilterOptions, matchesFilters } from './filter'
 import { DetailPanel } from './components/DetailPanel'
 import { FilterBar } from './components/FilterBar'
@@ -136,6 +147,11 @@ export default function App() {
       const data = await applyUpdate(true, true, displaySettings.updateChannel)
       if (data.applied) {
         setUpdateOffer(null)
+        if (IS_NATIVE_APP) {
+          // Mobile data update already fired DATA_UPDATED_EVENT; refresh in place
+          // instead of showing the desktop "restart to finish" dialog.
+          return
+        }
         setUpdateDone({
           ...updateOffer,
           ...data,
@@ -167,50 +183,54 @@ export default function App() {
     }
   }
 
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        setLoading(true)
-        const [plotFile, rec, cov] = await Promise.all([
-          fetchPlots(),
-          fetchRecords(),
-          fetchCovers(),
-        ])
-        if (cancelled) return
-        const list = plotFile.data || []
-        // Fill missing Plotline ids as 未读 (server also does this; keep client in sync).
-        const nextRec = { ...rec }
-        let patched = false
-        for (const p of list) {
-          if (p?.id == null) continue
-          const key = String(p.id)
-          if (!(key in nextRec)) {
-            nextRec[key] = '未读'
-            patched = true
-          }
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [plotFile, rec, cov] = await Promise.all([
+        fetchPlots(),
+        fetchRecords(),
+        fetchCovers(),
+      ])
+      const list = plotFile.data || []
+      // Fill missing Plotline ids as 未读 (server also does this; keep client in sync).
+      const nextRec = { ...rec }
+      let patched = false
+      for (const p of list) {
+        if (p?.id == null) continue
+        const key = String(p.id)
+        if (!(key in nextRec)) {
+          nextRec[key] = '未读'
+          patched = true
         }
-        setPlots(list)
-        setRecords(nextRec)
-        setCovers(cov)
-        setError(null)
-        if (patched) {
-          try {
-            await saveRecords(nextRec)
-          } catch {
-            /* server ensure_read_record is the durable path; ignore soft save errors here */
-          }
-        }
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e))
-      } finally {
-        if (!cancelled) setLoading(false)
       }
-    })()
-    return () => {
-      cancelled = true
+      setPlots(list)
+      setRecords(nextRec)
+      setCovers(cov)
+      setError(null)
+      if (patched) {
+        try {
+          await saveRecords(nextRec)
+        } catch {
+          /* server ensure_read_record is the durable path; ignore soft save errors here */
+        }
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    void loadData()
+  }, [loadData])
+
+  // Mobile data updater (applyUpdate in native mode) reloads plots after storing.
+  useEffect(() => {
+    const onUpdated = () => void loadData()
+    window.addEventListener(DATA_UPDATED_EVENT, onUpdated)
+    return () => window.removeEventListener(DATA_UPDATED_EVENT, onUpdated)
+  }, [loadData])
 
   const options = useMemo(() => collectFilterOptions(plots), [plots])
   const plotsMap = useMemo(
@@ -481,23 +501,7 @@ export default function App() {
           <button
             type="button"
             className="btn"
-            onClick={() => {
-              void (async () => {
-                try {
-                  const [plotFile, rec, cov] = await Promise.all([
-                    fetchPlots(),
-                    fetchRecords(),
-                    fetchCovers(),
-                  ])
-                  setPlots(plotFile.data || [])
-                  setRecords(rec)
-                  setCovers(cov)
-                  setError(null)
-                } catch (e) {
-                  setError(e instanceof Error ? e.message : String(e))
-                }
-              })()
-            }}
+            onClick={() => void loadData()}
           >
             {t('actions.refreshData')}
           </button>

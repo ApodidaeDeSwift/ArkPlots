@@ -48,6 +48,24 @@ def _read(path: str) -> object:
         return json.load(handle)
 
 
+def _git_blob(path: str) -> bytes:
+    return subprocess.run(
+        ["git", "-C", ROOT, "show", "HEAD:" + path],
+        capture_output=True,
+        check=True,
+    ).stdout
+
+
+def _git_has(path: str) -> bool:
+    return (
+        subprocess.run(
+            ["git", "-C", ROOT, "cat-file", "-e", "HEAD:" + path],
+            capture_output=True,
+        ).returncode
+        == 0
+    )
+
+
 class ReadRecordMigrationTests(unittest.TestCase):
     def test_statuses_follow_plot_names(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -216,8 +234,12 @@ class PlotInsertTests(unittest.TestCase):
         warm = next(ref["id"] for ref in drowned["necessary_plot"] if "肉鸽预热" in ref["reason"])
         self.assertEqual(warm, general["id"])
 
-        covers = _read(os.path.join(ROOT, "web", "public", "covers", "covers.json"))
-        sources = _read(os.path.join(ROOT, "web", "public", "covers", "sources.json"))
+        # The working tree may carry build-time cover overrides (compressed
+        # jpgs for mobile builds, no sources.json) or a personal read state,
+        # so the shipped data files are verified as committed, not as checked
+        # out.
+        covers = json.loads(_git_blob("web/public/covers/covers.json"))
+        sources = json.loads(_git_blob("web/public/covers/sources.json"))
         self.assertEqual(covers["123"], "covers/123.jpg")
         self.assertEqual(covers["124"], "covers/124.png")
         self.assertEqual(covers["125"], "covers/125.png")
@@ -229,12 +251,11 @@ class PlotInsertTests(unittest.TestCase):
         self.assertTrue(sources["127"].startswith("https://web.hycdn.cn/comic/pic/"))
         self.assertEqual(sources["126"], "活动名称_人们，我们.png")
         self.assertEqual(sources["137"], "bilibili/昨日海活动宣传PV封面.jpg")
-        cover_dir = os.path.join(ROOT, "web", "public", "covers")
-        self.assertTrue(os.path.isfile(os.path.join(cover_dir, "123.jpg")))
-        self.assertTrue(os.path.isfile(os.path.join(cover_dir, "125.png")))
-        self.assertTrue(os.path.isfile(os.path.join(cover_dir, "126.png")))
-        self.assertTrue(os.path.isfile(os.path.join(cover_dir, "127.jpg")))
-        self.assertTrue(os.path.isfile(os.path.join(cover_dir, "137.jpg")))
+        for cover_id in ("123", "125", "126", "127", "137"):
+            self.assertTrue(
+                _git_has("web/public/covers/" + covers[cover_id].split("/")[-1]),
+                covers[cover_id],
+            )
 
         with open(
             os.path.join(ROOT, "web", "src", "i18n", "content", "plotNames.en-US.ts"),
@@ -255,7 +276,7 @@ class PlotInsertTests(unittest.TestCase):
         self.assertIn("BeforeInstall: MigrateReadRecord", iss)
         self.assertIn("ExtractTemporaryFile('Plotline.new.json')", iss)
 
-        record = _read(os.path.join(ROOT, "Read_record.json"))
+        record = json.loads(_git_blob("Read_record.json"))
         self.assertNotIn("123", record)
         self.assertNotIn("125", record)
         self.assertNotIn("127", record)

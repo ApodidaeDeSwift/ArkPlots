@@ -1,4 +1,4 @@
-import type { UpdateCheckResult } from '../api'
+import { IS_NATIVE_APP, type UpdateCheckResult } from '../api'
 import { useT } from '../i18n'
 import { ReleaseNotes } from './ReleaseNotes'
 
@@ -16,7 +16,9 @@ function NotesBlock({ result }: { result: UpdateCheckResult }) {
   const version = versionOf(result)
   return (
     <>
-      <h4 className="update-dialog-notes-title">{t('version.notesTitle', { version })}</h4>
+      <h4 className="update-dialog-notes-title">
+        {t(IS_NATIVE_APP ? 'version.mobileNotesTitle' : 'version.notesTitle', { version })}
+      </h4>
       {notes ? (
         <ReleaseNotes source={notes} />
       ) : (
@@ -63,7 +65,9 @@ export function UpdateOfferDialog({ result, busy, errorText, onLater, onConfirm 
         aria-modal="true"
         aria-labelledby="update-offer-title"
       >
-        <h3 id="update-offer-title">{t('version.promptTitle', { version })}</h3>
+        <h3 id="update-offer-title">
+          {t(IS_NATIVE_APP ? 'version.mobilePromptTitle' : 'version.promptTitle', { version })}
+        </h3>
         <p className="update-dialog-ask">{t('version.promptAsk')}</p>
         <NotesBlock result={result} />
         {busy && (
